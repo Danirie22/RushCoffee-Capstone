@@ -7,6 +7,7 @@ import QueuePositionCard from '../../components/queue/QueuePositionCard';
 import OrderSummary from '../../components/queue/OrderSummary';
 import { useAuth } from '../../context/AuthContext';
 import { useOrder } from '../../context/OrderContext';
+import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
 
 const QueuePage: React.FC = () => {
     const { currentUser } = useAuth();
@@ -21,7 +22,7 @@ const QueuePage: React.FC = () => {
                 <Header />
                 <main className="flex flex-1 items-center justify-center px-6 py-20 text-center">
                     <div>
-                        <Coffee className="mx-auto h-24 w-24 text-gray-300" />
+                        <RushCoffeeLogo className="mx-auto h-24 w-24 text-gray-300 opacity-50" />
                         <h1 className="mt-4 font-display text-2xl font-bold text-coffee-900">
                             You're not in the queue
                         </h1>
@@ -50,7 +51,7 @@ const QueuePage: React.FC = () => {
                 <Header />
                 <main className="flex flex-1 items-center justify-center px-6 py-20 text-center">
                     <div>
-                        <Coffee className="mx-auto h-24 w-24 text-gray-300" />
+                        <RushCoffeeLogo className="mx-auto h-24 w-24 text-gray-300 opacity-50" />
                         <h1 className="mt-4 font-display text-2xl font-bold text-coffee-900">
                             Your queue is empty
                         </h1>

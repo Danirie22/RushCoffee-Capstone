@@ -1,8 +1,10 @@
 
+
 import React from 'react';
 import { X, Minus, Plus, Trash2, ArrowRight, Coffee } from 'lucide-react';
 import { Product, ProductSize } from '../../data/mockProducts';
 import Badge from '../../../components/ui/Badge';
+import RushCoffeeLogo from '../layout/RushCoffeeLogo';
 
 export interface CartItem {
   id: string;
@@ -74,7 +76,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
           {/* Cart Items or Empty State */}
           {cartItems.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
-              <Coffee className="h-24 w-24 text-gray-300" />
+              <RushCoffeeLogo className="h-24 w-24 text-gray-300 opacity-50" />
               <h3 className="text-lg font-semibold text-gray-800">Your cart is empty</h3>
               <p className="text-gray-500">Looks like you haven't added anything yet.</p>
               <button

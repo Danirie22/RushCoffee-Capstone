@@ -1,6 +1,8 @@
 
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, ArrowUpDown, Check } from 'lucide-react';
+import { Search, ArrowUpDown, Check, X, Loader2 } from 'lucide-react';
+import { GoogleGenAI, Modality } from "@google/genai";
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -9,6 +11,8 @@ import ProductCardSkeleton from '../../components/menu/ProductCardSkeleton';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { mockProducts, Product } from '../../data/mockProducts';
+import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
+
 
 const categories = ['All', ...Array.from(new Set(mockProducts.map(p => p.category)))];
 
@@ -29,8 +33,12 @@ const MenuPage: React.FC = () => {
     const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
     const sortMenuRef = useRef<HTMLDivElement>(null);
     const productsSectionRef = useRef<HTMLElement>(null);
+
+    const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
+    const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
     
-    const { addToCart } = useCart();
+    const { addToCart, showToast } = useCart();
     const { currentUser } = useAuth();
 
     useEffect(() => {
@@ -55,6 +63,55 @@ const MenuPage: React.FC = () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+    
+    const closeModal = () => {
+        setIsGeneratingImage(false);
+        setGeneratedImage(null);
+        setCurrentProduct(null);
+    };
+
+    const handleGenerateImage = async (product: Product) => {
+        if (!process.env.API_KEY) {
+            showToast('API key is not configured for image generation.');
+            return;
+        }
+        
+        setCurrentProduct(product);
+        setIsGeneratingImage(true);
+        setGeneratedImage(null);
+
+        const prompt = `A professional, photorealistic studio shot of a "${product.name}", a popular coffee shop drink. Description: "${product.description}". The background is a blurry, cozy café interior with warm lighting. The lighting is soft and natural, highlighting the textures of the drink. 4K, high detail, food photography.`;
+
+        try {
+            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const response = await ai.models.generateContent({
+                model: 'gemini-2.5-flash-image',
+                contents: {
+                    parts: [{ text: prompt }],
+                },
+                config: {
+                    responseModalities: [Modality.IMAGE],
+                },
+            });
+
+            for (const part of response.candidates[0].content.parts) {
+                if (part.inlineData) {
+                    const base64ImageBytes: string = part.inlineData.data;
+                    const imageUrl = `data:image/png;base64,${base64ImageBytes}`;
+                    setGeneratedImage(imageUrl);
+                    break;
+                }
+            }
+
+        } catch (error) {
+            console.error("Error generating image:", error);
+            showToast('Failed to generate image. Please try again.');
+            closeModal();
+        } finally {
+             setIsGeneratingImage(false);
+        }
+    };
+
 
     const filteredAndSortedProducts = useMemo(() => {
         let processedProducts = products.filter(product => {
@@ -194,6 +251,7 @@ const MenuPage: React.FC = () => {
                                         key={product.id}
                                         product={product}
                                         onAddToCart={addToCart}
+                                        onGenerateImage={handleGenerateImage}
                                         isLoggedIn={!!currentUser}
                                     />
                                 ))}
@@ -208,6 +266,40 @@ const MenuPage: React.FC = () => {
                     </div>
                 </section>
             </main>
+
+            {/* Image Generation Modal */}
+            {(isGeneratingImage || generatedImage) && (
+                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+                    <div className="relative w-full max-w-lg transform rounded-2xl bg-white p-6 text-center shadow-xl transition-all">
+                        <button onClick={closeModal} className="absolute -top-2 -right-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-gray-700 text-white transition-transform hover:scale-110">
+                           <X className="h-5 w-5" />
+                        </button>
+                        <h3 id="modal-title" className="text-lg font-semibold leading-6 text-gray-900">Generating Image for {currentProduct?.name}</h3>
+
+                        <div className="mt-4 aspect-square w-full">
+                            {isGeneratingImage ? (
+                                <div className="flex h-full flex-col items-center justify-center rounded-lg bg-gray-100">
+                                    <RushCoffeeLogo className="h-16 w-16 animate-pulse-slow text-primary-500" />
+                                    <p className="mt-4 font-semibold text-gray-700">Brewing your image...</p>
+                                    <p className="text-sm text-gray-500">This may take a moment.</p>
+                                </div>
+                            ) : generatedImage ? (
+                                <img src={generatedImage} alt={`AI generated image of ${currentProduct?.name}`} className="h-full w-full rounded-lg object-cover shadow-md" />
+                            ) : null}
+                        </div>
+                        
+                        <div className="mt-5">
+                            <button
+                                type="button"
+                                className="inline-flex w-full justify-center rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700"
+                                onClick={closeModal}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             
             <Footer />
         </div>

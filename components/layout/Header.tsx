@@ -1,7 +1,9 @@
 
+
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { Coffee, Menu, X, ShoppingCart } from 'lucide-react';
+import { Menu, X, ShoppingCart } from 'lucide-react';
+import RushCoffeeLogo from '../../src/components/layout/RushCoffeeLogo';
 
 const navLinks = [
     { href: '/', label: 'Home' },
@@ -47,7 +49,7 @@ const Header: React.FC = () => {
             <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/95 shadow-md backdrop-blur-sm">
                 <div className="container mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
                     <NavLink to="/" className="flex items-center gap-2">
-                        <Coffee className="h-8 w-8 text-primary-600" />
+                        <RushCoffeeLogo className="h-8 w-8 text-primary-600" />
                         <span className="text-2xl font-bold text-primary-600">
                             Rush Coffee
                         </span>
@@ -107,7 +109,7 @@ const Header: React.FC = () => {
                 >
                     <div className="flex items-center justify-between border-b p-4">
                          <NavLink to="/" className="flex items-center gap-2" onClick={closeMenu}>
-                            <Coffee className="h-7 w-7 text-primary-600" />
+                            <RushCoffeeLogo className="h-7 w-7 text-primary-600" />
                             <span className="text-xl font-bold text-primary-600">
                                 Rush Coffee
                             </span>

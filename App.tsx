@@ -17,6 +17,7 @@ import { CartProvider, useCart } from './src/context/CartContext';
 import { OrderProvider } from './src/context/OrderContext';
 import CartSidebar from './src/components/menu/CartSidebar';
 import ScrollToTop from './src/components/utils/ScrollToTop';
+import RushCoffeeLogo from './src/components/layout/RushCoffeeLogo';
 
 // Placeholder for pages that are not yet created
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
@@ -25,7 +26,7 @@ const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
       <Header />
       <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-primary-50 to-coffee-50">
         <div className="p-4 text-center">
-          <div className="mb-4 text-6xl" role="img" aria-label="coffee cup">☕</div>
+          <RushCoffeeLogo className="mx-auto mb-4 h-16 w-16 text-gray-400 opacity-50" />
           <h1 className="mb-4 font-display text-4xl font-bold text-gray-900">
             {title}
           </h1>
@@ -47,7 +48,7 @@ const NotFound: React.FC = () => {
       <Header />
       <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-primary-50 to-coffee-50">
         <div className="p-4 text-center">
-          <div className="mb-4 text-6xl" role="img" aria-label="crying face emoji">😢</div>
+          <RushCoffeeLogo className="mx-auto mb-4 h-16 w-16 text-gray-400 opacity-50" />
           <h1 className="mb-4 font-display text-4xl font-bold text-gray-900">
             404 - Page Not Found
           </h1>

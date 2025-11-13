@@ -1,6 +1,8 @@
 
 
 
+
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Clock, Gift, Wallet, Users, Bell, ArrowRight, Quote, ChevronsDown } from 'lucide-react';
@@ -152,8 +154,8 @@ const HomePage: React.FC = () => {
                                 <div className="absolute h-80 w-80 animate-float rounded-full bg-primary-200/50 blur-3xl"></div>
                                 <div className="absolute bottom-0 right-0 h-64 w-64 animate-float-delay rounded-full bg-coffee-800/10 blur-2xl"></div>
                                 
-                                <div className="relative animate-fade-in-up text-coffee-800" style={{ animationDelay: '500ms', opacity: 0 }}>
-                                    <span className="text-[12rem] drop-shadow-2xl" role="img" aria-label="Coffee cup">☕</span>
+                                <div className="relative animate-fade-in-up" style={{ animationDelay: '500ms', opacity: 0 }}>
+                                    <RushCoffeeLogo className="h-auto w-[250px] animate-float drop-shadow-2xl lg:w-[350px]" />
                                 </div>
                             </div>
                         </div>
