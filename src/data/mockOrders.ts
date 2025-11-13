@@ -1,0 +1,96 @@
+
+import { QueueItem } from './mockQueue';
+
+export const mockUserOrders: QueueItem[] = [
+  {
+    id: 'queue-user-001',
+    customerName: 'Juan Dela Cruz',
+    orderNumber: 'RC-2025-101',
+    position: 0,
+    status: 'completed',
+    orderItems: [
+      { productId: 'cb-01', productName: 'Spanish Latte', quantity: 1, price: 59 },
+      { productId: 'ms-01', productName: 'Matcha Latte', quantity: 1, price: 69 },
+    ],
+    totalAmount: 128,
+    paymentMethod: 'gcash',
+    paymentStatus: 'paid',
+    timestamp: new Date(new Date().setDate(new Date().getDate() - 2)),
+    estimatedTime: 0,
+  },
+  {
+    id: 'queue-user-002',
+    customerName: 'Juan Dela Cruz',
+    orderNumber: 'RC-2025-095',
+    position: 0,
+    status: 'completed',
+    orderItems: [
+      { productId: 'cb-03', productName: 'Caramel Chocolate Mocha', quantity: 2, price: 59 },
+    ],
+    totalAmount: 118,
+    paymentMethod: 'cash',
+    paymentStatus: 'paid',
+    timestamp: new Date(new Date().setDate(new Date().getDate() - 5)),
+    estimatedTime: 0,
+  },
+  {
+    id: 'queue-user-003',
+    customerName: 'Juan Dela Cruz',
+    orderNumber: 'RC-2025-089',
+    position: 0,
+    status: 'completed',
+    orderItems: [
+      { productId: 'cb-01', productName: 'Spanish Latte', quantity: 1, price: 59 },
+    ],
+    totalAmount: 59,
+    paymentMethod: 'gcash',
+    paymentStatus: 'paid',
+    timestamp: new Date(new Date().setDate(new Date().getDate() - 10)),
+    estimatedTime: 0,
+  },
+   {
+    id: 'queue-user-004',
+    customerName: 'Juan Dela Cruz',
+    orderNumber: 'RC-2025-081',
+    position: 0,
+    status: 'completed',
+    orderItems: [
+      { productId: 'nc-01', productName: 'Red Velvet', quantity: 1, price: 89 },
+      { productId: 'nc-03', productName: 'Milky Choco', quantity: 1, price: 89 },
+    ],
+    totalAmount: 178,
+    paymentMethod: 'cash',
+    paymentStatus: 'paid',
+    timestamp: new Date(new Date().setDate(new Date().getDate() - 15)),
+    estimatedTime: 0,
+  },
+  {
+    id: 'queue-user-005',
+    customerName: 'Juan Dela Cruz',
+    orderNumber: 'RC-2025-075',
+    position: 0,
+    status: 'completed',
+    orderItems: [ { productId: 'ms-02', productName: 'Strawberry Matcha', quantity: 1, price: 99 } ],
+    totalAmount: 99,
+    paymentMethod: 'gcash',
+    paymentStatus: 'paid',
+    timestamp: new Date(new Date().setDate(new Date().getDate() - 20)),
+    estimatedTime: 0,
+  },
+  {
+    id: 'queue-user-006',
+    customerName: 'Juan Dela Cruz',
+    orderNumber: 'RC-2025-070',
+    position: 0,
+    status: 'completed',
+    orderItems: [
+        { productId: 'cb-02', productName: 'Rush Coffee Blend', quantity: 1, price: 69 },
+        { productId: 'cb-06', productName: 'Americano', quantity: 1, price: 59 }
+    ],
+    totalAmount: 128,
+    paymentMethod: 'gcash',
+    paymentStatus: 'paid',
+    timestamp: new Date(new Date().setDate(new Date().getDate() - 22)),
+    estimatedTime: 0,
+  }
+];

@@ -1,9 +1,11 @@
 
 
 
+
+
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, ShoppingCart, ChevronDown, Home, Info, Phone } from 'lucide-react';
+import { Menu, X, LogOut, ShoppingCart, ChevronDown, Home, Info, Phone, Gift, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import RushCoffeeLogo from './RushCoffeeLogo';
@@ -18,10 +20,12 @@ const loggedOutNavLinks = [
 const loggedInNavLinks = [
     { href: '/menu', label: 'Menu' },
     { href: '/queue', label: 'Queue' },
+    { href: '/rewards', label: 'Rewards' },
 ]
 
 const userDropdownLinks = [
-    { href: '/', label: 'Home', Icon: Home },
+    { href: '/profile', label: 'My Profile', Icon: User },
+    { href: '/rewards', label: 'My Rewards', Icon: Gift },
     { href: '/about', label: 'About', Icon: Info },
     { href: '/contact', label: 'Contact', Icon: Phone },
 ]

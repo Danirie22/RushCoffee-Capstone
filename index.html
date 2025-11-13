@@ -49,6 +49,7 @@
               'float-delay': 'float 7s ease-in-out infinite -1s',
               'steam-1': 'steam 3s ease-out infinite',
               'steam-2': 'steam 3s ease-out infinite 0.5s',
+              'shimmer': 'shimmer 2.5s linear infinite',
             },
             keyframes: {
               'fade-in-up': {
@@ -64,6 +65,10 @@
                 '15%': { opacity: '0.4' },
                 '50%': { transform: 'translateY(-10px) scaleX(1.2)', opacity: '0.8' },
                 '100%': { transform: 'translateY(-30px) scaleX(1)', opacity: '0' },
+              },
+              'shimmer': {
+                '0%': { transform: 'translateX(-100%)' },
+                '100%': { transform: 'translateX(100%)' },
               }
             }
           }
@@ -82,7 +87,9 @@
     "firebase/auth": "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js",
     "firebase/firestore": "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js",
     "firebase/": "https://aistudiocdn.com/firebase@^12.5.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1"
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.29.1",
+    "date-fns": "https://aistudiocdn.com/date-fns@^3.6.0",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^11.3.19"
   }
 }
 </script>

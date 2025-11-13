@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Sparkles } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 
 import { Product, ProductSize } from '../../data/mockProducts';
 import Card from '../../../components/ui/Card';
@@ -11,11 +11,10 @@ import Badge from '../../../components/ui/Badge';
 interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product, selectedSize: ProductSize) => void;
-  onGenerateImage: (product: Product) => void;
   isLoggedIn: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onGenerateImage, isLoggedIn }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLoggedIn }) => {
   const { name, description, category, imageUrl, available, stock, popular, new: isNew } = product;
   const navigate = useNavigate();
   
@@ -49,15 +48,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onGener
           alt={name}
           className="h-48 w-full object-cover"
         />
-        <div className="absolute top-2 left-2">
-            <button 
-                onClick={() => onGenerateImage(product)}
-                className="rounded-full bg-white/80 p-2 text-primary-600 shadow-md backdrop-blur-sm transition-transform hover:scale-110"
-                aria-label={`Generate new image for ${name}`}
-            >
-                <Sparkles className="h-5 w-5" />
-            </button>
-        </div>
         <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
           {isOutOfStock ? (
             <Badge className="bg-red-100 text-red-800">Out of Stock</Badge>

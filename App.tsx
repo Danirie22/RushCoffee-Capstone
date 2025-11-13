@@ -2,6 +2,8 @@
 
 
 
+
+
 import React from 'react';
 import { HashRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -12,6 +14,11 @@ import RegisterPage from './src/pages/Auth/RegisterPage';
 import MenuPage from './src/pages/Menu/MenuPage';
 import CheckoutPage from './src/pages/Checkout/CheckoutPage';
 import QueuePage from './src/pages/Queue/QueuePage';
+import RewardsPage from './src/pages/Rewards/RewardsPage';
+import ProfilePage from './src/pages/Profile/ProfilePage';
+import AboutPage from './src/pages/Home/AboutPage';
+import ContactPage from './src/pages/Home/ContactPage';
+import FAQPage from './src/pages/Home/FAQPage';
 import { AuthProvider } from './src/context/AuthContext';
 import { CartProvider, useCart } from './src/context/CartContext';
 import { OrderProvider } from './src/context/OrderContext';
@@ -52,7 +59,7 @@ const NotFound: React.FC = () => {
           <h1 className="mb-4 font-display text-4xl font-bold text-gray-900">
             404 - Page Not Found
           </h1>
-          <p className="mb-8 text-gray-600">This coffee blend doesn't exist on our menu!</p>
+          <p className="mb-8 text-gray-600">This coffee blend doesn't exist on our menu. Maybe it got lost in the daily grind?</p>
           <Link to="/" className="font-medium text-primary-600 transition-colors hover:text-primary-700">
             ← Back to Home
           </Link>
@@ -63,70 +70,63 @@ const NotFound: React.FC = () => {
   );
 };
 
+// Wrapper component to use hooks from contexts
 const AppContent: React.FC = () => {
-    const { 
-        isCartOpen, 
-        closeCart, 
-        cartItems, 
-        updateQuantity, 
-        removeFromCart,
-        toastMessage
-    } = useCart();
-    const navigate = useNavigate();
+  const { isCartOpen, closeCart, cartItems, updateQuantity, removeFromCart, showToast } = useCart();
+  const navigate = useNavigate();
 
-    const handleCheckout = () => {
-        closeCart();
-        navigate('/checkout');
-    };
+  const handleCheckout = () => {
+    closeCart();
+    navigate('/checkout');
+  };
 
-    return (
-        <>
-            <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/about" element={<ComingSoon title="About Rush Coffee" />} />
-                <Route path="/menu" element={<MenuPage />} />
-                <Route path="/contact" element={<ComingSoon title="Contact Us" />} />
-                
-                {/* Auth Routes */}
-                <Route path="/auth/login" element={<LoginPage />} />
-                <Route path="/auth/register" element={<RegisterPage />} />
-                <Route path="/queue" element={<QueuePage />} />
-                <Route path="/checkout" element={<CheckoutPage />} />
-                
-                {/* Legal Routes */}
-                <Route path="/terms" element={<ComingSoon title="Terms of Service" />} />
-                <Route path="/privacy" element={<ComingSoon title="Privacy Policy" />} />
-
-                <Route path="*" element={<NotFound />} />
-            </Routes>
-            <CartSidebar
-                isOpen={isCartOpen}
-                onClose={closeCart}
-                cartItems={cartItems}
-                onUpdateQuantity={updateQuantity}
-                onRemoveItem={removeFromCart}
-                onCheckout={handleCheckout}
-            />
-            {toastMessage && (
-                <div className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 transform rounded-full bg-coffee-900 px-4 py-2 text-sm font-medium text-white shadow-lg transition-all animate-fade-in-up md:bottom-6">
-                    {toastMessage}
-                </div>
-            )}
-        </>
-    );
+  return (
+    <>
+      <ScrollToTop />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/menu" element={<MenuPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/auth/login" element={<LoginPage />} />
+        <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/queue" element={<QueuePage />} />
+        <Route path="/rewards" element={<RewardsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/faq" element={<FAQPage />} />
+        <Route path="/terms" element={<ComingSoon title="Terms of Service" />} />
+        <Route path="/privacy" element={<ComingSoon title="Privacy Policy" />} />
+        <Route path="/cookies" element={<ComingSoon title="Cookie Policy" />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+      <CartSidebar
+        isOpen={isCartOpen}
+        onClose={closeCart}
+        cartItems={cartItems}
+        onUpdateQuantity={updateQuantity}
+        onRemoveItem={removeFromCart}
+        onCheckout={handleCheckout}
+      />
+      {showToast && (
+        <div className="fixed bottom-4 right-4 z-[100] animate-fade-in-up rounded-lg bg-gray-900 px-4 py-3 text-white shadow-lg">
+            {showToast}
+        </div>
+      )}
+    </>
+  );
 };
 
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <CartProvider>
-        <OrderProvider>
-            <HashRouter>
-                <ScrollToTop />
-                <AppContent />
-            </HashRouter>
-        </OrderProvider>
-      </CartProvider>
+      <OrderProvider>
+        <CartProvider>
+          <HashRouter>
+            <AppContent />
+          </HashRouter>
+        </CartProvider>
+      </OrderProvider>
     </AuthProvider>
   );
 };
