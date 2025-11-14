@@ -1,9 +1,9 @@
-
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Gift, TrendingUp, Star, Coffee, Award, Check, X, QrCode, ClipboardCopy } from 'lucide-react';
+import { Gift, TrendingUp, Star, Coffee, Award, Check, X, QrCode, ClipboardCopy, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -14,7 +14,8 @@ import Modal from '../../components/ui/Modal';
 import RewardsTierBadge from '../../components/rewards/RewardsTierBadge';
 import RewardCard from '../../components/rewards/RewardCard';
 import RewardsHistory from '../../components/rewards/RewardsHistory';
-import { mockAvailableRewards, tierThresholds, AvailableReward, RewardHistory } from '../../data/mockRewards';
+import ProductCardSkeleton from '../../components/menu/ProductCardSkeleton'; // Re-using for rewards
+import { tierThresholds, AvailableReward, RewardHistory } from '../../data/mockRewards';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
@@ -45,7 +46,9 @@ const filterCategories = ['all', 'drink', 'food', 'discount'];
 
 const RewardsPage: React.FC = () => {
     const { currentUser, redeemReward } = useAuth();
-    const [availableRewards] = useState<AvailableReward[]>(mockAvailableRewards);
+    const [availableRewards, setAvailableRewards] = useState<AvailableReward[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     
     // Redeem Flow State
     const [showRedeemModal, setShowRedeemModal] = useState(false);
@@ -61,6 +64,29 @@ const RewardsPage: React.FC = () => {
     const [isHowToEarnCollapsed, setIsHowToEarnCollapsed] = useState(true);
 
     const { showToast } = useCart();
+
+    useEffect(() => {
+        const fetchRewards = async () => {
+            setIsLoading(true);
+            setError(null);
+            try {
+                const rewardsCollection = collection(db, 'rewards');
+                const q = query(rewardsCollection, orderBy('displayOrder', 'asc'));
+                const querySnapshot = await getDocs(q);
+                const rewardsList = querySnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })) as AvailableReward[];
+                setAvailableRewards(rewardsList);
+            } catch (err) {
+                console.error("Error fetching rewards:", err);
+                setError("Could not load available rewards. Please try again later.");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchRewards();
+    }, []);
     
     const nextTier = currentUser ? (currentUser.tier === 'bronze' ? 'silver' : currentUser.tier === 'silver' ? 'gold' : null) : null;
     const nextTierPoints = nextTier ? tierThresholds[nextTier].min : 0;
@@ -86,10 +112,10 @@ const RewardsPage: React.FC = () => {
         }
     };
 
-    const handleConfirmRedeem = () => {
+    const handleConfirmRedeem = async () => {
         if (!selectedReward || !redeemReward) return;
 
-        redeemReward(selectedReward);
+        await redeemReward(selectedReward);
         
         setShowRedeemModal(false);
         showToast('Reward redeemed successfully!');
@@ -210,7 +236,15 @@ const RewardsPage: React.FC = () => {
                         </div>
 
                         <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {filteredAndSortedRewards.length > 0 ? (
+                            {isLoading ? (
+                                Array.from({ length: 3 }).map((_, i) => <ProductCardSkeleton key={i} />)
+                            ) : error ? (
+                                <div className="flex flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50 py-20 text-center text-red-700 md:col-span-3">
+                                    <AlertCircle className="h-16 w-16" />
+                                    <h3 className="mt-4 text-xl font-semibold">Oops! Something went wrong.</h3>
+                                    <p className="mt-2">{error}</p>
+                                </div>
+                            ) : filteredAndSortedRewards.length > 0 ? (
                                 filteredAndSortedRewards.map(reward => (
                                     <RewardCard 
                                         key={reward.id}

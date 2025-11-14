@@ -1,4 +1,6 @@
 
+
+
 export interface ProductSize {
   name: 'Grande' | 'Venti';
   size: '16oz' | '22oz';
@@ -16,6 +18,11 @@ export interface Product {
   stock: number;
   popular?: boolean;
   new?: boolean;
+  displayOrder: number;
+  recipe?: Array<{
+    ingredientId: string;
+    quantity: number;
+  }>;
 }
 
 export const mockProducts: Product[] = [
@@ -33,6 +40,12 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     popular: true,
+    displayOrder: 1,
+    recipe: [
+        { ingredientId: 'espresso-shot', quantity: 2 },
+        { ingredientId: 'milk', quantity: 150 },
+        { ingredientId: 'condensed-milk', quantity: 30 },
+    ],
   },
   {
     id: 'cb-02',
@@ -47,6 +60,11 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     popular: true,
+    displayOrder: 2,
+    recipe: [
+        { ingredientId: 'coffee-beans-blend', quantity: 18 },
+        { ingredientId: 'hot-water', quantity: 200 },
+    ],
   },
   {
     id: 'cb-03',
@@ -61,6 +79,13 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     popular: true,
+    displayOrder: 3,
+    recipe: [
+        { ingredientId: 'espresso-shot', quantity: 2 },
+        { ingredientId: 'milk', quantity: 150 },
+        { ingredientId: 'chocolate-sauce', quantity: 20 },
+        { ingredientId: 'caramel-sauce', quantity: 15 },
+    ],
   },
   {
     id: 'cb-04',
@@ -74,6 +99,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1542326588-e8a2455822ff?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 4,
   },
   {
     id: 'cb-05',
@@ -87,6 +113,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1623112142751-0a9981836104?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 5,
   },
   {
     id: 'cb-06',
@@ -100,6 +127,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1586348943529-beaae6c28db9?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 6,
   },
   {
     id: 'cb-07',
@@ -113,6 +141,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1610890693148-e1db6f51f47a?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 7,
   },
   {
     id: 'cb-08',
@@ -126,6 +155,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1611082596937-293699a6d36f?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 8,
   },
   {
     id: 'cb-09',
@@ -139,6 +169,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1630449942323-28d11634a36f?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 9,
   },
   {
     id: 'cb-10',
@@ -152,6 +183,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1589396520838-03c642278453?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 10,
   },
   {
     id: 'cb-11',
@@ -165,6 +197,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1610889556528-9a742f161427?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 11,
   },
   {
     id: 'cb-12',
@@ -178,6 +211,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1572498873426-9d6f3e0d2b7e?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 12,
   },
 
   // Non-Coffee Based
@@ -193,6 +227,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1600718374662-0483d2b9da44?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 13,
   },
   {
     id: 'nc-02',
@@ -206,6 +241,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1563822558223-5a2a8adea614?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 14,
   },
   {
     id: 'nc-03',
@@ -219,6 +255,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1542848523-2a4721a78736?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 15,
   },
   {
     id: 'nc-04',
@@ -232,6 +269,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1622171129302-1f486241a87e?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 16,
   },
   {
     id: 'nc-05',
@@ -245,6 +283,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1596700249549-8055f1f99b24?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 17,
   },
     {
     id: 'nc-06',
@@ -258,6 +297,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1625194657116-2a9a11da4821?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 18,
   },
 
   // Matcha Series
@@ -274,6 +314,11 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     popular: true,
+    displayOrder: 19,
+     recipe: [
+        { ingredientId: 'matcha-powder', quantity: 5 },
+        { ingredientId: 'milk', quantity: 200 },
+    ],
   },
   {
     id: 'ms-02',
@@ -287,6 +332,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1615837197154-2e801f9bd236?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 20,
   },
   {
     id: 'ms-03',
@@ -300,6 +346,7 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1587764353351-d4a4bca0f17e?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 21,
   },
   {
     id: 'ms-04',
@@ -313,5 +360,6 @@ export const mockProducts: Product[] = [
     imageUrl: 'https://images.unsplash.com/photo-1562376556-a65529391005?q=80&w=600',
     available: true,
     stock: 99,
+    displayOrder: 22,
   },
 ];

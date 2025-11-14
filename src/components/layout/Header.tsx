@@ -1,7 +1,8 @@
 
+
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone } from 'lucide-react';
+import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import RushCoffeeLogo from './RushCoffeeLogo';
@@ -87,32 +88,51 @@ const Header: React.FC = () => {
         const clickHandler = isMobile ? closeMobileMenu : undefined;
 
         if (currentUser) {
-            return (
+             return (
                  <div className={`relative ${isMobile ? 'w-full' : ''}`} ref={userMenuRef}>
                     <button 
                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                         className={`flex w-full items-center justify-center gap-2 rounded-full border border-primary-600 px-4 py-2 text-sm font-semibold text-primary-600 transition-colors hover:bg-primary-50 ${isMobile ? 'text-base' : ''}`}
+                        aria-haspopup="true"
+                        aria-expanded={isUserMenuOpen}
                     >
                         <span>Welcome, {currentUser.firstName}!</span>
                         <ChevronDown className={`h-4 w-4 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isUserMenuOpen && !isMobile && (
                         <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            <div className="py-1">
+                            <div className="py-1" role="menu" aria-orientation="vertical">
                                 {userDropdownLinks.map(link => (
                                      <NavLink 
                                         key={link.label}
                                         to={link.href} 
                                         onClick={() => setIsUserMenuOpen(false)}
-                                        className={({ isActive }) => `flex items-center gap-3 px-4 py-2 text-sm transition-colors hover:bg-gray-100 ${isActive ? 'text-primary-600 font-semibold' : 'text-gray-700'}`}>
+                                        className={({ isActive }) => `flex items-center gap-3 px-4 py-2 text-sm transition-colors hover:bg-gray-100 ${isActive ? 'text-primary-600 font-semibold' : 'text-gray-700'}`}
+                                        role="menuitem"
+                                     >
                                         <link.Icon className="h-4 w-4" />
                                         {link.label}
                                     </NavLink>
                                 ))}
+                                {currentUser.role === 'admin' && (
+                                    <>
+                                        <hr className="my-1"/>
+                                        <NavLink
+                                            to="/admin"
+                                            onClick={() => setIsUserMenuOpen(false)}
+                                            className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-yellow-700 transition-colors hover:bg-yellow-50"
+                                            role="menuitem"
+                                        >
+                                            <Shield className="h-4 w-4" />
+                                            Admin Dashboard
+                                        </NavLink>
+                                    </>
+                                )}
                                 <hr className="my-1"/>
                                 <button 
                                     onClick={handleLogout}
                                     className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
+                                    role="menuitem"
                                 >
                                     <LogOut className="h-4 w-4" />
                                     Logout
@@ -150,7 +170,7 @@ const Header: React.FC = () => {
         >
             <ShoppingCart className="h-6 w-6" />
             {totalCartItems > 0 && (
-                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white" aria-hidden="true">
                     {totalCartItems}
                 </span>
             )}
@@ -211,17 +231,21 @@ const Header: React.FC = () => {
                 <div
                     className="absolute inset-0 bg-black/50"
                     onClick={closeMobileMenu}
+                    aria-hidden="true"
                 ></div>
 
                 <div
                     className={`fixed top-0 right-0 flex h-full w-4/5 max-w-sm flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
                         isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="mobile-menu-title"
                 >
                     <div className="flex items-center justify-between border-b p-4">
                          <NavLink to="/" className="flex items-center gap-2" onClick={closeMobileMenu}>
                             <RushCoffeeLogo className="h-7 w-7 text-primary-600" />
-                            <span className="text-xl font-bold text-primary-600">
+                            <span id="mobile-menu-title" className="text-xl font-bold text-primary-600">
                                 Rush Coffee
                             </span>
                         </NavLink>
@@ -265,6 +289,20 @@ const Header: React.FC = () => {
                                         {link.label}
                                     </NavLink>
                                 ))}
+                                {currentUser.role === 'admin' && (
+                                    <NavLink
+                                        to="/admin"
+                                        onClick={closeMobileMenu}
+                                        className={({ isActive }) =>
+                                            `flex items-center gap-3 rounded-md px-3 py-2 text-lg font-medium transition-colors hover:bg-yellow-50 ${
+                                                isActive ? 'bg-yellow-100 text-yellow-800' : 'text-yellow-700'
+                                            }`
+                                        }
+                                    >
+                                        <Shield className="h-5 w-5"/>
+                                        Admin Dashboard
+                                    </NavLink>
+                                )}
                             </div>
                         )}
                     </nav>

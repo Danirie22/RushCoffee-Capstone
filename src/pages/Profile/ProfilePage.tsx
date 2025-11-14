@@ -1,8 +1,7 @@
 
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { format } from 'date-fns';
-import { User, ShoppingBag, Settings, Edit, Mail, Phone, Calendar, Star, Loader2, Upload } from 'lucide-react';
+import { User, ShoppingBag, Settings, Edit, Mail, Phone, Calendar, Star, Loader2, Upload, MessageSquare } from 'lucide-react';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -13,19 +12,20 @@ import ProfileHeader from '../../components/profile/ProfileHeader';
 import EditProfileForm from '../../components/profile/EditProfileForm';
 import OrderHistory from '../../components/profile/OrderHistory';
 import SettingsSection from '../../components/profile/SettingsSection';
+import FeedbackSection from '../../components/profile/FeedbackSection';
 import { UserProfile } from '../../context/AuthContext';
 import { useAuth } from '../../context/AuthContext';
 import { useOrder } from '../../context/OrderContext';
 import { mockProducts } from '../../data/mockProducts';
 import { useCart } from '../../context/CartContext';
 
-type Tab = 'overview' | 'orders' | 'settings';
+type Tab = 'overview' | 'orders' | 'settings' | 'feedback';
 
 const ProfilePage: React.FC = () => {
   const { currentUser, updateUserProfile } = useAuth();
   const { orderHistory } = useOrder();
   
-  const [user, setUser] = useState<UserProfile | null>(currentUser);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [isEditing, setIsEditing] = useState(false);
   
@@ -112,6 +112,7 @@ const ProfilePage: React.FC = () => {
   const tabItems = [
     { id: 'overview', label: 'Overview', Icon: User },
     { id: 'orders', label: 'Order History', Icon: ShoppingBag },
+    { id: 'feedback', label: 'My Feedback', Icon: MessageSquare },
     { id: 'settings', label: 'Settings', Icon: Settings },
   ];
 
@@ -121,6 +122,8 @@ const ProfilePage: React.FC = () => {
         return <OrderHistory orders={orderHistory} />;
       case 'settings':
         return <SettingsSection preferences={user.preferences} onUpdatePreferences={handleUpdatePreferences} />;
+      case 'feedback':
+        return <FeedbackSection user={user} />;
       case 'overview':
       default:
         return (

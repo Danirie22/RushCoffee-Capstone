@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import React from 'react';
 import { HashRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -22,9 +17,19 @@ import FAQPage from './src/pages/Home/FAQPage';
 import { AuthProvider } from './src/context/AuthContext';
 import { CartProvider, useCart } from './src/context/CartContext';
 import { OrderProvider } from './src/context/OrderContext';
+import { ProductProvider } from './src/context/ProductContext';
 import CartSidebar from './src/components/menu/CartSidebar';
 import ScrollToTop from './src/components/utils/ScrollToTop';
 import RushCoffeeLogo from './src/components/layout/RushCoffeeLogo';
+import ProtectedRoute from './src/components/auth/ProtectedRoute';
+import AdminDashboardPage from './src/pages/Admin/AdminDashboardPage';
+import AdminQueuePage from './src/pages/Admin/AdminQueuePage';
+import AdminLayout from './src/components/admin/AdminLayout';
+import AdminInventoryPage from './src/pages/Admin/AdminInventoryPage';
+import AdminProductsPage from './src/pages/Admin/AdminProductsPage';
+import AdminAnalyticsPage from './src/pages/Admin/AdminAnalyticsPage';
+import AdminFeedbackPage from './src/pages/Admin/AdminFeedbackPage';
+import AdminSettingsPage from './src/pages/Admin/AdminSettingsPage';
 
 // Placeholder for pages that are not yet created
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
@@ -72,7 +77,7 @@ const NotFound: React.FC = () => {
 
 // Wrapper component to use hooks from contexts
 const AppContent: React.FC = () => {
-  const { isCartOpen, closeCart, cartItems, updateQuantity, removeFromCart, showToast } = useCart();
+  const { isCartOpen, closeCart, cartItems, updateQuantity, removeFromCart, toastMessage } = useCart();
   const navigate = useNavigate();
 
   const handleCheckout = () => {
@@ -98,6 +103,20 @@ const AppContent: React.FC = () => {
         <Route path="/terms" element={<ComingSoon title="Terms of Service" />} />
         <Route path="/privacy" element={<ComingSoon title="Privacy Policy" />} />
         <Route path="/cookies" element={<ComingSoon title="Cookie Policy" />} />
+        
+        {/* Admin Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="queue" element={<AdminQueuePage />} />
+            <Route path="inventory" element={<AdminInventoryPage />} />
+            <Route path="products" element={<AdminProductsPage />} />
+            <Route path="analytics" element={<AdminAnalyticsPage />} />
+            <Route path="feedback" element={<AdminFeedbackPage />} />
+            <Route path="settings" element={<AdminSettingsPage />} />
+          </Route>
+        </Route>
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CartSidebar
@@ -108,9 +127,9 @@ const AppContent: React.FC = () => {
         onRemoveItem={removeFromCart}
         onCheckout={handleCheckout}
       />
-      {showToast && (
+      {toastMessage && (
         <div className="fixed bottom-4 right-4 z-[100] animate-fade-in-up rounded-lg bg-gray-900 px-4 py-3 text-white shadow-lg">
-            {showToast}
+            {toastMessage}
         </div>
       )}
     </>
@@ -120,13 +139,15 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <OrderProvider>
-        <CartProvider>
-          <HashRouter>
-            <AppContent />
-          </HashRouter>
-        </CartProvider>
-      </OrderProvider>
+      <ProductProvider>
+        <OrderProvider>
+          <CartProvider>
+            <HashRouter>
+              <AppContent />
+            </HashRouter>
+          </CartProvider>
+        </OrderProvider>
+      </ProductProvider>
     </AuthProvider>
   );
 };

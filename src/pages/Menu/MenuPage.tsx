@@ -1,7 +1,5 @@
-
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, ArrowUpDown, Check } from 'lucide-react';
+import { Search, ArrowUpDown, Check, AlertCircle } from 'lucide-react';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -9,10 +7,7 @@ import ProductCard from '../../components/menu/ProductCard';
 import ProductCardSkeleton from '../../components/menu/ProductCardSkeleton';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
-import { mockProducts, Product } from '../../data/mockProducts';
-
-
-const categories = ['All', ...Array.from(new Set(mockProducts.map(p => p.category)))];
+import { useProduct } from '../../context/ProductContext';
 
 const sortOptionsList = [
     { value: 'default', label: 'Default' },
@@ -23,8 +18,7 @@ const sortOptionsList = [
 ];
 
 const MenuPage: React.FC = () => {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { products, isLoading, error } = useProduct();
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [sortOption, setSortOption] = useState('default');
@@ -34,17 +28,13 @@ const MenuPage: React.FC = () => {
     
     const { addToCart } = useCart();
     const { currentUser } = useAuth();
-
-    useEffect(() => {
-        setIsLoading(true);
-        const timer = setTimeout(() => {
-            setProducts(mockProducts);
-            setIsLoading(false);
-        }, 1500); // Simulate 1.5 second network delay
-
-        return () => clearTimeout(timer);
-    }, []);
     
+    const categories = useMemo(() => {
+        if (products.length === 0) return ['All'];
+        const uniqueCategories = [...new Set(products.map(p => p.category))];
+        return ['All', ...uniqueCategories.sort()];
+    }, [products]);
+
     // Close sort menu on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -188,6 +178,12 @@ const MenuPage: React.FC = () => {
                                 {Array.from({ length: 8 }).map((_, index) => (
                                     <ProductCardSkeleton key={index} />
                                 ))}
+                            </div>
+                        ) : error ? (
+                             <div className="flex flex-col items-center justify-center rounded-lg border border-red-200 bg-red-50 py-20 text-center text-red-700">
+                                <AlertCircle className="h-16 w-16" />
+                                <h3 className="mt-4 text-xl font-semibold">Oops! Something went wrong.</h3>
+                                <p className="mt-2">{error}</p>
                             </div>
                         ) : filteredAndSortedProducts.length > 0 ? (
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">

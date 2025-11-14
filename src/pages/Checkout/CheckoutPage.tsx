@@ -47,11 +47,16 @@ const CheckoutPage: React.FC = () => {
 
     // Redirect if cart is empty
     useEffect(() => {
+        if (!currentUser) {
+            showToast('Please log in to proceed to checkout.');
+            navigate('/auth/login', { state: { from: '/checkout' } });
+            return;
+        }
         if (totalCartItems === 0 && !isProcessing && !orderPlaced) {
             showToast('Your cart is empty. Add items to checkout.');
             navigate('/menu');
         }
-    }, [totalCartItems, navigate, showToast, isProcessing, orderPlaced]);
+    }, [totalCartItems, navigate, showToast, isProcessing, orderPlaced, currentUser]);
 
     // Pre-fill user info if logged in
     useEffect(() => {
@@ -82,9 +87,9 @@ const CheckoutPage: React.FC = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handlePlaceOrder = (e: React.FormEvent) => {
+    const handlePlaceOrder = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validateForm()) {
+        if (!currentUser || !validateForm()) {
             showToast('Please correct the errors before proceeding.');
             return;
         }
@@ -93,15 +98,15 @@ const CheckoutPage: React.FC = () => {
         const newOrderNumber = `RC-2025-${Math.floor(1000 + Math.random() * 9000)}`;
         
         // Simulate API call
-        setTimeout(() => {
-            const newOrder: QueueItem = {
-                id: newOrderNumber,
+        setTimeout(async () => {
+            const orderData = {
+                userId: currentUser.uid,
                 customerName: customerInfo.name,
                 orderNumber: newOrderNumber,
                 position: Math.floor(Math.random() * 5) + 1,
                 status: 'waiting',
                 orderItems: cartItems.map(item => ({
-                    productId: `${item.product.id}-${item.selectedSize.name}`,
+                    productId: item.product.id,
                     productName: `${item.product.name} (${item.selectedSize.name})`,
                     quantity: item.quantity,
                     price: item.selectedSize.price,
@@ -109,13 +114,15 @@ const CheckoutPage: React.FC = () => {
                 totalAmount: total,
                 paymentMethod: selectedPaymentMethod!,
                 paymentStatus: selectedPaymentMethod === 'gcash' ? 'paid' : 'pending',
-                timestamp: new Date(),
                 estimatedTime: 10,
             };
             
-            addOrderToHistory(newOrder);
-            if(processNewOrderForUser) processNewOrderForUser(newOrder);
-            setActiveOrder(newOrder);
+            await addOrderToHistory(orderData as Omit<QueueItem, 'id'|'timestamp'>);
+            if (processNewOrderForUser) {
+                // We need to construct a temporary full QueueItem for the stats update
+                 await processNewOrderForUser({ ...orderData, id: 'temp', timestamp: new Date() });
+            }
+            
             clearCart();
             setIsProcessing(false);
             setOrderPlaced(true);
@@ -132,8 +139,7 @@ const CheckoutPage: React.FC = () => {
         (selectedPaymentMethod === 'gcash' && !receiptFile);
 
 
-    // Empty Cart Component
-    if (totalCartItems === 0 && !orderPlaced) {
+    if (!currentUser || (totalCartItems === 0 && !orderPlaced)) {
         return (
             <div className="flex min-h-screen flex-col">
                 <Header />
@@ -192,7 +198,7 @@ const CheckoutPage: React.FC = () => {
                                         receipt={receiptFile}
                                         onReceiptUpload={setReceiptFile}
                                     />
-                                     {errors.gcash && <p className="mt-2 text-xs text-red-500">{errors.gcash}</p>}
+                                     {errors.gcash && <p className="mt-2 text-xs text-red-500 text-center">{errors.gcash}</p>}
                                 </div>
                             )}
 

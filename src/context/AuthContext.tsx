@@ -1,5 +1,3 @@
-
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
     User as FirebaseUser,
@@ -11,7 +9,7 @@ import {
     browserSessionPersistence,
     browserLocalPersistence
 } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { doc, setDoc, getDoc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import { QueueItem } from './OrderContext';
 import { AvailableReward, tierThresholds } from '../data/mockRewards';
@@ -54,6 +52,7 @@ export interface UserProfile {
     tier: 'bronze' | 'silver' | 'gold';
     rewardsHistory: RewardHistory[];
     preferences: UserPreferences;
+    cart?: any[]; // To hold cart data in Firestore
 }
 
 interface AuthContextType {
@@ -62,9 +61,9 @@ interface AuthContextType {
     register: (email: string, password: string, firstName: string, lastName: string, phone: string) => Promise<void>;
     login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
     logout: () => Promise<void>;
-    processNewOrderForUser?: (order: QueueItem) => void;
-    redeemReward?: (reward: AvailableReward) => void;
-    updateUserProfile?: (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => void;
+    processNewOrderForUser: (order: QueueItem) => Promise<void>;
+    redeemReward: (reward: AvailableReward) => Promise<void>;
+    updateUserProfile: (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -88,7 +87,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user: FirebaseUser | null) => {
             if (user) {
-                // Fetch user profile from Firestore
                 const userDocRef = doc(db, 'users', user.uid);
                 const userDoc = await getDoc(userDocRef);
                 if (userDoc.exists()) {
@@ -107,27 +105,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         currentPoints: data.currentPoints ?? 0,
                         lifetimePoints: data.lifetimePoints ?? 0,
                         tier: data.tier || 'bronze',
-                        rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({ ...h, date: h.date.toDate() })),
+                        rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({ ...h, date: h.date.toDate() })).sort((a: any, b: any) => b.date - a.date),
                         preferences: data.preferences || { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } },
                     };
                     setCurrentUser(userProfile);
                 } else {
-                     // This might happen if user is created but firestore doc fails.
-                     // For now, we can set a basic profile.
-                    setCurrentUser({
-                        uid: user.uid,
-                        email: user.email,
-                        firstName: 'User',
-                        lastName: '',
-                        createdAt: new Date(),
-                        totalOrders: 0,
-                        totalSpent: 0,
-                        currentPoints: 0,
-                        lifetimePoints: 0,
-                        tier: 'bronze',
-                        rewardsHistory: [],
-                        preferences: { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } }
-                    });
+                    setCurrentUser(null);
                 }
             } else {
                 setCurrentUser(null);
@@ -142,6 +125,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        const welcomeBonus: RewardHistory = {
+            id: `rh-${Date.now()}`,
+            type: 'earned',
+            points: 25,
+            description: 'Welcome Bonus',
+            date: new Date(),
+        };
+
         const userProfileData: Omit<UserProfile, 'uid' | 'email'> = {
             firstName,
             lastName,
@@ -152,14 +143,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             currentPoints: 25,
             lifetimePoints: 25,
             tier: 'bronze',
-            rewardsHistory: [{
-                id: `rh-${Date.now()}`,
-                type: 'earned',
-                points: 25,
-                description: 'Welcome Bonus',
-                date: new Date(),
-            }],
-            preferences: { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } }
+            rewardsHistory: [welcomeBonus],
+            preferences: { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } },
+            cart: [],
         };
         
         await setDoc(doc(db, 'users', user.uid), userProfileData);
@@ -175,7 +161,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         await signOut(auth);
     };
 
-    const processNewOrderForUser = (order: QueueItem) => {
+    const processNewOrderForUser = async (order: QueueItem) => {
         if (!currentUser) return;
         
         const pointsEarned = Math.floor(order.totalAmount / 10);
@@ -187,32 +173,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             date: new Date(),
         };
 
-        setCurrentUser(prevUser => {
-            if (!prevUser) return null;
-            
-            const newLifetimePoints = prevUser.lifetimePoints + pointsEarned;
-            let newTier = prevUser.tier;
-            if (prevUser.tier === 'bronze' && newLifetimePoints >= tierThresholds.silver.min) {
-                newTier = 'silver';
-            }
-            if (prevUser.tier === 'silver' && newLifetimePoints >= tierThresholds.gold.min) {
-                newTier = 'gold';
-            }
+        const newLifetimePoints = currentUser.lifetimePoints + pointsEarned;
+        let newTier = currentUser.tier;
+        if (currentUser.tier === 'bronze' && newLifetimePoints >= tierThresholds.silver.min) newTier = 'silver';
+        if (currentUser.tier === 'silver' && newLifetimePoints >= tierThresholds.gold.min) newTier = 'gold';
 
-            return {
-                ...prevUser,
-                totalOrders: prevUser.totalOrders + 1,
-                totalSpent: prevUser.totalSpent + order.totalAmount,
-                currentPoints: prevUser.currentPoints + pointsEarned,
-                lifetimePoints: newLifetimePoints,
-                tier: newTier,
-                rewardsHistory: [newRewardEntry, ...prevUser.rewardsHistory],
-            };
+        const updatedProfile: UserProfile = {
+            ...currentUser,
+            totalOrders: currentUser.totalOrders + 1,
+            totalSpent: currentUser.totalSpent + order.totalAmount,
+            currentPoints: currentUser.currentPoints + pointsEarned,
+            lifetimePoints: newLifetimePoints,
+            tier: newTier,
+            rewardsHistory: [newRewardEntry, ...currentUser.rewardsHistory],
+        };
+        setCurrentUser(updatedProfile);
+        
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userDocRef, {
+            totalOrders: increment(1),
+            totalSpent: increment(order.totalAmount),
+            currentPoints: increment(pointsEarned),
+            lifetimePoints: increment(pointsEarned),
+            tier: newTier,
+            rewardsHistory: [newRewardEntry, ...currentUser.rewardsHistory]
         });
-        // In a real app, we would also update the user document in Firestore here.
     };
 
-    const redeemReward = (reward: AvailableReward) => {
+    const redeemReward = async (reward: AvailableReward) => {
         if (!currentUser || currentUser.currentPoints < reward.pointsCost) return;
 
         const newHistoryEntry: RewardHistory = {
@@ -222,22 +210,27 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             description: `${reward.name} Redeemed`,
             date: new Date(),
         };
-
-        setCurrentUser(prevUser => {
-            if (!prevUser) return null;
-            return {
-                ...prevUser,
-                currentPoints: prevUser.currentPoints - reward.pointsCost,
-                rewardsHistory: [newHistoryEntry, ...prevUser.rewardsHistory],
-            };
+        
+        const updatedProfile: UserProfile = {
+            ...currentUser,
+            currentPoints: currentUser.currentPoints - reward.pointsCost,
+            rewardsHistory: [newHistoryEntry, ...currentUser.rewardsHistory],
+        };
+        setCurrentUser(updatedProfile);
+        
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userDocRef, {
+            currentPoints: increment(-reward.pointsCost),
+            rewardsHistory: [newHistoryEntry, ...currentUser.rewardsHistory],
         });
-        // Also update Firestore here in a real app.
     };
     
-    const updateUserProfile = (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => {
+    const updateUserProfile = async (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => {
         if (!currentUser) return;
         setCurrentUser(prev => prev ? { ...prev, ...updates } : null);
-        // Also update Firestore here in a real app.
+        
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userDocRef, updates);
     };
 
     const value = {

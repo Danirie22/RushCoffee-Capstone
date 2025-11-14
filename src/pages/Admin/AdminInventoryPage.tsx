@@ -1,0 +1,135 @@
+
+import React, { useState, useEffect } from 'react';
+import { collection, onSnapshot, query, orderBy, doc, updateDoc, increment } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { Loader2, Package, AlertTriangle, CheckCircle, XCircle, Plus } from 'lucide-react';
+import UpdateStockModal from '../../components/admin/UpdateStockModal';
+
+export interface Ingredient {
+    id: string;
+    name: string;
+    stock: number;
+    unit: string;
+    lowStockThreshold: number;
+}
+
+const AdminInventoryPage: React.FC = () => {
+    const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
+
+    useEffect(() => {
+        const q = query(collection(db, "ingredients"), orderBy("name", "asc"));
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const ingredientsList: Ingredient[] = [];
+            querySnapshot.forEach((doc) => {
+                ingredientsList.push({ id: doc.id, ...doc.data() } as Ingredient);
+            });
+            setIngredients(ingredientsList);
+            setIsLoading(false);
+        }, (error) => {
+            console.error("Error fetching inventory: ", error);
+            setIsLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    const handleOpenModal = (ingredient: Ingredient) => {
+        setSelectedIngredient(ingredient);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedIngredient(null);
+    };
+
+    const handleUpdateStock = async (ingredientId: string, amount: number, type: 'add' | 'set') => {
+        const ingredientRef = doc(db, "ingredients", ingredientId);
+        try {
+            if (type === 'add') {
+                await updateDoc(ingredientRef, { stock: increment(amount) });
+            } else {
+                await updateDoc(ingredientRef, { stock: amount });
+            }
+            handleCloseModal();
+        } catch (error) {
+            console.error("Error updating stock: ", error);
+        }
+    };
+
+    const getStockStatus = (item: Ingredient) => {
+        if (item.stock <= 0) {
+            return { text: 'Out of Stock', color: 'text-red-600', Icon: XCircle };
+        }
+        if (item.stock <= item.lowStockThreshold) {
+            return { text: 'Low Stock', color: 'text-yellow-600', Icon: AlertTriangle };
+        }
+        return { text: 'In Stock', color: 'text-green-600', Icon: CheckCircle };
+    };
+
+    if (isLoading) {
+        return <div className="flex h-full items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary-600" /></div>;
+    }
+
+    return (
+        <div>
+            <div className="flex items-center justify-between mb-6">
+                <h1 className="font-display text-3xl font-bold text-gray-800">Inventory Management</h1>
+                 <button className="flex items-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700">
+                    <Plus className="h-4 w-4" />
+                    Add Ingredient
+                </button>
+            </div>
+            
+            <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Ingredient</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Current Stock</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
+                            <th scope="col" className="relative px-6 py-3"><span className="sr-only">Edit</span></th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200 bg-white">
+                        {ingredients.map((item) => {
+                            const status = getStockStatus(item);
+                            return (
+                                <tr key={item.id} className="hover:bg-gray-50">
+                                    <td className="whitespace-nowrap px-6 py-4">
+                                        <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4">
+                                        <div className="text-sm text-gray-900">{item.stock.toLocaleString()} <span className="text-gray-500">{item.unit}</span></div>
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4">
+                                        <div className={`inline-flex items-center gap-1 text-sm font-semibold ${status.color}`}>
+                                            <status.Icon className="h-4 w-4" />
+                                            {status.text}
+                                        </div>
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                                        <button onClick={() => handleOpenModal(item)} className="text-primary-600 hover:text-primary-800">Update Stock</button>
+                                    </td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+
+            {isModalOpen && selectedIngredient && (
+                <UpdateStockModal
+                    ingredient={selectedIngredient}
+                    onClose={handleCloseModal}
+                    onUpdate={handleUpdateStock}
+                />
+            )}
+        </div>
+    );
+};
+
+export default AdminInventoryPage;

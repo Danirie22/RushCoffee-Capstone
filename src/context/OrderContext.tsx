@@ -1,10 +1,11 @@
-
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+import { useAuth } from './AuthContext';
 
-// Replicating the QueueItem interface to keep contexts independent
 export interface QueueItem {
-  id: string;
+  id: string; // Firestore document ID
+  userId: string;
   customerName: string;
   orderNumber: string;
   position: number;
@@ -22,12 +23,12 @@ export interface QueueItem {
   estimatedTime: number; // in minutes
 }
 
-
 interface OrderContextType {
   activeOrder: QueueItem | null;
   setActiveOrder: (order: QueueItem | null) => void;
   orderHistory: QueueItem[];
-  addOrderToHistory: (order: QueueItem) => void;
+  addOrderToHistory: (order: Omit<QueueItem, 'id' | 'timestamp'>) => Promise<void>;
+  isHistoryLoading: boolean;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -47,7 +48,50 @@ interface OrderProviderProps {
 export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     const [activeOrder, setActiveOrder] = useState<QueueItem | null>(null);
     const [orderHistory, setOrderHistory] = useState<QueueItem[]>([]);
+    const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+    const { currentUser } = useAuth();
 
+    // Fetch order history for logged-in user
+    useEffect(() => {
+        if (currentUser) {
+            const fetchHistory = async () => {
+                setIsHistoryLoading(true);
+                try {
+                    const ordersRef = collection(db, 'orders');
+                    // The original query required a composite index. To fix this without database changes,
+                    // we fetch the user's orders and sort them on the client side.
+                    const q = query(ordersRef, where('userId', '==', currentUser.uid));
+                    const querySnapshot = await getDocs(q);
+
+                    const unsortedHistory = querySnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data(),
+                        timestamp: doc.data().timestamp.toDate(),
+                    })) as QueueItem[];
+
+                    const history = unsortedHistory.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+                    
+                    setOrderHistory(history);
+
+                    // Check for an incomplete order to set as active
+                    const lastIncompleteOrder = history.find(order => order.status !== 'completed');
+                    setActiveOrder(lastIncompleteOrder || null);
+                } catch (error) {
+                    console.error("Error fetching order history:", error);
+                } finally {
+                    setIsHistoryLoading(false);
+                }
+            };
+            fetchHistory();
+        } else {
+            // Clear data on logout
+            setOrderHistory([]);
+            setActiveOrder(null);
+            setIsHistoryLoading(false);
+        }
+    }, [currentUser]);
+
+    // Simulate order status progression for the active order
     useEffect(() => {
         if (activeOrder && activeOrder.status !== 'completed') {
             const sequence: QueueItem['status'][] = ['waiting', 'preparing', 'ready', 'completed'];
@@ -59,17 +103,34 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
             const timer = setTimeout(() => {
                 const nextStatus = sequence[currentIndex + 1];
                 setActiveOrder(prev => prev ? { ...prev, status: nextStatus } : null);
-            }, 10000); // 10 seconds for each status update
+            }, 10000);
 
             return () => clearTimeout(timer);
         }
     }, [activeOrder]);
 
-    const addOrderToHistory = (order: QueueItem) => {
-        setOrderHistory(prevHistory => [order, ...prevHistory]);
+    const addOrderToHistory = async (orderData: Omit<QueueItem, 'id' | 'timestamp'>) => {
+        try {
+            const docRef = await addDoc(collection(db, 'orders'), {
+                ...orderData,
+                timestamp: serverTimestamp(),
+            });
+
+            // Optimistically update local state
+            const newOrder: QueueItem = {
+                ...orderData,
+                id: docRef.id,
+                timestamp: new Date(),
+            };
+            setOrderHistory(prevHistory => [newOrder, ...prevHistory]);
+            setActiveOrder(newOrder);
+
+        } catch (error) {
+            console.error("Error adding order to Firestore:", error);
+        }
     };
 
-    const value = { activeOrder, setActiveOrder, orderHistory, addOrderToHistory };
+    const value = { activeOrder, setActiveOrder, orderHistory, addOrderToHistory, isHistoryLoading };
 
     return (
         <OrderContext.Provider value={value}>
