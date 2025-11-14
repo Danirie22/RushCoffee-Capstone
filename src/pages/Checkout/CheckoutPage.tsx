@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, User, Phone, MessageSquare, Check, Coffee, AlertCircle, Loader2 } from 'lucide-react';
@@ -15,8 +16,8 @@ import { useOrder, QueueItem } from '../../context/OrderContext';
 const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
     const { cartItems, showToast, totalCartItems, clearCart } = useCart();
-    const { currentUser } = useAuth();
-    const { setActiveOrder } = useOrder();
+    const { currentUser, processNewOrderForUser } = useAuth();
+    const { setActiveOrder, addOrderToHistory } = useOrder();
     
     // State
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'gcash' | 'cash' | null>(null);
@@ -27,6 +28,7 @@ const CheckoutPage: React.FC = () => {
     const [receiptFile, setReceiptFile] = useState<File | null>(null);
     
     const [isProcessing, setIsProcessing] = useState(false);
+    const [orderPlaced, setOrderPlaced] = useState(false);
 
     // Memoized calculations for order summary
     const { subtotal, serviceFee, total } = useMemo(() => {
@@ -45,11 +47,11 @@ const CheckoutPage: React.FC = () => {
 
     // Redirect if cart is empty
     useEffect(() => {
-        if (totalCartItems === 0 && !isProcessing) {
+        if (totalCartItems === 0 && !isProcessing && !orderPlaced) {
             showToast('Your cart is empty. Add items to checkout.');
             navigate('/menu');
         }
-    }, [totalCartItems, navigate, showToast, isProcessing]);
+    }, [totalCartItems, navigate, showToast, isProcessing, orderPlaced]);
 
     // Pre-fill user info if logged in
     useEffect(() => {
@@ -111,9 +113,12 @@ const CheckoutPage: React.FC = () => {
                 estimatedTime: 10,
             };
             
+            addOrderToHistory(newOrder);
+            if(processNewOrderForUser) processNewOrderForUser(newOrder);
             setActiveOrder(newOrder);
             clearCart();
             setIsProcessing(false);
+            setOrderPlaced(true);
             navigate('/queue', { state: { fromCheckout: true, orderNumber: newOrderNumber } });
 
         }, 2000);
@@ -128,7 +133,7 @@ const CheckoutPage: React.FC = () => {
 
 
     // Empty Cart Component
-    if (totalCartItems === 0) {
+    if (totalCartItems === 0 && !orderPlaced) {
         return (
             <div className="flex min-h-screen flex-col">
                 <Header />

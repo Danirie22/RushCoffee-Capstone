@@ -1,14 +1,14 @@
 
 import React, { useState, useEffect, FormEvent } from 'react';
 import { User, Phone, Mail, Save, X, Loader2 } from 'lucide-react';
-import { UserProfile } from '../../data/mockUser';
+import { UserProfile } from '../../context/AuthContext';
 import Card from '../../../components/ui/Card';
 import Button from '../ui/Button';
 import { useCart } from '../../context/CartContext';
 
 interface EditProfileFormProps {
   user: UserProfile;
-  onSave: (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phoneNumber'>>) => void;
+  onSave: (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => void;
   onCancel: () => void;
 }
 
@@ -16,7 +16,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ user, onSave, onCance
   const [formData, setFormData] = useState({
     firstName: user.firstName,
     lastName: user.lastName,
-    phoneNumber: user.phoneNumber || '',
+    phone: user.phone || '',
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -27,7 +27,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ user, onSave, onCance
     const changes =
       formData.firstName !== user.firstName ||
       formData.lastName !== user.lastName ||
-      formData.phoneNumber !== (user.phoneNumber || '');
+      formData.phone !== (user.phone || '');
     setHasChanges(changes);
   }, [formData, user]);
 
@@ -39,7 +39,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ user, onSave, onCance
     if (formData.lastName.length < 2) {
       newErrors.lastName = 'Last name must be at least 2 characters.';
     }
-    if (formData.phoneNumber && !/^(09|\+639)\d{9}$/.test(formData.phoneNumber)) {
+    if (formData.phone && !/^(09|\+639)\d{9}$/.test(formData.phone)) {
       newErrors.phone = 'Invalid Philippine phone number format.';
     }
     setErrors(newErrors);
@@ -88,10 +88,10 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ user, onSave, onCance
           </div>
         </div>
         <div>
-          <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Phone Number</label>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
           <div className="relative mt-1">
             <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-            <input type="tel" name="phoneNumber" id="phoneNumber" value={formData.phoneNumber} onChange={handleChange} className="w-full rounded-md border-gray-300 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
+            <input type="tel" name="phone" id="phone" value={formData.phone} onChange={handleChange} className="w-full rounded-md border-gray-300 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
           </div>
           {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
         </div>
@@ -99,7 +99,7 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ user, onSave, onCance
           <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
           <div className="relative mt-1">
             <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-            <input type="email" name="email" id="email" value={user.email} className="w-full rounded-md border-gray-300 bg-gray-100 pl-10 text-gray-500 shadow-sm" disabled readOnly />
+            <input type="email" name="email" id="email" value={user.email || ''} className="w-full rounded-md border-gray-300 bg-gray-100 pl-10 text-gray-500 shadow-sm" disabled readOnly />
           </div>
           <p className="mt-1 text-xs text-gray-500">Contact support to change your email address.</p>
         </div>

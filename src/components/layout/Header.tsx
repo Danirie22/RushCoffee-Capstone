@@ -1,11 +1,7 @@
 
-
-
-
-
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, LogOut, ShoppingCart, ChevronDown, Home, Info, Phone, Gift, User } from 'lucide-react';
+import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import RushCoffeeLogo from './RushCoffeeLogo';

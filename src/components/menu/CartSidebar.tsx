@@ -1,6 +1,7 @@
 
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { X, Minus, Plus, Trash2, ArrowRight, Coffee } from 'lucide-react';
 import { Product, ProductSize } from '../../data/mockProducts';
 import Badge from '../../../components/ui/Badge';
@@ -30,8 +31,14 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
   onRemoveItem,
   onCheckout,
 }) => {
+  const navigate = useNavigate();
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartItems.reduce((sum, item) => sum + item.selectedSize.price * item.quantity, 0);
+  
+  const handleStartOrdering = () => {
+    onClose();
+    navigate('/menu');
+  };
 
   return (
     <>
@@ -80,7 +87,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
               <h3 className="text-lg font-semibold text-gray-800">Your cart is empty</h3>
               <p className="text-gray-500">Looks like you haven't added anything yet.</p>
               <button
-                onClick={onClose}
+                onClick={handleStartOrdering}
                 className="mt-4 rounded-full bg-primary-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700"
               >
                 Start Ordering

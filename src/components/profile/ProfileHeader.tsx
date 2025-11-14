@@ -2,7 +2,7 @@
 import React from 'react';
 import { Camera, Coffee, CircleDollarSign, Calendar, Shield } from 'lucide-react';
 import { format } from 'date-fns';
-import { UserProfile } from '../../data/mockUser';
+import { UserProfile } from '../../context/AuthContext';
 import Badge from '../../../components/ui/Badge';
 
 interface ProfileHeaderProps {
@@ -63,12 +63,12 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEditPhoto }) => {
       <div className="mt-8 grid grid-cols-3 gap-4 border-y border-gray-200 bg-gray-50/50 px-6 py-4">
         <div className="text-center">
           <Coffee className="mx-auto mb-1 h-6 w-6 text-primary-600" />
-          <p className="text-xl font-bold text-coffee-900">{user.stats.totalOrders}</p>
+          <p className="text-xl font-bold text-coffee-900">{user.totalOrders}</p>
           <p className="text-xs text-gray-500">Total Orders</p>
         </div>
         <div className="text-center">
           <CircleDollarSign className="mx-auto mb-1 h-6 w-6 text-primary-600" />
-          <p className="text-xl font-bold text-coffee-900">₱{user.stats.totalSpent.toLocaleString()}</p>
+          <p className="text-xl font-bold text-coffee-900">₱{user.totalSpent.toLocaleString()}</p>
           <p className="text-xs text-gray-500">Total Spent</p>
         </div>
         <div className="text-center">

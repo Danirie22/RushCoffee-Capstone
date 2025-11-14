@@ -1,10 +1,9 @@
 import React from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { Coffee, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
-import QueuePositionCard from '../../components/queue/QueuePositionCard';
-import OrderSummary from '../../components/queue/OrderSummary';
+import ModernQueueCard from '../../components/queue/ModernQueueCard';
 import { useAuth } from '../../context/AuthContext';
 import { useOrder } from '../../context/OrderContext';
 import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
@@ -77,26 +76,14 @@ const QueuePage: React.FC = () => {
         <div className="flex min-h-screen flex-col bg-gray-50">
             <Header />
             <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
-                <div className="flex w-full max-w-lg flex-col items-center gap-8">
+                <div className="flex w-full max-w-md flex-col items-center gap-8">
                     {location.state?.fromCheckout && (
                          <div className="w-full rounded-lg bg-green-100 p-4 text-center text-green-800 animate-fade-in-up">
                             <h2 className="font-bold">Order Placed Successfully!</h2>
                             <p className="text-sm">You are now in the queue. We'll start preparing your order shortly.</p>
                         </div>
                     )}
-                    <QueuePositionCard
-                        position={activeOrder.position}
-                        status={activeOrder.status}
-                        estimatedTime={activeOrder.estimatedTime}
-                    />
-                    <OrderSummary
-                        orderNumber={activeOrder.orderNumber}
-                        orderItems={activeOrder.orderItems}
-                        totalAmount={activeOrder.totalAmount}
-                        paymentMethod={activeOrder.paymentMethod}
-                        paymentStatus={activeOrder.paymentStatus}
-                        timestamp={activeOrder.timestamp}
-                    />
+                    <ModernQueueCard order={activeOrder} />
                 </div>
             </main>
             <Footer />

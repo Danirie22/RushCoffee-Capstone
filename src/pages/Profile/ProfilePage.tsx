@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { format } from 'date-fns';
 import { User, ShoppingBag, Settings, Edit, Mail, Phone, Calendar, Star, Loader2, Upload } from 'lucide-react';
@@ -12,16 +13,19 @@ import ProfileHeader from '../../components/profile/ProfileHeader';
 import EditProfileForm from '../../components/profile/EditProfileForm';
 import OrderHistory from '../../components/profile/OrderHistory';
 import SettingsSection from '../../components/profile/SettingsSection';
-import { mockUserProfile, UserProfile } from '../../data/mockUser';
-import { mockUserOrders } from '../../data/mockOrders';
+import { UserProfile } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
+import { useOrder } from '../../context/OrderContext';
 import { mockProducts } from '../../data/mockProducts';
 import { useCart } from '../../context/CartContext';
 
 type Tab = 'overview' | 'orders' | 'settings';
 
 const ProfilePage: React.FC = () => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [orders, setOrders] = useState(mockUserOrders);
+  const { currentUser, updateUserProfile } = useAuth();
+  const { orderHistory } = useOrder();
+  
+  const [user, setUser] = useState<UserProfile | null>(currentUser);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [isEditing, setIsEditing] = useState(false);
   
@@ -35,11 +39,8 @@ const ProfilePage: React.FC = () => {
   const { showToast } = useCart();
 
   useEffect(() => {
-    // Simulate loading user data
-    setTimeout(() => {
-      setUser(mockUserProfile);
-    }, 500);
-  }, []);
+    setUser(currentUser);
+  }, [currentUser]);
   
   useEffect(() => {
     if (!photoFile) {
@@ -50,15 +51,17 @@ const ProfilePage: React.FC = () => {
     setPhotoPreview(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
   }, [photoFile]);
-
+  
   const favoriteProduct = useMemo(() => {
+    // This is a mock implementation since we don't track favorite items yet.
+    // In a real app, this would be part of the user's stats.
     if (!user) return null;
-    return mockProducts.find(p => p.id === user.stats.favoriteItem);
+    return mockProducts.find(p => p.id === 'cb-01');
   }, [user]);
 
   const handleSaveProfile = (updates: Partial<UserProfile>) => {
-    if (user) {
-      setUser({ ...user, ...updates });
+    if (user && updateUserProfile) {
+      updateUserProfile(updates);
       setIsEditing(false);
     }
   };
@@ -87,6 +90,8 @@ const ProfilePage: React.FC = () => {
         const reader = new FileReader();
         reader.readAsDataURL(photoFile);
         reader.onloadend = () => {
+            // This is a mock update. A real app would get a URL from a storage service.
+            // For now, we update the local user state. In a full app, this would also call a context update function.
             setUser({ ...user, photoURL: reader.result as string });
             setIsUploading(false);
             setIsPhotoModalOpen(false);
@@ -113,7 +118,7 @@ const ProfilePage: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'orders':
-        return <OrderHistory orders={orders} />;
+        return <OrderHistory orders={orderHistory} />;
       case 'settings':
         return <SettingsSection preferences={user.preferences} onUpdatePreferences={handleUpdatePreferences} />;
       case 'overview':
@@ -133,12 +138,12 @@ const ProfilePage: React.FC = () => {
                   </div>
                   <ul className="mt-4 space-y-3 text-gray-700">
                     <li className="flex items-center gap-3"><Mail className="h-5 w-5 text-gray-400" /> {user.email}</li>
-                    <li className="flex items-center gap-3"><Phone className="h-5 w-5 text-gray-400" /> {user.phoneNumber || 'Not provided'}</li>
+                    <li className="flex items-center gap-3"><Phone className="h-5 w-5 text-gray-400" /> {user.phone || 'Not provided'}</li>
                     <li className="flex items-center gap-3"><Calendar className="h-5 w-5 text-gray-400" /> Member since {format(user.createdAt, 'MMMM dd, yyyy')}</li>
                   </ul>
                 </Card>
               )}
-              <OrderHistory orders={orders} limit={3} showViewAll onViewAll={() => setActiveTab('orders')} />
+              <OrderHistory orders={orderHistory} limit={3} showViewAll onViewAll={() => setActiveTab('orders')} />
             </div>
             <div className="space-y-6 lg:col-span-1">
               {favoriteProduct && (

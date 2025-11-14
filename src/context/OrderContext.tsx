@@ -1,3 +1,5 @@
+
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 // Replicating the QueueItem interface to keep contexts independent
@@ -24,6 +26,8 @@ export interface QueueItem {
 interface OrderContextType {
   activeOrder: QueueItem | null;
   setActiveOrder: (order: QueueItem | null) => void;
+  orderHistory: QueueItem[];
+  addOrderToHistory: (order: QueueItem) => void;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -42,6 +46,7 @@ interface OrderProviderProps {
 
 export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     const [activeOrder, setActiveOrder] = useState<QueueItem | null>(null);
+    const [orderHistory, setOrderHistory] = useState<QueueItem[]>([]);
 
     useEffect(() => {
         if (activeOrder && activeOrder.status !== 'completed') {
@@ -60,7 +65,11 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
         }
     }, [activeOrder]);
 
-    const value = { activeOrder, setActiveOrder };
+    const addOrderToHistory = (order: QueueItem) => {
+        setOrderHistory(prevHistory => [order, ...prevHistory]);
+    };
+
+    const value = { activeOrder, setActiveOrder, orderHistory, addOrderToHistory };
 
     return (
         <OrderContext.Provider value={value}>

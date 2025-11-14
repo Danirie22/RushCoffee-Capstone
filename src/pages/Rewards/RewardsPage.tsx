@@ -1,4 +1,7 @@
+
+
 import React, { useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { Gift, TrendingUp, Star, Coffee, Award, Check, X, QrCode, ClipboardCopy } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -11,8 +14,10 @@ import Modal from '../../components/ui/Modal';
 import RewardsTierBadge from '../../components/rewards/RewardsTierBadge';
 import RewardCard from '../../components/rewards/RewardCard';
 import RewardsHistory from '../../components/rewards/RewardsHistory';
-import { mockUserRewards, mockAvailableRewards, tierThresholds, UserRewards, AvailableReward, RewardHistory } from '../../data/mockRewards';
+import { mockAvailableRewards, tierThresholds, AvailableReward, RewardHistory } from '../../data/mockRewards';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext';
+import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
 
 const tierBenefits = {
   bronze: [
@@ -39,7 +44,7 @@ const filterCategories = ['all', 'drink', 'food', 'discount'];
 
 
 const RewardsPage: React.FC = () => {
-    const [userRewards, setUserRewards] = useState<UserRewards>(mockUserRewards);
+    const { currentUser, redeemReward } = useAuth();
     const [availableRewards] = useState<AvailableReward[]>(mockAvailableRewards);
     
     // Redeem Flow State
@@ -56,8 +61,8 @@ const RewardsPage: React.FC = () => {
     const [isHowToEarnCollapsed, setIsHowToEarnCollapsed] = useState(true);
 
     const { showToast } = useCart();
-
-    const nextTier = userRewards.tier === 'bronze' ? 'silver' : userRewards.tier === 'silver' ? 'gold' : null;
+    
+    const nextTier = currentUser ? (currentUser.tier === 'bronze' ? 'silver' : currentUser.tier === 'silver' ? 'gold' : null) : null;
     const nextTierPoints = nextTier ? tierThresholds[nextTier].min : 0;
 
     const filteredAndSortedRewards = useMemo(() => {
@@ -82,23 +87,9 @@ const RewardsPage: React.FC = () => {
     };
 
     const handleConfirmRedeem = () => {
-        if (!selectedReward) return;
+        if (!selectedReward || !redeemReward) return;
 
-        const newPoints = userRewards.currentPoints - selectedReward.pointsCost;
-        
-        const newHistoryEntry: RewardHistory = {
-            id: `rh-${Date.now()}`,
-            type: 'redeemed',
-            points: -selectedReward.pointsCost,
-            description: `${selectedReward.name} Redeemed`,
-            date: new Date(),
-        };
-
-        setUserRewards(prev => ({
-            ...prev,
-            currentPoints: newPoints,
-            history: [newHistoryEntry, ...prev.history],
-        }));
+        redeemReward(selectedReward);
         
         setShowRedeemModal(false);
         showToast('Reward redeemed successfully!');
@@ -113,6 +104,31 @@ const RewardsPage: React.FC = () => {
         setSelectedReward(null);
         setRedemptionCode('');
     };
+    
+    if (!currentUser) {
+        return (
+            <div className="flex min-h-screen flex-col bg-gray-50">
+                <Header />
+                <main className="flex flex-1 items-center justify-center px-6 py-20 text-center">
+                    <div>
+                        <RushCoffeeLogo className="mx-auto h-24 w-24 text-gray-300 opacity-50" />
+                        <h1 className="mt-4 font-display text-2xl font-bold text-coffee-900">
+                            View Your Rewards
+                        </h1>
+                        <p className="mt-2 text-gray-600">
+                           Please log in to see your points and redeem exclusive rewards.
+                        </p>
+                        <div className="mt-8 flex justify-center gap-4">
+                            <Link to="/auth/login" className="rounded-full bg-primary-600 px-8 py-3 font-semibold text-white transition-transform hover:scale-105">
+                                Login
+                            </Link>
+                        </div>
+                    </div>
+                </main>
+                <Footer />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -129,25 +145,25 @@ const RewardsPage: React.FC = () => {
                                 <div className="relative z-10">
                                     <p className="font-semibold text-primary-100">Your Points Balance</p>
                                     <h1 className="mt-2 font-display text-7xl font-bold tracking-tight text-white">
-                                        {userRewards.currentPoints.toLocaleString()}
+                                        {currentUser.currentPoints.toLocaleString()}
                                     </h1>
                                     <p className="mt-2 text-primary-200">
-                                        Lifetime Points: {userRewards.lifetimePoints.toLocaleString()}
+                                        Lifetime Points: {currentUser.lifetimePoints.toLocaleString()}
                                     </p>
                                 </div>
                             </Card>
                             <Card className="p-0">
                                 <RewardsTierBadge 
-                                    tier={userRewards.tier}
-                                    currentPoints={userRewards.currentPoints}
+                                    tier={currentUser.tier}
+                                    currentPoints={currentUser.currentPoints}
                                     nextTierPoints={nextTierPoints}
                                 />
                             </Card>
                         </div>
                         <Card className="mt-6">
-                            <h3 className="font-display text-xl font-bold capitalize text-coffee-900">{userRewards.tier} Tier Benefits</h3>
+                            <h3 className="font-display text-xl font-bold capitalize text-coffee-900">{currentUser.tier} Tier Benefits</h3>
                             <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                                {tierBenefits[userRewards.tier].map(benefit => (
+                                {tierBenefits[currentUser.tier].map(benefit => (
                                     <li key={benefit} className="flex items-center gap-2 text-gray-700">
                                         <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-100">
                                             <Check className="h-3 w-3 text-green-600" />
@@ -199,7 +215,7 @@ const RewardsPage: React.FC = () => {
                                     <RewardCard 
                                         key={reward.id}
                                         reward={reward}
-                                        currentPoints={userRewards.currentPoints}
+                                        currentPoints={currentUser.currentPoints}
                                         onRedeem={handleRedeemClick}
                                     />
                                 ))
@@ -250,7 +266,7 @@ const RewardsPage: React.FC = () => {
                 {/* History Section */}
                 <section className="px-6 py-12">
                     <div className="container mx-auto max-w-7xl">
-                        <RewardsHistory history={userRewards.history} />
+                        <RewardsHistory history={currentUser.rewardsHistory} />
                     </div>
                 </section>
             </main>
@@ -275,10 +291,10 @@ const RewardsPage: React.FC = () => {
                         <p className="text-gray-600">You are about to redeem:</p>
                         <h4 className="my-1 text-xl font-bold text-coffee-900">{selectedReward.name}</h4>
                         <div className="my-4 space-y-2">
-                             <div className="flex justify-between text-gray-700"><p>Current Points:</p> <p className="font-semibold">{userRewards.currentPoints}</p></div>
+                             <div className="flex justify-between text-gray-700"><p>Current Points:</p> <p className="font-semibold">{currentUser.currentPoints}</p></div>
                              <div className="flex justify-between text-red-600"><p>Points Cost:</p> <p className="font-semibold">-{selectedReward.pointsCost}</p></div>
                              <hr className="my-1 border-dashed"/>
-                             <div className="flex justify-between text-lg font-bold text-gray-900"><p>Points After:</p> <p>{userRewards.currentPoints - selectedReward.pointsCost}</p></div>
+                             <div className="flex justify-between text-lg font-bold text-gray-900"><p>Points After:</p> <p>{currentUser.currentPoints - selectedReward.pointsCost}</p></div>
                         </div>
                         <div className="mt-4 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
                             This action cannot be undone. Please confirm you want to proceed.
