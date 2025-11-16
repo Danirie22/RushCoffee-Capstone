@@ -1,4 +1,5 @@
-import React from 'react';
+
+import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, MapPin, Phone, Mail } from 'lucide-react';
 import RushCoffeeLogo from './RushCoffeeLogo';

@@ -1,4 +1,5 @@
-import React from 'react';
+
+import * as React from 'react';
 
 type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -36,14 +37,14 @@ const Button: React.FC<ButtonProps> = ({
 
   const Component = asChild ? 'span' : 'button';
 
-  return (
-    <Component
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
-      {...props}
-    >
-      {children}
-    </Component>
-  );
+  return React.createElement(
+      Component,
+      {
+        className: `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`,
+        ...props
+      },
+      children
+    );
 };
 
 export default Button;

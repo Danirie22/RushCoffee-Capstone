@@ -1,6 +1,7 @@
 
 
-import React, { useState } from 'react';
+
+import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 
@@ -18,7 +19,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLogge
   const { name, description, category, imageUrl, available, stock, popular, new: isNew } = product;
   const navigate = useNavigate();
   
-  const [selectedSize, setSelectedSize] = useState<ProductSize>(product.sizes[0]);
+  const [selectedSize, setSelectedSize] = React.useState<ProductSize>(product.sizes[0]);
 
   const isOutOfStock = !available || stock === 0;
 

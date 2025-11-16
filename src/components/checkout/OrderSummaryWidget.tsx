@@ -1,5 +1,6 @@
 
-import React from 'react';
+
+import * as React from 'react';
 import Card from '../../../components/ui/Card';
 
 interface OrderSummaryWidgetProps {

@@ -1,4 +1,5 @@
-import React from 'react';
+
+import * as React from 'react';
 
 // Use React.SVGProps for an <svg> element.
 // This allows passing standard SVG attributes like width, height, etc.

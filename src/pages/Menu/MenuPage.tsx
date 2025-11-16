@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+
+import * as React from 'react';
 import { Search, ArrowUpDown, Check, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -38,24 +39,24 @@ const itemVariants = {
 
 const MenuPage: React.FC = () => {
     const { products, isLoading, error } = useProduct();
-    const [selectedCategory, setSelectedCategory] = useState('All');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [sortOption, setSortOption] = useState('default');
-    const [isSortMenuOpen, setIsSortMenuOpen] = useState(false);
-    const sortMenuRef = useRef<HTMLDivElement>(null);
-    const productsSectionRef = useRef<HTMLElement>(null);
+    const [selectedCategory, setSelectedCategory] = React.useState('All');
+    const [searchQuery, setSearchQuery] = React.useState('');
+    const [sortOption, setSortOption] = React.useState('default');
+    const [isSortMenuOpen, setIsSortMenuOpen] = React.useState(false);
+    const sortMenuRef = React.useRef<HTMLDivElement>(null);
+    const productsSectionRef = React.useRef<HTMLElement>(null);
     
     const { addToCart } = useCart();
     const { currentUser } = useAuth();
     
-    const categories = useMemo(() => {
+    const categories = React.useMemo(() => {
         if (products.length === 0) return ['All'];
         const uniqueCategories = [...new Set(products.map(p => p.category))];
         return ['All', ...uniqueCategories.sort()];
     }, [products]);
 
     // Close sort menu on outside click
-    useEffect(() => {
+    React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (sortMenuRef.current && !sortMenuRef.current.contains(event.target as Node)) {
                 setIsSortMenuOpen(false);
@@ -67,7 +68,7 @@ const MenuPage: React.FC = () => {
         };
     }, []);
 
-    const filteredAndSortedProducts = useMemo(() => {
+    const filteredAndSortedProducts = React.useMemo(() => {
         let processedProducts = products.filter(product => {
             const matchesCategory = selectedCategory === 'All' || product.category === selectedCategory;
             const matchesSearch =

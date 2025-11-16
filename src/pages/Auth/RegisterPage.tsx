@@ -1,4 +1,5 @@
-import React, { useState, FormEvent, useEffect, useCallback } from 'react';
+
+import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, User, Phone, Check, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -72,7 +73,7 @@ const InputField = ({ name, label, type, placeholder, Icon, children, autoComple
 };
 
 const RegisterPage: React.FC = () => {
-    const [formData, setFormData] = useState<FormFields>({
+    const [formData, setFormData] = React.useState<FormFields>({
         firstName: '',
         lastName: '',
         email: '',
@@ -81,17 +82,17 @@ const RegisterPage: React.FC = () => {
         confirmPassword: '',
         terms: false,
     });
-    const [errors, setErrors] = useState<ValidationErrors>({});
-    const [touched, setTouched] = useState<Partial<Record<keyof FormFields, boolean>>>({});
-    const [apiError, setApiError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
-    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [passwordStrength, setPasswordStrength] = useState(0);
+    const [errors, setErrors] = React.useState<ValidationErrors>({});
+    const [touched, setTouched] = React.useState<Partial<Record<keyof FormFields, boolean>>>({});
+    const [apiError, setApiError] = React.useState<string | null>(null);
+    const [isLoading, setIsLoading] = React.useState(false);
+    const [showPassword, setShowPassword] = React.useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+    const [passwordStrength, setPasswordStrength] = React.useState(0);
     const navigate = useNavigate();
     const { register } = useAuth();
 
-    const validate = useCallback(() => {
+    const validate = React.useCallback(() => {
         const newErrors: ValidationErrors = {};
 
         if (!formData.firstName) newErrors.firstName = 'First name is required';
@@ -117,13 +118,13 @@ const RegisterPage: React.FC = () => {
         return newErrors;
     }, [formData]);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (touched.password) {
             setPasswordStrength(calculatePasswordStrength(formData.password));
         }
     }, [formData.password, touched.password]);
     
-    useEffect(() => {
+    React.useEffect(() => {
         if (Object.keys(touched).length > 0) {
             setErrors(validate());
         }
@@ -142,7 +143,7 @@ const RegisterPage: React.FC = () => {
         setTouched(prev => ({ ...prev, [name]: true }));
     };
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setApiError(null);
         setTouched({

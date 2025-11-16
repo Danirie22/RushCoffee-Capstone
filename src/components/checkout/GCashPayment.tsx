@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+
+import * as React from 'react';
 import { AlertCircle, UploadCloud, FileImage, X } from 'lucide-react';
 
 interface GCashPaymentProps {
@@ -14,9 +15,9 @@ const GCashPayment: React.FC<GCashPaymentProps> = ({
   receipt,
   onReceiptUpload,
 }) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (!receipt) {
       setPreviewUrl(null);
       return;

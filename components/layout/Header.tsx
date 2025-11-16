@@ -1,6 +1,7 @@
 
 
-import React, { useState, useEffect } from 'react';
+
+import * as React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Menu, X, ShoppingCart } from 'lucide-react';
 import RushCoffeeLogo from '../../src/components/layout/RushCoffeeLogo';
@@ -13,9 +14,9 @@ const navLinks = [
 ];
 
 const Header: React.FC = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
-    useEffect(() => {
+    React.useEffect(() => {
         const handleResize = () => {
             if (window.innerWidth >= 768) {
                 setIsMenuOpen(false);
@@ -25,7 +26,7 @@ const Header: React.FC = () => {
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    useEffect(() => {
+    React.useEffect(() => {
         if (isMenuOpen) {
             document.body.style.overflow = 'hidden';
         } else {

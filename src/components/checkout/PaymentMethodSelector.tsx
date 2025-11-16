@@ -1,5 +1,6 @@
 
-import React from 'react';
+
+import * as React from 'react';
 import { Wallet, Banknote, Check } from 'lucide-react';
 import Badge from '../../../components/ui/Badge';
 

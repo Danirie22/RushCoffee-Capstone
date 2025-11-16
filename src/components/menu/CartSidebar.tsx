@@ -1,6 +1,7 @@
 
 
-import React from 'react';
+
+import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Minus, Plus, Trash2, ArrowRight, Coffee } from 'lucide-react';
 import { Product, ProductSize } from '../../data/mockProducts';

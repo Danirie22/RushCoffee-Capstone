@@ -1,4 +1,5 @@
-import React from 'react';
+
+import * as React from 'react';
 import { Medal, Award, Crown } from 'lucide-react';
 
 interface RewardsTierBadgeProps {

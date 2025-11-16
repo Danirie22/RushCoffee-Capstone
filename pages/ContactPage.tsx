@@ -1,5 +1,7 @@
 
-import React, { useState, FormEvent } from 'react';
+
+
+import * as React from 'react';
 import { MapPin, Phone, Mail, Share2, Send, ChevronDown, User, Hash, MessageSquare, Loader2, CheckCircle, Facebook, Instagram, Twitter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -52,11 +54,11 @@ const InfoCard: React.FC<{ icon: React.ElementType; title: string; children: Rea
 
 
 const ContactPage: React.FC = () => {
-    const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-    const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' });
-    const [errors, setErrors] = useState<Partial<typeof formData>>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSuccess, setIsSuccess] = useState(false);
+    const [openFaqIndex, setOpenFaqIndex] = React.useState<number | null>(0);
+    const [formData, setFormData] = React.useState({ name: '', email: '', phone: '', subject: '', message: '' });
+    const [errors, setErrors] = React.useState<Partial<typeof formData>>({});
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [isSuccess, setIsSuccess] = React.useState(false);
 
     const validate = () => {
         const newErrors: Partial<typeof formData> = {};
@@ -68,7 +70,7 @@ const ContactPage: React.FC = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
         

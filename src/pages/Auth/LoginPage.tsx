@@ -1,4 +1,5 @@
-import React, { useState, FormEvent, useEffect } from 'react';
+
+import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -19,13 +20,13 @@ const GoogleIcon = () => (
 );
 
 const LoginPage: React.FC = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
-    const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
-    const [apiError, setApiError] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
+    const [email, setEmail] = React.useState('');
+    const [password, setPassword] = React.useState('');
+    const [showPassword, setShowPassword] = React.useState(false);
+    const [rememberMe, setRememberMe] = React.useState(false);
+    const [errors, setErrors] = React.useState<{ email?: string; password?: string }>({});
+    const [apiError, setApiError] = React.useState<string | null>(null);
+    const [isLoading, setIsLoading] = React.useState(false);
     const navigate = useNavigate();
     const { login } = useAuth();
 
@@ -42,7 +43,7 @@ const LoginPage: React.FC = () => {
         return newErrors;
     };
 
-    const handleSubmit = async (e: FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setApiError(null);
         const formErrors = validate();

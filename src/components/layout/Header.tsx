@@ -1,5 +1,6 @@
 
-import React from 'react';
+
+import * as React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -214,6 +215,7 @@ const Header: React.FC = () => {
                             onClick={toggleMobileMenu}
                             className="rounded-md p-2 text-gray-700 transition hover:bg-gray-100"
                             aria-label="Toggle menu"
+                            aria-expanded={isMobileMenuOpen}
                         >
                             <Menu className="h-6 w-6" />
                         </button>
@@ -256,7 +258,7 @@ const Header: React.FC = () => {
                             <X className="h-6 w-6" />
                         </button>
                     </div>
-                    <nav className="flex flex-col gap-4 p-4">
+                    <nav className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
                         {navLinks.map((link) => (
                             <NavLink
                                 key={link.label}

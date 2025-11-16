@@ -1,5 +1,6 @@
 
-import React from 'react';
+
+import * as React from 'react';
 import { Gift, Lock } from 'lucide-react';
 import { AvailableReward } from '../../data/mockRewards';
 import Card from '../../../components/ui/Card';

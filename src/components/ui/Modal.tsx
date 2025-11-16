@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+
+import * as React from 'react';
 import { X } from 'lucide-react';
 import Card from '../../../components/ui/Card';
 
@@ -12,7 +13,7 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, size = 'md' }) => {
-  useEffect(() => {
+  React.useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose();

@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+
+import * as React from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Bell, X } from 'lucide-react';
 import Header from '../../components/layout/Header';
@@ -16,12 +17,12 @@ const QueuePage: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const [notificationPermission, setNotificationPermission] = useState('default');
-    const [showPermissionBanner, setShowPermissionBanner] = useState(false);
-    const notificationSentForOrder = useRef<string | null>(null);
+    const [notificationPermission, setNotificationPermission] = React.useState('default');
+    const [showPermissionBanner, setShowPermissionBanner] = React.useState(false);
+    const notificationSentForOrder = React.useRef<string | null>(null);
 
     // Check notification permission on mount
-    useEffect(() => {
+    React.useEffect(() => {
         if ('Notification' in window) {
             setNotificationPermission(Notification.permission);
             if (Notification.permission === 'default') {
@@ -31,7 +32,7 @@ const QueuePage: React.FC = () => {
     }, []);
 
     // Effect to trigger notification when order is ready
-    useEffect(() => {
+    React.useEffect(() => {
         if (
             activeOrder &&
             activeOrder.status === 'ready' &&

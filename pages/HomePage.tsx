@@ -3,7 +3,8 @@
 
 
 
-import React from 'react';
+
+import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Clock, Gift, Wallet, Users, Bell, ArrowRight, Quote, ChevronsDown } from 'lucide-react';
 import Card from '../components/ui/Card';

@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+
+import * as React from 'react';
 import { Plus, Minus, History } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { RewardHistory } from '../../data/mockRewards';
@@ -9,14 +10,14 @@ interface RewardsHistoryProps {
 }
 
 const RewardsHistory: React.FC<RewardsHistoryProps> = ({ history }) => {
-  const [filter, setFilter] = useState<'all' | 'earned' | 'redeemed'>('all');
+  const [filter, setFilter] = React.useState<'all' | 'earned' | 'redeemed'>('all');
 
-  const filteredHistory = useMemo(() => {
+  const filteredHistory = React.useMemo(() => {
     if (filter === 'all') return history;
     return history.filter(item => item.type === filter);
   }, [history, filter]);
 
-  const sortedHistory = useMemo(() => {
+  const sortedHistory = React.useMemo(() => {
     return [...filteredHistory].sort((a, b) => b.date.getTime() - a.date.getTime());
   }, [filteredHistory]);
 

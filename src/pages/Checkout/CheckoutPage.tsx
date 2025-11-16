@@ -1,6 +1,7 @@
 
 
-import React, { useState, useEffect, useMemo } from 'react';
+
+import * as React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, User, Phone, MessageSquare, Check, Coffee, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -20,24 +21,24 @@ const CheckoutPage: React.FC = () => {
     const { setActiveOrder, addOrderToHistory } = useOrder();
     
     // State
-    const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'gcash' | 'cash' | null>(null);
-    const [customerInfo, setCustomerInfo] = useState({ name: '', phone: '' });
-    const [orderNotes, setOrderNotes] = useState('');
-    const [errors, setErrors] = useState<{ name?: string; phone?: string; payment?: string; gcash?: string }>({});
+    const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<'gcash' | 'cash' | null>(null);
+    const [customerInfo, setCustomerInfo] = React.useState({ name: '', phone: '' });
+    const [orderNotes, setOrderNotes] = React.useState('');
+    const [errors, setErrors] = React.useState<{ name?: string; phone?: string; payment?: string; gcash?: string }>({});
     
-    const [receiptFile, setReceiptFile] = useState<File | null>(null);
+    const [receiptFile, setReceiptFile] = React.useState<File | null>(null);
     
-    const [isProcessing, setIsProcessing] = useState(false);
-    const [orderPlaced, setOrderPlaced] = useState(false);
+    const [isProcessing, setIsProcessing] = React.useState(false);
+    const [orderPlaced, setOrderPlaced] = React.useState(false);
 
     // Memoized calculations for order summary
-    const { subtotal, serviceFee, total } = useMemo(() => {
+    const { subtotal, serviceFee, total } = React.useMemo(() => {
         const sub = cartItems.reduce((acc, item) => acc + item.selectedSize.price * item.quantity, 0);
         const fee = 15.00; // Example service fee
         return { subtotal: sub, serviceFee: fee, total: sub + fee };
     }, [cartItems]);
 
-    const summaryItems = useMemo(() => 
+    const summaryItems = React.useMemo(() => 
         cartItems.map(item => ({
             productName: `${item.product.name} (${item.selectedSize.name})`,
             quantity: item.quantity,
@@ -46,7 +47,7 @@ const CheckoutPage: React.FC = () => {
     [cartItems]);
 
     // Redirect if cart is empty
-    useEffect(() => {
+    React.useEffect(() => {
         if (!currentUser) {
             showToast('Please log in to proceed to checkout.');
             navigate('/auth/login', { state: { from: '/checkout' } });
@@ -59,7 +60,7 @@ const CheckoutPage: React.FC = () => {
     }, [totalCartItems, navigate, showToast, isProcessing, orderPlaced, currentUser]);
 
     // Pre-fill user info if logged in
-    useEffect(() => {
+    React.useEffect(() => {
         if (currentUser) {
             setCustomerInfo({
                 name: `${currentUser.firstName} ${currentUser.lastName}`,

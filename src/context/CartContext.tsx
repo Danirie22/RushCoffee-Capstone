@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect, useCallback } from 'react';
+
+import * as React from 'react';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { Product, ProductSize } from '../data/mockProducts';
@@ -41,10 +42,10 @@ interface CartContextType {
   clearCart: () => void;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+const CartContext = React.createContext<CartContextType | undefined>(undefined);
 
 export const useCart = () => {
-  const context = useContext(CartContext);
+  const context = React.useContext(CartContext);
   if (context === undefined) {
     throw new Error('useCart must be used within a CartProvider');
   }
@@ -52,32 +53,32 @@ export const useCart = () => {
 };
 
 interface CartProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [isCartLoading, setIsCartLoading] = useState(true);
+  const [cartItems, setCartItems] = React.useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = React.useState(false);
+  const [toastMessage, setToastMessage] = React.useState<string | null>(null);
+  const [isCartLoading, setIsCartLoading] = React.useState(true);
 
   const { currentUser } = useAuth();
   const { products, isLoading: productsLoading } = useProduct();
 
   // Toast message handler
-  useEffect(() => {
+  React.useEffect(() => {
     if (toastMessage) {
       const timer = setTimeout(() => setToastMessage(null), 4000); // Increased duration for longer messages
       return () => clearTimeout(timer);
     }
   }, [toastMessage]);
 
-  const showToast = useCallback((message: string) => {
+  const showToast = React.useCallback((message: string) => {
     setToastMessage(message);
   }, []);
 
   // Fetch cart from Firestore on user login
-  useEffect(() => {
+  React.useEffect(() => {
     const fetchAndHydrateCart = async () => {
       if (!currentUser || productsLoading) return;
 
@@ -122,7 +123,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 }, [currentUser, products, productsLoading, showToast]);
 
 
-  const updateFirestoreCart = useCallback(async (newCart: CartItem[]) => {
+  const updateFirestoreCart = React.useCallback(async (newCart: CartItem[]) => {
     if (!currentUser) return;
     try {
       const userDocRef = doc(db, 'users', currentUser.uid);
@@ -138,7 +139,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   }, [currentUser, showToast]);
 
-  const totalCartItems = useMemo(() => {
+  const totalCartItems = React.useMemo(() => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   }, [cartItems]);
   

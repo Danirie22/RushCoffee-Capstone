@@ -1,4 +1,6 @@
-import React from 'react';
+
+
+import * as React from 'react';
 
 const AboutPage: React.FC = () => (
     <div className="flex flex-col items-center justify-center rounded-lg bg-white p-8 shadow-sm text-center min-h-[60vh]">

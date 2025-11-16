@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+import * as React from 'react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { useAuth } from './AuthContext';
@@ -32,10 +33,10 @@ interface OrderContextType {
   isHistoryLoading: boolean;
 }
 
-const OrderContext = createContext<OrderContextType | undefined>(undefined);
+const OrderContext = React.createContext<OrderContextType | undefined>(undefined);
 
 export const useOrder = () => {
-    const context = useContext(OrderContext);
+    const context = React.useContext(OrderContext);
     if (context === undefined) {
         throw new Error('useOrder must be used within an OrderProvider');
     }
@@ -43,17 +44,17 @@ export const useOrder = () => {
 };
 
 interface OrderProviderProps {
-    children: ReactNode;
+    children: React.ReactNode;
 }
 
 export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
-    const [activeOrder, setActiveOrder] = useState<QueueItem | null>(null);
-    const [orderHistory, setOrderHistory] = useState<QueueItem[]>([]);
-    const [isHistoryLoading, setIsHistoryLoading] = useState(true);
+    const [activeOrder, setActiveOrder] = React.useState<QueueItem | null>(null);
+    const [orderHistory, setOrderHistory] = React.useState<QueueItem[]>([]);
+    const [isHistoryLoading, setIsHistoryLoading] = React.useState(true);
     const { currentUser } = useAuth();
 
     // Fetch order history for logged-in user
-    useEffect(() => {
+    React.useEffect(() => {
         if (currentUser) {
             const fetchHistory = async () => {
                 setIsHistoryLoading(true);
@@ -93,7 +94,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
     }, [currentUser]);
 
     // Simulate order status progression for the active order
-    useEffect(() => {
+    React.useEffect(() => {
         if (activeOrder && activeOrder.status !== 'completed') {
             const sequence: QueueItem['status'][] = ['waiting', 'preparing', 'ready', 'completed'];
             const currentStatus = activeOrder.status;

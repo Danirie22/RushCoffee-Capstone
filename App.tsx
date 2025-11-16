@@ -1,5 +1,7 @@
 
-import React from 'react';
+
+
+import * as React from 'react';
 import { HashRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import Header from './src/components/layout/Header';
@@ -30,6 +32,8 @@ import AdminProductsPage from './src/pages/Admin/AdminProductsPage';
 import AdminAnalyticsPage from './src/pages/Admin/AdminAnalyticsPage';
 import AdminFeedbackPage from './src/pages/Admin/AdminFeedbackPage';
 import AdminSettingsPage from './src/pages/Admin/AdminSettingsPage';
+import TermsPage from './src/pages/Home/TermsPage';
+import PrivacyPolicyPage from './src/pages/Home/PrivacyPolicyPage';
 
 // Placeholder for pages that are not yet created
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
@@ -100,8 +104,8 @@ const AppContent: React.FC = () => {
         <Route path="/rewards" element={<RewardsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/faq" element={<FAQPage />} />
-        <Route path="/terms" element={<ComingSoon title="Terms of Service" />} />
-        <Route path="/privacy" element={<ComingSoon title="Privacy Policy" />} />
+        <Route path="/terms" element={<TermsPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/cookies" element={<ComingSoon title="Cookie Policy" />} />
         
         {/* Admin Routes */}
