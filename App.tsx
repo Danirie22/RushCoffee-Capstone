@@ -12,7 +12,7 @@ import QueuePage from './src/pages/Queue/QueuePage';
 import RewardsPage from './src/pages/Rewards/RewardsPage';
 import ProfilePage from './src/pages/Profile/ProfilePage';
 import AboutPage from './src/pages/Home/AboutPage';
-import ContactPage from './src/pages/Home/ContactPage';
+import ContactPage from './pages/ContactPage';
 import FAQPage from './src/pages/Home/FAQPage';
 import { AuthProvider } from './src/context/AuthContext';
 import { CartProvider, useCart } from './src/context/CartContext';

@@ -1,16 +1,7 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { 
-    // FIX: The `User` type from 'firebase/auth' is not a value, so it must be imported as a type.
-    type User as FirebaseUser,
-    onAuthStateChanged,
-    createUserWithEmailAndPassword,
-    signInWithEmailAndPassword,
-    signOut,
-    setPersistence,
-    browserSessionPersistence,
-    browserLocalPersistence
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc, serverTimestamp, increment } from 'firebase/firestore';
+import { User, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence, browserSessionPersistence, browserLocalPersistence } from 'firebase/auth';
+import { doc, setDoc, getDoc, updateDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import { QueueItem } from './OrderContext';
 import { AvailableReward, tierThresholds } from '../data/mockRewards';
@@ -62,9 +53,8 @@ interface AuthContextType {
     register: (email: string, password: string, firstName: string, lastName: string, phone: string) => Promise<void>;
     login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
     logout: () => Promise<void>;
-    processNewOrderForUser: (order: QueueItem) => Promise<void>;
-    redeemReward: (reward: AvailableReward) => Promise<void>;
     updateUserProfile: (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => Promise<void>;
+    updateUserPhoto: (photoURL: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,40 +76,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user: FirebaseUser | null) => {
+        let unsubscribeFromFirestore: Unsubscribe | undefined;
+
+        const unsubscribeFromAuth = onAuthStateChanged(auth, async (user: User | null) => {
+            if (unsubscribeFromFirestore) {
+                unsubscribeFromFirestore();
+            }
+
             if (user) {
                 const userDocRef = doc(db, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    const userProfile: UserProfile = {
-                        uid: user.uid,
-                        email: user.email,
-                        firstName: data.firstName || 'User',
-                        lastName: data.lastName || '',
-                        phone: data.phone || '',
-                        photoURL: data.photoURL,
-                        createdAt: data.createdAt?.toDate() || new Date(),
-                        role: data.role,
-                        totalOrders: data.totalOrders ?? 0,
-                        totalSpent: data.totalSpent ?? 0,
-                        currentPoints: data.currentPoints ?? 0,
-                        lifetimePoints: data.lifetimePoints ?? 0,
-                        tier: data.tier || 'bronze',
-                        rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({ ...h, date: h.date.toDate() })).sort((a: any, b: any) => b.date - a.date),
-                        preferences: data.preferences || { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } },
-                    };
-                    setCurrentUser(userProfile);
-                } else {
+                unsubscribeFromFirestore = onSnapshot(userDocRef, (userDoc) => {
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        const userProfile: UserProfile = {
+                            uid: user.uid,
+                            email: user.email,
+                            firstName: data.firstName || 'User',
+                            lastName: data.lastName || '',
+                            phone: data.phone || '',
+                            photoURL: data.photoURL,
+                            createdAt: data.createdAt?.toDate() || new Date(),
+                            role: data.role,
+                            totalOrders: data.totalOrders ?? 0,
+                            totalSpent: data.totalSpent ?? 0,
+                            currentPoints: data.currentPoints ?? 0,
+                            lifetimePoints: data.lifetimePoints ?? 0,
+                            tier: data.tier || 'bronze',
+                            rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({ ...h, date: h.date.toDate() })).sort((a: any, b: any) => b.date - a.date),
+                            preferences: data.preferences || { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } },
+                        };
+                        setCurrentUser(userProfile);
+                    } else {
+                        setCurrentUser(null);
+                    }
+                    setLoading(false);
+                }, (error) => {
+                    console.error("Error listening to user document:", error);
                     setCurrentUser(null);
-                }
+                    setLoading(false);
+                });
             } else {
                 setCurrentUser(null);
+                setLoading(false);
             }
-            setLoading(false);
         });
 
-        return unsubscribe;
+        return () => {
+            unsubscribeFromAuth();
+            if (unsubscribeFromFirestore) {
+                unsubscribeFromFirestore();
+            }
+        };
     }, []);
 
     const register = async (email: string, password: string, firstName: string, lastName: string, phone: string) => {
@@ -161,78 +168,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const logout = async () => {
         await signOut(auth);
     };
-
-    const processNewOrderForUser = async (order: QueueItem) => {
-        if (!currentUser) return;
-        
-        const pointsEarned = Math.floor(order.totalAmount / 10);
-        const newRewardEntry: RewardHistory = {
-            id: `rh-${Date.now()}`,
-            type: 'earned',
-            points: pointsEarned,
-            description: `Purchase - Order #${order.orderNumber}`,
-            date: new Date(),
-        };
-
-        const newLifetimePoints = currentUser.lifetimePoints + pointsEarned;
-        let newTier = currentUser.tier;
-        if (currentUser.tier === 'bronze' && newLifetimePoints >= tierThresholds.silver.min) newTier = 'silver';
-        if (currentUser.tier === 'silver' && newLifetimePoints >= tierThresholds.gold.min) newTier = 'gold';
-
-        const updatedProfile: UserProfile = {
-            ...currentUser,
-            totalOrders: currentUser.totalOrders + 1,
-            totalSpent: currentUser.totalSpent + order.totalAmount,
-            currentPoints: currentUser.currentPoints + pointsEarned,
-            lifetimePoints: newLifetimePoints,
-            tier: newTier,
-            rewardsHistory: [newRewardEntry, ...currentUser.rewardsHistory],
-        };
-        setCurrentUser(updatedProfile);
-        
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userDocRef, {
-            totalOrders: increment(1),
-            totalSpent: increment(order.totalAmount),
-            currentPoints: increment(pointsEarned),
-            lifetimePoints: increment(pointsEarned),
-            tier: newTier,
-            rewardsHistory: [newRewardEntry, ...currentUser.rewardsHistory]
-        });
-    };
-
-    const redeemReward = async (reward: AvailableReward) => {
-        if (!currentUser || currentUser.currentPoints < reward.pointsCost) return;
-
-        const newHistoryEntry: RewardHistory = {
-            id: `rh-${Date.now()}`,
-            type: 'redeemed',
-            points: -reward.pointsCost,
-            description: `${reward.name} Redeemed`,
-            date: new Date(),
-        };
-        
-        const updatedProfile: UserProfile = {
-            ...currentUser,
-            currentPoints: currentUser.currentPoints - reward.pointsCost,
-            rewardsHistory: [newHistoryEntry, ...currentUser.rewardsHistory],
-        };
-        setCurrentUser(updatedProfile);
-        
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userDocRef, {
-            currentPoints: increment(-reward.pointsCost),
-            rewardsHistory: [newHistoryEntry, ...currentUser.rewardsHistory],
-        });
-    };
     
     const updateUserProfile = async (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => {
         if (!currentUser) return;
-        setCurrentUser(prev => prev ? { ...prev, ...updates } : null);
         
         const userDocRef = doc(db, 'users', currentUser.uid);
         await updateDoc(userDocRef, updates);
     };
+
+    const updateUserPhoto = async (photoURL: string) => {
+        if (!currentUser) return;
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        await updateDoc(userDocRef, { photoURL });
+    };
+
 
     const value = {
         currentUser,
@@ -240,9 +189,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         register,
         login,
         logout,
-        processNewOrderForUser,
-        redeemReward,
         updateUserProfile,
+        updateUserPhoto,
     };
 
     return (

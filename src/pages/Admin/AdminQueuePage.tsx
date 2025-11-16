@@ -1,12 +1,14 @@
 
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, runTransaction, getDoc, increment } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, runTransaction, getDoc, increment, arrayUnion } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { QueueItem } from '../../context/OrderContext';
 import QueueColumn from '../../components/admin/QueueColumn';
 import { Loader2, Coffee } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
+import { tierThresholds } from '../../data/mockRewards';
+import { UserProfile } from '../../context/AuthContext';
 
 type OrderStatus = 'waiting' | 'preparing' | 'ready' | 'completed';
 
@@ -16,11 +18,10 @@ const AdminQueuePage: React.FC = () => {
     const { showToast } = useCart();
 
     useEffect(() => {
-        // The original query with `where("status", "in", ...)` and `orderBy("timestamp", ...)` requires a composite index.
-        // To avoid this, we fetch the documents matching the status and sort them on the client side.
         const q = query(
             collection(db, "orders"),
-            where("status", "in", ["waiting", "preparing", "ready"])
+            where("status", "in", ["waiting", "preparing", "ready"]),
+            orderBy("timestamp", "asc")
         );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -33,9 +34,6 @@ const AdminQueuePage: React.FC = () => {
                 } as QueueItem);
             });
             
-            // Sort client-side by timestamp in ascending order
-            activeOrders.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-
             setOrders(activeOrders);
             setIsLoading(false);
         }, (error) => {
@@ -56,33 +54,69 @@ const AdminQueuePage: React.FC = () => {
                     throw new Error("Order does not exist!");
                 }
                 
-                const orderData = orderDoc.data();
+                const orderData = orderDoc.data() as QueueItem;
+                const currentStatus = orderData.status;
 
+                // --- INVENTORY DEDUCTION LOGIC ---
                 // Deduct stock only when moving from 'waiting' to 'preparing'
-                if (orderData.status === 'waiting' && newStatus === 'preparing') {
+                if (currentStatus === 'waiting' && newStatus === 'preparing') {
                     for (const item of orderData.orderItems) {
                         const productRef = doc(db, "products", item.productId);
                         const productDoc = await transaction.get(productRef);
 
                         if (productDoc.exists() && productDoc.data().recipe) {
-                            const product = productDoc.data();
-                            for (const recipeItem of product.recipe) {
+                            for (const recipeItem of productDoc.data().recipe) {
                                 const ingredientRef = doc(db, "ingredients", recipeItem.ingredientId);
                                 const amountToDeduct = recipeItem.quantity * item.quantity;
                                 
                                 const ingredientDoc = await transaction.get(ingredientRef);
-                                if (!ingredientDoc.exists()) {
-                                    throw new Error(`Ingredient '${recipeItem.ingredientId}' not found in inventory.`);
-                                }
-
-                                const currentStock = ingredientDoc.data().stock;
-                                if (currentStock < amountToDeduct) {
-                                    throw new Error(`Insufficient stock for '${ingredientDoc.data().name}'. Required: ${amountToDeduct}, Available: ${currentStock}.`);
-                                }
+                                if (!ingredientDoc.exists()) throw new Error(`Ingredient '${recipeItem.ingredientId}' not found.`);
+                                if (ingredientDoc.data().stock < amountToDeduct) throw new Error(`Insufficient stock for '${ingredientDoc.data().name}'.`);
                                 
                                 transaction.update(ingredientRef, { stock: increment(-amountToDeduct) });
                             }
                         }
+                    }
+                }
+                
+                // --- REWARDS & STATS LOGIC ---
+                // Award points only when moving to 'completed'
+                if (newStatus === 'completed' && currentStatus !== 'completed') {
+                    const userRef = doc(db, "users", orderData.userId);
+                    const userDoc = await transaction.get(userRef);
+
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data() as UserProfile;
+                        
+                        // Calculate points based on tier
+                        let pointsMultiplier = 1;
+                        if (userData.tier === 'silver') pointsMultiplier = 1.5;
+                        if (userData.tier === 'gold') pointsMultiplier = 2;
+                        
+                        const pointsEarned = Math.floor(orderData.totalAmount / 10) * pointsMultiplier;
+
+                        // Check for tier upgrade
+                        const newLifetimePoints = userData.lifetimePoints + pointsEarned;
+                        let newTier = userData.tier;
+                        if (newTier === 'bronze' && newLifetimePoints >= tierThresholds.silver.min) newTier = 'silver';
+                        if (newTier === 'silver' && newLifetimePoints >= tierThresholds.gold.min) newTier = 'gold';
+
+                        const rewardHistoryEntry = {
+                            id: `rh-${Date.now()}`,
+                            type: 'earned' as const,
+                            points: pointsEarned,
+                            description: `Order #${orderData.orderNumber}`,
+                            date: new Date(),
+                        };
+
+                        transaction.update(userRef, {
+                            totalOrders: increment(1),
+                            totalSpent: increment(orderData.totalAmount),
+                            currentPoints: increment(pointsEarned),
+                            lifetimePoints: increment(pointsEarned),
+                            tier: newTier,
+                            rewardsHistory: arrayUnion(rewardHistoryEntry)
+                        });
                     }
                 }
 

@@ -13,6 +13,7 @@ import EditProfileForm from '../../components/profile/EditProfileForm';
 import OrderHistory from '../../components/profile/OrderHistory';
 import SettingsSection from '../../components/profile/SettingsSection';
 import FeedbackSection from '../../components/profile/FeedbackSection';
+import OrderHistoryCardSkeleton from '../../components/profile/OrderHistoryCardSkeleton';
 import { UserProfile } from '../../context/AuthContext';
 import { useAuth } from '../../context/AuthContext';
 import { useOrder } from '../../context/OrderContext';
@@ -22,8 +23,8 @@ import { useCart } from '../../context/CartContext';
 type Tab = 'overview' | 'orders' | 'settings' | 'feedback';
 
 const ProfilePage: React.FC = () => {
-  const { currentUser, updateUserProfile } = useAuth();
-  const { orderHistory } = useOrder();
+  const { currentUser, updateUserProfile, updateUserPhoto } = useAuth();
+  const { orderHistory, isHistoryLoading } = useOrder();
   
   const [user, setUser] = useState<UserProfile | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
@@ -36,7 +37,7 @@ const ProfilePage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { showToast } = useCart();
+  const { showToast, addToCart } = useCart();
 
   useEffect(() => {
     setUser(currentUser);
@@ -83,22 +84,32 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleUploadPhoto = () => {
-    if (!photoFile || !user) return;
+    if (!photoFile || !user || !updateUserPhoto) return;
     setIsUploading(true);
-    // Simulate upload
-    setTimeout(() => {
-        const reader = new FileReader();
-        reader.readAsDataURL(photoFile);
-        reader.onloadend = () => {
-            // This is a mock update. A real app would get a URL from a storage service.
-            // For now, we update the local user state. In a full app, this would also call a context update function.
-            setUser({ ...user, photoURL: reader.result as string });
+    
+    const reader = new FileReader();
+    reader.readAsDataURL(photoFile);
+    reader.onloadend = async () => {
+        const base64Photo = reader.result as string;
+        try {
+            await updateUserPhoto(base64Photo);
             setIsUploading(false);
             setIsPhotoModalOpen(false);
             setPhotoFile(null);
             showToast('Profile photo updated!');
-        };
-    }, 1500);
+        } catch (error) {
+            console.error("Error updating photo:", error);
+            showToast('Failed to update photo.');
+            setIsUploading(false);
+        }
+    };
+  };
+
+  const handleOrderAgain = () => {
+    if (favoriteProduct) {
+        // Add the default (Grande) size to cart
+        addToCart(favoriteProduct, favoriteProduct.sizes[0]);
+    }
   };
 
   if (!user) {
@@ -119,7 +130,13 @@ const ProfilePage: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'orders':
-        return <OrderHistory orders={orderHistory} />;
+        return isHistoryLoading ? (
+          <div className="space-y-4">
+            {Array.from({ length: 5 }).map((_, i) => <OrderHistoryCardSkeleton key={i} />)}
+          </div>
+        ) : (
+          <OrderHistory orders={orderHistory} />
+        );
       case 'settings':
         return <SettingsSection preferences={user.preferences} onUpdatePreferences={handleUpdatePreferences} />;
       case 'feedback':
@@ -146,7 +163,16 @@ const ProfilePage: React.FC = () => {
                   </ul>
                 </Card>
               )}
-              <OrderHistory orders={orderHistory} limit={3} showViewAll onViewAll={() => setActiveTab('orders')} />
+              {isHistoryLoading ? (
+                 <Card>
+                    <h3 className="font-display text-xl font-bold text-coffee-900">Recent Orders</h3>
+                    <div className="mt-4 space-y-4">
+                        {Array.from({ length: 3 }).map((_, i) => <OrderHistoryCardSkeleton key={i} />)}
+                    </div>
+                 </Card>
+              ) : (
+                <OrderHistory orders={orderHistory} limit={3} showViewAll onViewAll={() => setActiveTab('orders')} />
+              )}
             </div>
             <div className="space-y-6 lg:col-span-1">
               {favoriteProduct && (
@@ -157,7 +183,7 @@ const ProfilePage: React.FC = () => {
                     <div>
                       <p className="font-semibold text-gray-800">{favoriteProduct.name}</p>
                       <p className="text-sm text-gray-500">{favoriteProduct.category}</p>
-                       <Button size="sm" variant="secondary" className="mt-2">Order Again</Button>
+                       <Button size="sm" variant="secondary" className="mt-2" onClick={handleOrderAgain}>Order Again</Button>
                     </div>
                   </div>
                 </Card>

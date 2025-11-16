@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { QueueItem } from '../../context/OrderContext';
 import OrderCard from './OrderCard';
 
@@ -24,9 +25,19 @@ const QueueColumn: React.FC<QueueColumnProps> = ({ title, orders, onUpdateStatus
                 {title} <span className="text-base font-medium text-gray-500">({orders.length})</span>
             </h2>
             <div className="flex-grow space-y-4 overflow-y-auto">
-                {orders.map(order => (
-                    <OrderCard key={order.orderNumber} order={order} onUpdateStatus={onUpdateStatus} />
-                ))}
+                <AnimatePresence>
+                    {orders.map(order => (
+                        <motion.div
+                            key={order.id}
+                            layout
+                            initial={{ opacity: 0, y: 50, scale: 0.3 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+                        >
+                            <OrderCard order={order} onUpdateStatus={onUpdateStatus} />
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
                  {orders.length === 0 && (
                     <div className="flex h-32 items-center justify-center text-sm text-gray-500">
                         No orders in this stage.

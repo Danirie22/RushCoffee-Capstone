@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Search, ArrowUpDown, Check, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -16,6 +17,24 @@ const sortOptionsList = [
     { value: 'name-asc', label: 'Name: A-Z' },
     { value: 'name-desc', label: 'Name: Z-A' },
 ];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+  },
+};
 
 const MenuPage: React.FC = () => {
     const { products, isLoading, error } = useProduct();
@@ -186,16 +205,22 @@ const MenuPage: React.FC = () => {
                                 <p className="mt-2">{error}</p>
                             </div>
                         ) : filteredAndSortedProducts.length > 0 ? (
-                            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                            <motion.div
+                                className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+                                variants={containerVariants}
+                                initial="hidden"
+                                animate="visible"
+                            >
                                 {filteredAndSortedProducts.map(product => (
-                                    <ProductCard
-                                        key={product.id}
-                                        product={product}
-                                        onAddToCart={addToCart}
-                                        isLoggedIn={!!currentUser}
-                                    />
+                                    <motion.div key={product.id} variants={itemVariants} layout className="flex">
+                                        <ProductCard
+                                            product={product}
+                                            onAddToCart={addToCart}
+                                            isLoggedIn={!!currentUser}
+                                        />
+                                    </motion.div>
                                 ))}
-                            </div>
+                            </motion.div>
                         ) : (
                             <div className="flex flex-col items-center justify-center py-20 text-center">
                                 <Search className="h-24 w-24 text-gray-300" />

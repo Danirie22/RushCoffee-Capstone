@@ -12,6 +12,12 @@ export interface CartItem {
   quantity: number;
 }
 
+export interface ReorderItem {
+  product: Product;
+  selectedSize: ProductSize;
+  quantity: number;
+}
+
 // Simplified structure for Firestore
 interface FirestoreCartItem {
   productId: string;
@@ -26,6 +32,7 @@ interface CartContextType {
   totalCartItems: number;
   isCartLoading: boolean;
   addToCart: (product: Product, selectedSize: ProductSize) => void;
+  addMultipleToCart: (items: ReorderItem[]) => void;
   updateQuantity: (cartItemId: string, newQuantity: number) => void;
   removeFromCart: (cartItemId: string) => void;
   openCart: () => void;
@@ -60,7 +67,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   // Toast message handler
   useEffect(() => {
     if (toastMessage) {
-      const timer = setTimeout(() => setToastMessage(null), 3000);
+      const timer = setTimeout(() => setToastMessage(null), 4000); // Increased duration for longer messages
       return () => clearTimeout(timer);
     }
   }, [toastMessage]);
@@ -157,6 +164,40 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     openCart();
   };
 
+  const addMultipleToCart = (itemsToAdd: ReorderItem[]) => {
+    if (!itemsToAdd || itemsToAdd.length === 0) return;
+
+    let newCart = [...cartItems];
+    let itemsAddedCount = 0;
+    
+    itemsToAdd.forEach(item => {
+        const cartItemId = `${item.product.id}-${item.selectedSize.name}`;
+        const existingItemIndex = newCart.findIndex(cartItem => cartItem.id === cartItemId);
+
+        if (existingItemIndex > -1) {
+            const existingItem = newCart[existingItemIndex];
+            const newQuantity = existingItem.quantity + item.quantity;
+            newCart[existingItemIndex] = {
+                ...existingItem,
+                quantity: Math.min(newQuantity, item.product.stock),
+            };
+        } else {
+            newCart.push({
+                id: cartItemId,
+                product: item.product,
+                selectedSize: item.selectedSize,
+                quantity: Math.min(item.quantity, item.product.stock),
+            });
+        }
+        itemsAddedCount += item.quantity;
+    });
+
+    setCartItems(newCart);
+    updateFirestoreCart(newCart);
+    showToast(`${itemsAddedCount} item(s) added to your cart!`);
+    openCart();
+  };
+
   const updateQuantity = (cartItemId: string, newQuantity: number) => {
      let newCart;
     if (newQuantity < 1) {
@@ -195,6 +236,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     totalCartItems,
     isCartLoading,
     addToCart,
+    addMultipleToCart,
     updateQuantity,
     removeFromCart,
     openCart,

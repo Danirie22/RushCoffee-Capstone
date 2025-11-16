@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
@@ -58,18 +59,18 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
                 setIsHistoryLoading(true);
                 try {
                     const ordersRef = collection(db, 'orders');
-                    // The original query required a composite index. To fix this without database changes,
-                    // we fetch the user's orders and sort them on the client side.
+                    // Removed orderBy from query to avoid needing a composite index
                     const q = query(ordersRef, where('userId', '==', currentUser.uid));
                     const querySnapshot = await getDocs(q);
 
-                    const unsortedHistory = querySnapshot.docs.map(doc => ({
+                    const history = querySnapshot.docs.map(doc => ({
                         id: doc.id,
                         ...doc.data(),
                         timestamp: doc.data().timestamp.toDate(),
                     })) as QueueItem[];
-
-                    const history = unsortedHistory.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+                    
+                    // Perform sorting on the client-side
+                    history.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
                     
                     setOrderHistory(history);
 

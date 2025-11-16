@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy, doc, updateDoc, increment } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, doc, updateDoc, increment, getDocs, addDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { Loader2, Package, AlertTriangle, CheckCircle, XCircle, Plus } from 'lucide-react';
 import UpdateStockModal from '../../components/admin/UpdateStockModal';
+import { mockIngredients } from '../../data/mockIngredients';
 
 export interface Ingredient {
     id: string;
@@ -20,20 +21,39 @@ const AdminInventoryPage: React.FC = () => {
     const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
 
     useEffect(() => {
-        const q = query(collection(db, "ingredients"), orderBy("name", "asc"));
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const ingredientsList: Ingredient[] = [];
-            querySnapshot.forEach((doc) => {
-                ingredientsList.push({ id: doc.id, ...doc.data() } as Ingredient);
+        const seedAndFetch = async () => {
+            const ingredientsCollectionRef = collection(db, "ingredients");
+            const initialSnapshot = await getDocs(query(ingredientsCollectionRef));
+
+            if (initialSnapshot.empty) {
+                console.log("Seeding ingredients...");
+                const promises = mockIngredients.map(ingredient => addDoc(ingredientsCollectionRef, ingredient));
+                await Promise.all(promises);
+            }
+
+            const q = query(collection(db, "ingredients"), orderBy("name", "asc"));
+            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+                const ingredientsList: Ingredient[] = [];
+                querySnapshot.forEach((doc) => {
+                    ingredientsList.push({ id: doc.id, ...doc.data() } as Ingredient);
+                });
+                setIngredients(ingredientsList);
+                setIsLoading(false);
+            }, (error) => {
+                console.error("Error fetching inventory: ", error);
+                setIsLoading(false);
             });
-            setIngredients(ingredientsList);
-            setIsLoading(false);
-        }, (error) => {
-            console.error("Error fetching inventory: ", error);
-            setIsLoading(false);
+            return unsubscribe;
+        };
+
+        let unsubscribe: () => void;
+        seedAndFetch().then(unsub => {
+            if (unsub) unsubscribe = unsub;
         });
 
-        return () => unsubscribe();
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
     }, []);
 
     const handleOpenModal = (ingredient: Ingredient) => {

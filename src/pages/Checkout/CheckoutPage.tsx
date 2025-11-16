@@ -16,7 +16,7 @@ import { useOrder, QueueItem } from '../../context/OrderContext';
 const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
     const { cartItems, showToast, totalCartItems, clearCart } = useCart();
-    const { currentUser, processNewOrderForUser } = useAuth();
+    const { currentUser } = useAuth();
     const { setActiveOrder, addOrderToHistory } = useOrder();
     
     // State
@@ -117,11 +117,12 @@ const CheckoutPage: React.FC = () => {
                 estimatedTime: 10,
             };
             
+            // This now just creates the order document.
+            // A backend Cloud Function will be triggered on document creation
+            // to securely process points and update user stats.
             await addOrderToHistory(orderData as Omit<QueueItem, 'id'|'timestamp'>);
-            if (processNewOrderForUser) {
-                // We need to construct a temporary full QueueItem for the stats update
-                 await processNewOrderForUser({ ...orderData, id: 'temp', timestamp: new Date() });
-            }
+            
+            // The user's profile will update automatically via the new real-time listener in AuthContext.
             
             clearCart();
             setIsProcessing(false);

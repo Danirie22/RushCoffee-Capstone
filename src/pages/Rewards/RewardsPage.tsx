@@ -1,8 +1,9 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Gift, TrendingUp, Star, Coffee, Award, Check, X, QrCode, ClipboardCopy, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, addDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 
 import Header from '../../components/layout/Header';
@@ -15,7 +16,8 @@ import RewardsTierBadge from '../../components/rewards/RewardsTierBadge';
 import RewardCard from '../../components/rewards/RewardCard';
 import RewardsHistory from '../../components/rewards/RewardsHistory';
 import ProductCardSkeleton from '../../components/menu/ProductCardSkeleton'; // Re-using for rewards
-import { tierThresholds, AvailableReward, RewardHistory } from '../../data/mockRewards';
+import { tierThresholds, AvailableReward } from '../../data/mockRewards';
+import { mockAvailableRewards } from '../../data/mockAvailableRewards';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
@@ -43,9 +45,26 @@ const sortOptions = [
 ];
 const filterCategories = ['all', 'drink', 'food', 'discount'];
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+  },
+};
 
 const RewardsPage: React.FC = () => {
-    const { currentUser, redeemReward } = useAuth();
+    const { currentUser } = useAuth();
     const [availableRewards, setAvailableRewards] = useState<AvailableReward[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -66,11 +85,19 @@ const RewardsPage: React.FC = () => {
     const { showToast } = useCart();
 
     useEffect(() => {
-        const fetchRewards = async () => {
+        const seedAndFetchRewards = async () => {
             setIsLoading(true);
             setError(null);
             try {
                 const rewardsCollection = collection(db, 'rewards');
+                const initialSnapshot = await getDocs(query(rewardsCollection));
+
+                if (initialSnapshot.empty) {
+                    console.log("Seeding rewards...");
+                    const promises = mockAvailableRewards.map(reward => addDoc(rewardsCollection, reward));
+                    await Promise.all(promises);
+                }
+                
                 const q = query(rewardsCollection, orderBy('displayOrder', 'asc'));
                 const querySnapshot = await getDocs(q);
                 const rewardsList = querySnapshot.docs.map(doc => ({
@@ -85,7 +112,7 @@ const RewardsPage: React.FC = () => {
                 setIsLoading(false);
             }
         };
-        fetchRewards();
+        seedAndFetchRewards();
     }, []);
     
     const nextTier = currentUser ? (currentUser.tier === 'bronze' ? 'silver' : currentUser.tier === 'silver' ? 'gold' : null) : null;
@@ -113,16 +140,14 @@ const RewardsPage: React.FC = () => {
     };
 
     const handleConfirmRedeem = async () => {
-        if (!selectedReward || !redeemReward) return;
-
-        await redeemReward(selectedReward);
+        if (!selectedReward) return;
+        
+        // This logic is being moved to a secure backend Cloud Function.
+        // The client should make a secure call to this function (e.g., using Firebase's callable functions).
+        // For now, we'll disable the client-side action and inform the user.
         
         setShowRedeemModal(false);
-        showToast('Reward redeemed successfully!');
-
-        const code = `RUSH-${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
-        setRedemptionCode(code);
-        setShowCodeModal(true);
+        showToast('Redemption feature is being updated for improved security. Please check back later!');
     };
     
     const handleCloseCodeModal = () => {
@@ -235,7 +260,12 @@ const RewardsPage: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        <motion.div
+                            className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                        >
                             {isLoading ? (
                                 Array.from({ length: 3 }).map((_, i) => <ProductCardSkeleton key={i} />)
                             ) : error ? (
@@ -246,12 +276,13 @@ const RewardsPage: React.FC = () => {
                                 </div>
                             ) : filteredAndSortedRewards.length > 0 ? (
                                 filteredAndSortedRewards.map(reward => (
-                                    <RewardCard 
-                                        key={reward.id}
-                                        reward={reward}
-                                        currentPoints={currentUser.currentPoints}
-                                        onRedeem={handleRedeemClick}
-                                    />
+                                    <motion.div key={reward.id} variants={itemVariants} layout className="h-full">
+                                        <RewardCard 
+                                            reward={reward}
+                                            currentPoints={currentUser.currentPoints}
+                                            onRedeem={handleRedeemClick}
+                                        />
+                                    </motion.div>
                                 ))
                             ) : (
                                 <div className="flex flex-col items-center justify-center gap-2 py-16 text-center md:col-span-2 lg:col-span-3">
@@ -260,7 +291,7 @@ const RewardsPage: React.FC = () => {
                                     <p className="text-sm text-gray-500">No rewards match your current filter. Check back soon!</p>
                                 </div>
                             )}
-                        </div>
+                        </motion.div>
                     </div>
                 </section>
                 

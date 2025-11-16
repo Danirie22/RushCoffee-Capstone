@@ -7,6 +7,8 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../../../components/ui/Card';
 import Button from '../ui/Button';
 import { QueueItem } from '../../context/OrderContext';
+import { useCart, ReorderItem } from '../../context/CartContext';
+import { useProduct } from '../../context/ProductContext';
 
 const statusConfig = {
   waiting: {
@@ -47,9 +49,58 @@ const ModernQueueCard: React.FC<{ order: QueueItem }> = ({ order }) => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const navigate = useNavigate();
   const config = statusConfig[order.status];
+  const { addMultipleToCart, showToast } = useCart();
+  const { products } = useProduct();
+
+  const handleReorder = () => {
+    const itemsToAdd: ReorderItem[] = [];
+    const unavailableItems: string[] = [];
+
+    for (const orderItem of order.orderItems) {
+      const product = products.find(p => p.id === orderItem.productId);
+
+      if (!product || !product.available || product.stock === 0) {
+        unavailableItems.push(orderItem.productName);
+        continue;
+      }
+
+      const sizeMatch = orderItem.productName.match(/\((Grande|Venti)\)$/);
+      const sizeName = sizeMatch ? sizeMatch[1] : null;
+
+      if (!sizeName) {
+        unavailableItems.push(orderItem.productName);
+        continue;
+      }
+
+      const selectedSize = product.sizes.find(s => s.name === sizeName);
+
+      if (!selectedSize) {
+        unavailableItems.push(orderItem.productName);
+        continue;
+      }
+
+      itemsToAdd.push({
+        product,
+        selectedSize,
+        quantity: orderItem.quantity,
+      });
+    }
+
+    if (itemsToAdd.length > 0) {
+      addMultipleToCart(itemsToAdd);
+    }
+
+    if (unavailableItems.length > 0) {
+      showToast(`Could not add: ${unavailableItems.join(', ')}. They may be unavailable.`);
+    }
+  };
   
   const handleActionClick = () => {
-    navigate('/menu');
+    if (order.status === 'completed') {
+        navigate('/menu');
+    } else {
+        handleReorder();
+    }
   };
 
   return (
