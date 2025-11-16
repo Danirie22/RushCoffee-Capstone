@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, FormEvent } from 'react';
 import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
@@ -32,10 +33,11 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({ user }) => {
 
   useEffect(() => {
     if (!user) return;
+    // The query requires a composite index if we combine `where` and `orderBy` on different fields.
+    // To avoid this, we fetch based on the user and sort the results on the client.
     const q = query(
       collection(db, "feedback"),
-      where("userId", "==", user.uid),
-      orderBy("createdAt", "desc")
+      where("userId", "==", user.uid)
     );
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
       const history: Feedback[] = [];
@@ -48,6 +50,9 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({ user }) => {
           updatedAt: data.updatedAt?.toDate(),
         } as Feedback);
       });
+      // Sort client-side
+      history.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+
       setFeedbackHistory(history);
       setIsLoadingHistory(false);
     });

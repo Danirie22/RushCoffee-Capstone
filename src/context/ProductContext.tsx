@@ -1,7 +1,8 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
-import { Product } from '../data/mockProducts';
+import { Product, mockProducts } from '../data/mockProducts';
 
 interface ProductContextType {
     products: Product[];
@@ -36,14 +37,17 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
                 const productsCollection = collection(db, 'products');
                 const q = query(productsCollection, orderBy('displayOrder', 'asc'));
                 const productSnapshot = await getDocs(q);
+                
                 const productList = productSnapshot.docs.map(doc => ({
                     id: doc.id,
                     ...doc.data()
                 })) as Product[];
                 setProducts(productList);
+
             } catch (err) {
-                console.error("Error fetching products: ", err);
-                setError("Failed to load products from the database.");
+                console.error("Error fetching products from Firestore: ", err);
+                setError("Could not connect to the database. Please check your connection and try again.");
+                setProducts([]); // Set to empty array on error
             } finally {
                 setIsLoading(false);
             }

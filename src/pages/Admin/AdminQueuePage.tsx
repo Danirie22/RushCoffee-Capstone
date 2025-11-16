@@ -6,18 +6,21 @@ import { db } from '../../firebaseConfig';
 import { QueueItem } from '../../context/OrderContext';
 import QueueColumn from '../../components/admin/QueueColumn';
 import { Loader2, Coffee } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
 
 type OrderStatus = 'waiting' | 'preparing' | 'ready' | 'completed';
 
 const AdminQueuePage: React.FC = () => {
     const [orders, setOrders] = useState<QueueItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const { showToast } = useCart();
 
     useEffect(() => {
+        // The original query with `where("status", "in", ...)` and `orderBy("timestamp", ...)` requires a composite index.
+        // To avoid this, we fetch the documents matching the status and sort them on the client side.
         const q = query(
             collection(db, "orders"),
-            where("status", "in", ["waiting", "preparing", "ready"]),
-            orderBy("timestamp", "asc")
+            where("status", "in", ["waiting", "preparing", "ready"])
         );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -29,6 +32,10 @@ const AdminQueuePage: React.FC = () => {
                     timestamp: doc.data().timestamp.toDate(),
                 } as QueueItem);
             });
+            
+            // Sort client-side by timestamp in ascending order
+            activeOrders.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
             setOrders(activeOrders);
             setIsLoading(false);
         }, (error) => {
@@ -62,6 +69,17 @@ const AdminQueuePage: React.FC = () => {
                             for (const recipeItem of product.recipe) {
                                 const ingredientRef = doc(db, "ingredients", recipeItem.ingredientId);
                                 const amountToDeduct = recipeItem.quantity * item.quantity;
+                                
+                                const ingredientDoc = await transaction.get(ingredientRef);
+                                if (!ingredientDoc.exists()) {
+                                    throw new Error(`Ingredient '${recipeItem.ingredientId}' not found in inventory.`);
+                                }
+
+                                const currentStock = ingredientDoc.data().stock;
+                                if (currentStock < amountToDeduct) {
+                                    throw new Error(`Insufficient stock for '${ingredientDoc.data().name}'. Required: ${amountToDeduct}, Available: ${currentStock}.`);
+                                }
+                                
                                 transaction.update(ingredientRef, { stock: increment(-amountToDeduct) });
                             }
                         }
@@ -71,8 +89,9 @@ const AdminQueuePage: React.FC = () => {
                 // Finally, update the order status
                 transaction.update(orderRef, { status: newStatus });
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error updating order status and stock: ", error);
+            showToast(error.message || 'Failed to update order. Please check inventory.');
         }
     };
 

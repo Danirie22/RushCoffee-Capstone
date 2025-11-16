@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { 
-    User as FirebaseUser,
+    // FIX: The `User` type from 'firebase/auth' is not a value, so it must be imported as a type.
+    type User as FirebaseUser,
     onAuthStateChanged,
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
