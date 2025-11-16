@@ -1,5 +1,3 @@
-
-
 import React, { useState, useEffect, FormEvent } from 'react';
 import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
@@ -9,11 +7,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import { UserProfile } from '../../context/AuthContext';
 import { Feedback } from '../../data/mockFeedback';
-import Card from '../../../components/ui/Card';
+import Card from '../ui/Card';
 import Button from '../ui/Button';
 import StarRating from '../feedback/StarRating';
 import { useCart } from '../../context/CartContext';
-import Badge from '../../../components/ui/Badge';
+import Badge from '../ui/Badge';
 
 interface FeedbackSectionProps {
   user: UserProfile;

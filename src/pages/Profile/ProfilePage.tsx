@@ -1,11 +1,10 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { format } from 'date-fns';
 import { User, ShoppingBag, Settings, Edit, Mail, Phone, Calendar, Star, Loader2, Upload, MessageSquare } from 'lucide-react';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
-import Card from '../../../components/ui/Card';
+import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import ProfileHeader from '../../components/profile/ProfileHeader';

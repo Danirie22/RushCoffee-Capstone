@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { BarChart, Users, Coffee, DollarSign } from 'lucide-react';
-import Card from '../../../components/ui/Card';
+import Card from '../../components/ui/Card';
 
 const AdminDashboardPage: React.FC = () => {
     return (

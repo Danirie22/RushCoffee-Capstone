@@ -1,11 +1,8 @@
-
-
-
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { X, Minus, Plus, Trash2, ArrowRight, Coffee } from 'lucide-react';
 import { Product, ProductSize } from '../../data/mockProducts';
-import Badge from '../../../components/ui/Badge';
+import Badge from '../ui/Badge';
 import RushCoffeeLogo from '../layout/RushCoffeeLogo';
 
 export interface CartItem {

@@ -1,12 +1,11 @@
-
 import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
-import Card from '../../../components/ui/Card';
-import Badge from '../../../components/ui/Badge';
+import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
 import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
 
 // A simple SVG for the Google icon

@@ -1,9 +1,8 @@
-
 import * as React from 'react';
 import { Plus, Minus, History } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { RewardHistory } from '../../data/mockRewards';
-import Card from '../../../components/ui/Card';
+import Card from '../ui/Card';
 
 interface RewardsHistoryProps {
   history: RewardHistory[];

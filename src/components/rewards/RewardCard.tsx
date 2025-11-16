@@ -1,10 +1,8 @@
-
-
 import * as React from 'react';
 import { Gift, Lock } from 'lucide-react';
 import { AvailableReward } from '../../data/mockRewards';
-import Card from '../../../components/ui/Card';
-import Badge from '../../../components/ui/Badge';
+import Card from '../ui/Card';
+import Badge from '../ui/Badge';
 
 interface RewardCardProps {
   reward: AvailableReward;

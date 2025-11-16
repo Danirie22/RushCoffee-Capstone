@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Gift, Loader2, Check, ClipboardCopy, AlertCircle } from 'lucide-react';
@@ -7,7 +6,7 @@ import { db } from '../../firebaseConfig';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
-import Card from '../../../components/ui/Card';
+import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import RewardsTierBadge from '../../components/rewards/RewardsTierBadge';

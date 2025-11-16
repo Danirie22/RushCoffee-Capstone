@@ -1,11 +1,10 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Coffee, Zap, Users, Lightbulb, MapPin, Phone, Clock, ArrowRight, Star, Watch } from 'lucide-react';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
-import Card from '../../../components/ui/Card';
+import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
 

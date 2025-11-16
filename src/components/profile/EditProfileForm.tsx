@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, FormEvent } from 'react';
 import { User, Phone, Mail, Save, X, Loader2 } from 'lucide-react';
 import { UserProfile } from '../../context/AuthContext';
-import Card from '../../../components/ui/Card';
+import Card from '../ui/Card';
 import Button from '../ui/Button';
 import { useCart } from '../../context/CartContext';
 

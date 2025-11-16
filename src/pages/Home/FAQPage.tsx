@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, ChevronDown, MessageCircle, HelpCircle } from 'lucide-react';
@@ -6,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
-import Card from '../../../components/ui/Card';
+import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 
 const faqData = [

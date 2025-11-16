@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Settings } from 'lucide-react';
-import Card from '../../../components/ui/Card';
+import Card from '../../components/ui/Card';
 
 const AdminSettingsPage: React.FC = () => {
     return (

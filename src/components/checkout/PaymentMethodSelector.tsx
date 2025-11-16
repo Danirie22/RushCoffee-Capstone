@@ -1,8 +1,6 @@
-
-
 import * as React from 'react';
 import { Wallet, Banknote, Check } from 'lucide-react';
-import Badge from '../../../components/ui/Badge';
+import Badge from '../ui/Badge';
 
 interface PaymentMethodSelectorProps {
   selectedMethod: 'gcash' | 'cash' | null;

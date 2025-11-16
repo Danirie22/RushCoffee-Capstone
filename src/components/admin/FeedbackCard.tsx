@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import { FeedbackWithUser } from '../../pages/Admin/AdminFeedbackPage';
 import StarRating from '../feedback/StarRating';
-import Badge from '../../../components/ui/Badge';
+import Badge from '../ui/Badge';
 
 interface FeedbackCardProps {
   feedback: FeedbackWithUser;

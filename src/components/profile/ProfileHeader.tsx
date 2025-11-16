@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Camera, Coffee, CircleDollarSign, Calendar, Shield } from 'lucide-react';
 import { format } from 'date-fns';
 import { UserProfile } from '../../context/AuthContext';
-import Badge from '../../../components/ui/Badge';
+import Badge from '../ui/Badge';
 
 interface ProfileHeaderProps {
   user: UserProfile;

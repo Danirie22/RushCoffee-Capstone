@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { Bell, Mail, Palette, Shield, Key, Download, Trash2, AlertTriangle, Eye, EyeOff, Loader2, Save } from 'lucide-react';
 import { UserPreferences } from '../../data/mockUser';
-import Card from '../../../components/ui/Card';
+import Card from '../ui/Card';
 import Button from '../ui/Button';
 import Modal from '../ui/Modal';
 import { useCart } from '../../context/CartContext';

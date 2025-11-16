@@ -1,13 +1,10 @@
-
-
-
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 
 import { Product, ProductSize } from '../../data/mockProducts';
-import Card from '../../../components/ui/Card';
-import Badge from '../../../components/ui/Badge';
+import Card from '../ui/Card';
+import Badge from '../ui/Badge';
 
 interface ProductCardProps {
   product: Product;
