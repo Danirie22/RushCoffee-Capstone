@@ -1,8 +1,7 @@
 
-import React, { useState, useEffect, FormEvent } from 'react';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../firebaseConfig';
-import { X, Plus, Trash2, Loader2, Save } from 'lucide-react';
+import React, { useState, useEffect, FormEvent, useRef } from 'react';
+import { db, storage } from '../../firebaseConfig';
+import { X, Plus, Trash2, Loader2, Save, Image as ImageIcon } from 'lucide-react';
 
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
@@ -40,10 +39,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addProduct, updateProduct } = useProduct();
   const { showToast } = useCart();
+  
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchIngredients = async () => {
-      const querySnapshot = await getDocs(collection(db, "ingredients"));
+      const querySnapshot = await db.collection("ingredients").get();
       const ingredientsList = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as (Ingredient & { id: string })[];
       setIngredients(ingredientsList);
     };
@@ -55,10 +58,26 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
   useEffect(() => {
     if (productToEdit) {
       setFormData(productToEdit);
+      setImagePreview(productToEdit.imageUrl);
     } else {
       setFormData(initialFormData);
+      setImagePreview(null);
     }
+    setImageFile(null);
   }, [productToEdit, isOpen]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+        showToast('Image file should be less than 2MB.');
+        return;
+      }
+      setImageFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -96,13 +115,31 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    
+    let finalImageUrl = formData.imageUrl;
+
+    if (imageFile) {
+        try {
+            const storageRef = storage.ref(`product_images/${Date.now()}-${imageFile.name}`);
+            const snapshot = await storageRef.put(imageFile);
+            finalImageUrl = await snapshot.ref.getDownloadURL();
+        } catch (uploadError) {
+            console.error("Error uploading image:", uploadError);
+            showToast("Failed to upload image. Please try again.");
+            setIsSubmitting(false);
+            return;
+        }
+    }
+
+    const finalProductData = { ...formData, imageUrl: finalImageUrl };
+
     try {
       if (productToEdit) {
-        const { id, ...updateData } = { ...formData, id: productToEdit.id };
+        const { id, ...updateData } = { ...finalProductData, id: productToEdit.id };
         await updateProduct(id, updateData);
         showToast('Product updated successfully!');
       } else {
-        await addProduct(formData);
+        await addProduct(finalProductData);
         showToast('Product added successfully!');
       }
       onClose();
@@ -136,10 +173,28 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
           <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
           <textarea name="description" id="description" value={formData.description} onChange={handleChange} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
         </div>
+        
         <div>
-            <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700">Image URL</label>
-            <input type="text" name="imageUrl" id="imageUrl" value={formData.imageUrl} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required />
+            <label className="block text-sm font-medium text-gray-700">Product Image</label>
+            <div
+                className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-primary-500 bg-gray-50"
+                onClick={() => fileInputRef.current?.click()}
+            >
+                <input ref={fileInputRef} id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/png, image/jpeg" onChange={handleImageChange} />
+                {imagePreview ? (
+                    <img src={imagePreview} alt="Product preview" className="max-h-40 rounded-lg object-contain" />
+                ) : (
+                    <div className="space-y-1 text-center">
+                        <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                        <p className="text-sm text-gray-600">
+                            <span className="font-medium text-primary-600">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-gray-500">PNG or JPG up to 2MB</p>
+                    </div>
+                )}
+            </div>
         </div>
+        
         {/* Pricing & Stock */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>

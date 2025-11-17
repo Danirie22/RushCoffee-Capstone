@@ -1,6 +1,8 @@
 
+
 import React, { useState, FormEvent, useEffect } from 'react';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+// FIX: Use compat import for v8 syntax.
+import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
@@ -30,11 +32,11 @@ const RespondFeedbackModal: React.FC<RespondFeedbackModalProps> = ({ isOpen, onC
         e.preventDefault();
         setIsSaving(true);
         try {
-            const feedbackRef = doc(db, 'feedback', feedback.id);
-            await updateDoc(feedbackRef, {
+            const feedbackRef = db.collection('feedback').doc(feedback.id);
+            await feedbackRef.update({
                 response,
                 status,
-                updatedAt: serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
             });
             onClose();
         } catch (error) {

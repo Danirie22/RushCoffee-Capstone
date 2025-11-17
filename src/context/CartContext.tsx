@@ -1,6 +1,5 @@
 
 import * as React from 'react';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { Product, ProductSize } from '../data/mockProducts';
 import { useAuth } from './AuthContext';
@@ -84,9 +83,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
       setIsCartLoading(true);
       try {
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
-        if (userDoc.exists()) {
+        const userDocRef = db.collection('users').doc(currentUser.uid);
+        const userDoc = await userDocRef.get();
+        if (userDoc.exists) {
           const firestoreCart = userDoc.data()?.cart as FirestoreCartItem[] || [];
           
           const hydratedCart = firestoreCart.map(item => {
@@ -126,13 +125,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const updateFirestoreCart = React.useCallback(async (newCart: CartItem[]) => {
     if (!currentUser) return;
     try {
-      const userDocRef = doc(db, 'users', currentUser.uid);
+      const userDocRef = db.collection('users').doc(currentUser.uid);
       const firestoreCart: FirestoreCartItem[] = newCart.map(item => ({
         productId: item.product.id,
         sizeName: item.selectedSize.name,
         quantity: item.quantity,
       }));
-      await updateDoc(userDocRef, { cart: firestoreCart });
+      await userDocRef.update({ cart: firestoreCart });
     } catch (error) {
       console.error("Error updating Firestore cart:", error);
       showToast("Error saving your cart.");

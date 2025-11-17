@@ -1,7 +1,8 @@
 
+
 import * as React from 'react';
 import { HashRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import HomePage from '../pages/HomePage';
+import HomePage from './pages/HomePage';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import LoginPage from './pages/Auth/LoginPage';
@@ -13,7 +14,7 @@ import QueuePage from './pages/Queue/QueuePage';
 import RewardsPage from './pages/Rewards/RewardsPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 import AboutPage from './pages/Home/AboutPage';
-import ContactPage from '../pages/ContactPage';
+import ContactPage from './pages/ContactPage';
 import FAQPage from './pages/Home/FAQPage';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';

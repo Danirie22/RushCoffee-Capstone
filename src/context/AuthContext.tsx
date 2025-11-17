@@ -1,8 +1,7 @@
 
-
 import * as React from 'react';
-import { User, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence, browserSessionPersistence, browserLocalPersistence, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, getAdditionalUserInfo } from 'firebase/auth';
-import { doc, setDoc, getDoc, updateDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
+// FIX: Update Firebase imports for v8 compatibility.
+import firebase from 'firebase/compat/app';
 import { auth, db } from '../firebaseConfig';
 import { QueueItem } from './OrderContext';
 import { AvailableReward, tierThresholds } from '../data/mockRewards';
@@ -79,18 +78,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
-        let unsubscribeFromFirestore: Unsubscribe | undefined;
+        // FIX: Use `() => void` for Unsubscribe type, as onSnapshot returns this in v8.
+        let unsubscribeFromFirestore: (() => void) | undefined;
 
-        const unsubscribeFromAuth = onAuthStateChanged(auth, async (user: User | null) => {
+        // FIX: Use auth.onAuthStateChanged and firebase.User for v8.
+        const unsubscribeFromAuth = auth.onAuthStateChanged(async (user: firebase.User | null) => {
             if (unsubscribeFromFirestore) {
                 unsubscribeFromFirestore();
             }
 
             if (user) {
-                const userDocRef = doc(db, 'users', user.uid);
-                unsubscribeFromFirestore = onSnapshot(userDocRef, (userDoc) => {
-                    if (userDoc.exists()) {
-                        const data = userDoc.data();
+                // FIX: Use v8 Firestore syntax for document reference and snapshot.
+                const userDocRef = db.collection('users').doc(user.uid);
+                unsubscribeFromFirestore = userDocRef.onSnapshot((userDoc) => {
+                    if (userDoc.exists) {
+                        const data = userDoc.data()!;
                         const userProfile: UserProfile = {
                             uid: user.uid,
                             email: user.email,
@@ -135,8 +137,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }, []);
 
     const register = async (email: string, password: string, firstName: string, lastName: string, phone: string) => {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
+        // FIX: Use auth.createUserWithEmailAndPassword for v8.
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user!;
 
         const welcomeBonus: RewardHistory = {
             id: `rh-${Date.now()}`,
@@ -161,14 +164,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             cart: [],
         };
         
-        await setDoc(doc(db, 'users', user.uid), userProfileData);
+        // FIX: Use v8 Firestore syntax to set document.
+        await db.collection('users').doc(user.uid).set(userProfileData);
     };
     
     const signInWithGoogle = async () => {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-        const additionalUserInfo = getAdditionalUserInfo(result);
+        // FIX: Use firebase.auth.GoogleAuthProvider for v8.
+        const provider = new firebase.auth.GoogleAuthProvider();
+        // FIX: Use auth.signInWithPopup for v8 and get additionalUserInfo from result.
+        const result = await auth.signInWithPopup(provider);
+        const user = result.user!;
+        const additionalUserInfo = result.additionalUserInfo;
 
         if (additionalUserInfo?.isNewUser) {
             // New user: create their profile document
@@ -199,36 +205,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 cart: [],
             };
 
-            await setDoc(doc(db, 'users', user.uid), userProfileData);
+            // FIX: Use v8 Firestore syntax to set document.
+            await db.collection('users').doc(user.uid).set(userProfileData);
         }
         // Existing users will be handled by the onAuthStateChanged listener
     };
 
     const login = async (email: string, password: string, rememberMe: boolean) => {
-        const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
-        await setPersistence(auth, persistence);
-        await signInWithEmailAndPassword(auth, email, password);
+        // FIX: Use firebase.auth.Auth.Persistence for v8.
+        const persistence = rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+        // FIX: Use auth.setPersistence for v8.
+        await auth.setPersistence(persistence);
+        // FIX: Use auth.signInWithEmailAndPassword for v8.
+        await auth.signInWithEmailAndPassword(email, password);
     };
 
     const logout = async () => {
-        await signOut(auth);
+        // FIX: Use auth.signOut for v8.
+        await auth.signOut();
     };
     
     const sendPasswordReset = async (email: string) => {
-        await sendPasswordResetEmail(auth, email);
+        // FIX: Use auth.sendPasswordResetEmail for v8.
+        await auth.sendPasswordResetEmail(email);
     };
     
     const updateUserProfile = async (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => {
         if (!currentUser) return;
         
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userDocRef, updates);
+        // FIX: Use v8 Firestore syntax to update document.
+        const userDocRef = db.collection('users').doc(currentUser.uid);
+        await userDocRef.update(updates);
     };
 
     const updateUserPhoto = async (photoURL: string) => {
         if (!currentUser) return;
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userDocRef, { photoURL });
+        // FIX: Use v8 Firestore syntax to update document.
+        const userDocRef = db.collection('users').doc(currentUser.uid);
+        await userDocRef.update({ photoURL });
     };
 
 

@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { collection, getDocs, query, orderBy, setDoc, doc, addDoc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 import { Product, mockProducts } from '../data/mockProducts';
 
@@ -37,9 +36,9 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
         try {
-            const productsCollectionRef = collection(db, 'products');
-            const q = query(productsCollectionRef, orderBy('displayOrder', 'asc'));
-            const productSnapshot = await getDocs(q);
+            const productsCollectionRef = db.collection('products');
+            const q = productsCollectionRef.orderBy('displayOrder', 'asc');
+            const productSnapshot = await q.get();
 
             const productList = productSnapshot.docs.map(doc => ({
                 id: doc.id,
@@ -58,23 +57,45 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
 
     useEffect(() => {
         const seedAndFetchProducts = async () => {
-            const productsCollectionRef = collection(db, 'products');
-            const initialSnapshot = await getDocs(query(productsCollectionRef));
+            const productsCollectionRef = db.collection('products');
+            const initialSnapshot = await productsCollectionRef.get();
             if (initialSnapshot.empty) {
                 console.log("Products collection is empty. Seeding database...");
                 try {
-                    const promises = mockProducts.map(product => {
+                    const batch = db.batch();
+                    mockProducts.forEach(product => {
                         const { id, ...productData } = product;
-                        const docRef = doc(productsCollectionRef, id);
-                        return setDoc(docRef, productData);
+                        const docRef = productsCollectionRef.doc(id);
+                        batch.set(docRef, productData);
                     });
-                    await Promise.all(promises);
+                    await batch.commit();
                     console.log("Seeding complete.");
                 } catch (seedError) {
                     console.error("Error seeding products:", seedError);
                     setError("Failed to seed the database.");
                     setIsLoading(false);
                     return;
+                }
+            } else {
+                // Non-destructive migration: Add missing products from the mock list
+                const existingProductIds = new Set(initialSnapshot.docs.map(doc => doc.id));
+                const missingProducts = mockProducts.filter(p => !existingProductIds.has(p.id));
+
+                if (missingProducts.length > 0) {
+                    console.log(`Found ${missingProducts.length} missing products. Adding them now...`);
+                    try {
+                        const batch = db.batch();
+                        missingProducts.forEach(product => {
+                            const { id, ...productData } = product;
+                            const docRef = productsCollectionRef.doc(id);
+                            batch.set(docRef, productData);
+                        });
+                        await batch.commit();
+                        console.log("Missing products added successfully.");
+                    } catch (migrationError) {
+                        console.error("Error adding missing products:", migrationError);
+                        // Don't block the app, just log the error. The fetch below will proceed.
+                    }
                 }
             }
             await fetchProducts();
@@ -85,7 +106,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
 
     const addProduct = async (productData: ProductFormData) => {
         try {
-            await addDoc(collection(db, 'products'), productData);
+            await db.collection('products').add(productData);
             await fetchProducts();
         } catch (e) {
             console.error("Error adding product: ", e);
@@ -95,8 +116,8 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
 
     const updateProduct = async (productId: string, productData: Partial<ProductFormData>) => {
         try {
-            const productDocRef = doc(db, 'products', productId);
-            await updateDoc(productDocRef, productData);
+            const productDocRef = db.collection('products').doc(productId);
+            await productDocRef.update(productData);
             await fetchProducts();
         } catch (e) {
             console.error("Error updating product: ", e);
@@ -106,8 +127,8 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
 
     const deleteProduct = async (productId: string) => {
         try {
-            const productDocRef = doc(db, 'products', productId);
-            await deleteDoc(productDocRef);
+            const productDocRef = db.collection('products').doc(productId);
+            await productDocRef.delete();
             await fetchProducts();
         } catch (e) {
             console.error("Error deleting product: ", e);

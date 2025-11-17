@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Clock, Gift, Wallet, Users, Bell, ArrowRight, Quote, ChevronsDown } from 'lucide-react';
@@ -99,6 +94,22 @@ const testimonials = [
 const HomePage: React.FC = () => {
     const { currentUser } = useAuth();
     const orderNowPath = currentUser ? '/menu' : '/auth/register';
+
+    const handleScrollTo = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+        e.preventDefault();
+        const element = document.getElementById(id);
+        if (element) {
+            // Header height is 5rem (80px), adding 1rem (16px) for margin.
+            const headerOffset = 96; 
+            const elementPosition = element.getBoundingClientRect().top;
+            const offsetPosition = elementPosition + window.scrollY - headerOffset;
+      
+            window.scrollTo({
+                 top: offsetPosition,
+                 behavior: "smooth"
+            });
+        }
+    };
     
     return (
         <div className="bg-white">
@@ -139,6 +150,7 @@ const HomePage: React.FC = () => {
                                     </Link>
                                     <a
                                         href="#features"
+                                        onClick={(e) => handleScrollTo(e, 'features')}
                                         className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-primary-600 px-8 py-4 text-lg font-semibold text-primary-600 transition-transform hover:scale-105 hover:bg-primary-50 sm:w-auto"
                                     >
                                         <ChevronsDown className="h-5 w-5" />

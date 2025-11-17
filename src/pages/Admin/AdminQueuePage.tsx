@@ -1,7 +1,8 @@
 
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, runTransaction, getDoc, increment, arrayUnion } from 'firebase/firestore';
+// FIX: Update Firebase imports for v8 compatibility.
+import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
 import { QueueItem } from '../../context/OrderContext';
 import QueueColumn from '../../components/admin/QueueColumn';
@@ -19,13 +20,13 @@ const AdminQueuePage: React.FC = () => {
     const { showToast } = useCart();
 
     useEffect(() => {
-        const q = query(
-            collection(db, "orders"),
-            where("status", "in", ["waiting", "preparing", "ready"])
-            // orderBy("timestamp", "asc") // Removed to avoid composite index. Sorting is now done client-side.
-        );
+        // FIX: Use v8 Firestore query syntax.
+        const q = db
+            .collection("orders")
+            .where("status", "in", ["waiting", "preparing", "ready"]);
 
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        // FIX: Use v8 onSnapshot syntax.
+        const unsubscribe = q.onSnapshot((querySnapshot) => {
             const activeOrders: QueueItem[] = [];
             querySnapshot.forEach((doc) => {
                 activeOrders.push({
@@ -49,11 +50,13 @@ const AdminQueuePage: React.FC = () => {
     
     const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
         try {
-            await runTransaction(db, async (transaction) => {
-                const orderRef = doc(db, "orders", orderId);
+            // FIX: Use v8 db.runTransaction syntax.
+            await db.runTransaction(async (transaction) => {
+                // FIX: Use v8 doc reference syntax.
+                const orderRef = db.collection("orders").doc(orderId);
                 const orderDoc = await transaction.get(orderRef);
 
-                if (!orderDoc.exists()) {
+                if (!orderDoc.exists) {
                     throw new Error("Order does not exist!");
                 }
                 
@@ -64,19 +67,20 @@ const AdminQueuePage: React.FC = () => {
                 // Deduct stock only when moving from 'waiting' to 'preparing'
                 if (currentStatus === 'waiting' && newStatus === 'preparing') {
                     for (const item of orderData.orderItems) {
-                        const productRef = doc(db, "products", item.productId);
+                        const productRef = db.collection("products").doc(item.productId);
                         const productDoc = await transaction.get(productRef);
 
-                        if (productDoc.exists() && productDoc.data().recipe) {
-                            for (const recipeItem of productDoc.data().recipe) {
-                                const ingredientRef = doc(db, "ingredients", recipeItem.ingredientId);
+                        if (productDoc.exists && productDoc.data()!.recipe) {
+                            for (const recipeItem of productDoc.data()!.recipe) {
+                                const ingredientRef = db.collection("ingredients").doc(recipeItem.ingredientId);
                                 const amountToDeduct = recipeItem.quantity * item.quantity;
                                 
                                 const ingredientDoc = await transaction.get(ingredientRef);
-                                if (!ingredientDoc.exists()) throw new Error(`Ingredient '${recipeItem.ingredientId}' not found.`);
-                                if (ingredientDoc.data().stock < amountToDeduct) throw new Error(`Insufficient stock for '${ingredientDoc.data().name}'.`);
+                                if (!ingredientDoc.exists) throw new Error(`Ingredient '${recipeItem.ingredientId}' not found.`);
+                                if (ingredientDoc.data()!.stock < amountToDeduct) throw new Error(`Insufficient stock for '${ingredientDoc.data()!.name}'.`);
                                 
-                                transaction.update(ingredientRef, { stock: increment(-amountToDeduct) });
+                                // FIX: Use firebase.firestore.FieldValue.increment for v8.
+                                transaction.update(ingredientRef, { stock: firebase.firestore.FieldValue.increment(-amountToDeduct) });
                             }
                         }
                     }
@@ -85,10 +89,10 @@ const AdminQueuePage: React.FC = () => {
                 // --- REWARDS & STATS LOGIC ---
                 // Award points only when moving to 'completed'
                 if (newStatus === 'completed' && currentStatus !== 'completed') {
-                    const userRef = doc(db, "users", orderData.userId);
+                    const userRef = db.collection("users").doc(orderData.userId);
                     const userDoc = await transaction.get(userRef);
 
-                    if (userDoc.exists()) {
+                    if (userDoc.exists) {
                         const userData = userDoc.data() as UserProfile;
                         
                         // Calculate points based on tier
@@ -112,13 +116,14 @@ const AdminQueuePage: React.FC = () => {
                             date: new Date(),
                         };
 
+                        // FIX: Use firebase.firestore.FieldValue for increment and arrayUnion in v8.
                         transaction.update(userRef, {
-                            totalOrders: increment(1),
-                            totalSpent: increment(orderData.totalAmount),
-                            currentPoints: increment(pointsEarned),
-                            lifetimePoints: increment(pointsEarned),
+                            totalOrders: firebase.firestore.FieldValue.increment(1),
+                            totalSpent: firebase.firestore.FieldValue.increment(orderData.totalAmount),
+                            currentPoints: firebase.firestore.FieldValue.increment(pointsEarned),
+                            lifetimePoints: firebase.firestore.FieldValue.increment(pointsEarned),
                             tier: newTier,
-                            rewardsHistory: arrayUnion(rewardHistoryEntry)
+                            rewardsHistory: firebase.firestore.FieldValue.arrayUnion(rewardHistoryEntry)
                         });
                     }
                 }

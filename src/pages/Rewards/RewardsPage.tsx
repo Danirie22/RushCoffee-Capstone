@@ -1,7 +1,9 @@
+
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Gift, Loader2, Check, ClipboardCopy, AlertCircle } from 'lucide-react';
-import { collection, getDocs, query, orderBy, addDoc, doc, updateDoc, increment, arrayUnion } from 'firebase/firestore';
+// FIX: Use compat import for v8 syntax.
+import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
 
 import Header from '../../components/layout/Header';
@@ -32,17 +34,17 @@ const RewardsPage: React.FC = () => {
     React.useEffect(() => {
         const seedAndFetchRewards = async () => {
             setIsLoading(true);
-            const rewardsCollectionRef = collection(db, 'rewards');
-            const snapshot = await getDocs(query(rewardsCollectionRef));
+            const rewardsCollectionRef = db.collection('rewards');
+            const snapshot = await rewardsCollectionRef.get();
 
             if (snapshot.empty) {
                 console.log("Seeding available rewards...");
-                const promises = mockAvailableRewards.map(reward => addDoc(rewardsCollectionRef, reward));
+                const promises = mockAvailableRewards.map(reward => rewardsCollectionRef.add(reward));
                 await Promise.all(promises);
             }
 
-            const q = query(rewardsCollectionRef, orderBy('displayOrder'));
-            const rewardsSnapshot = await getDocs(q);
+            const q = rewardsCollectionRef.orderBy('displayOrder');
+            const rewardsSnapshot = await q.get();
             const rewardsList = rewardsSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
@@ -71,7 +73,7 @@ const RewardsPage: React.FC = () => {
                 throw new Error("You don't have enough points.");
             }
 
-            const userDocRef = doc(db, 'users', currentUser.uid);
+            const userDocRef = db.collection('users').doc(currentUser.uid);
             const redemptionHistory = {
                 id: `rh-${Date.now()}`,
                 type: 'redeemed' as const,
@@ -80,9 +82,9 @@ const RewardsPage: React.FC = () => {
                 date: new Date(),
             };
 
-            await updateDoc(userDocRef, {
-                currentPoints: increment(-selectedReward.pointsCost),
-                rewardsHistory: arrayUnion(redemptionHistory)
+            await userDocRef.update({
+                currentPoints: firebase.firestore.FieldValue.increment(-selectedReward.pointsCost),
+                rewardsHistory: firebase.firestore.FieldValue.arrayUnion(redemptionHistory)
             });
 
             setRedeemCode(`RC-REDEEM-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);

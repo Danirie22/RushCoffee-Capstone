@@ -109,7 +109,7 @@ const AboutPage: React.FC = () => {
             </div>
             <div className="animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>
               <img 
-                src="https://images.unsplash.com/photo-1559925393-8be0ec4767c8?q=80&w=1200" 
+                src="/Menu/free-pastry-item.jpg" 
                 alt="Inside Rush Coffee shop"
                 className="h-80 w-full rounded-lg object-cover shadow-xl"
               />
@@ -160,7 +160,7 @@ const AboutPage: React.FC = () => {
               </ul>
               <Button size="lg" className="mt-8">Get Directions</Button>
             </div>
-            <div className="h-96 overflow-hidden rounded-lg shadow-xl"><div className="flex h-full w-full items-center justify-center bg-gray-300 bg-cover bg-center" style={{backgroundImage: "url('https://images.unsplash.com/photo-1552526881-72f220377224?q=80&w=1200')"}}><span className="rounded bg-white/80 px-4 py-2 font-semibold text-gray-700 backdrop-blur-sm">[Google Maps Placeholder]</span></div></div>
+            <div className="h-96 overflow-hidden rounded-lg shadow-xl"><div className="flex h-full w-full items-center justify-center bg-gray-300 bg-cover bg-center" style={{backgroundImage: "url('/Coffee Based/coffee-jelly.jpg')"}}><span className="rounded bg-white/80 px-4 py-2 font-semibold text-gray-700 backdrop-blur-sm">[Google Maps Placeholder]</span></div></div>
           </div>
         </section>
 

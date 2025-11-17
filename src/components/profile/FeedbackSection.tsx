@@ -1,5 +1,8 @@
+
+
 import React, { useState, useEffect, FormEvent } from 'react';
-import { collection, query, where, orderBy, onSnapshot, addDoc, serverTimestamp } from 'firebase/firestore';
+// FIX: Use compat import for v8 syntax.
+import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
 import { formatDistanceToNow } from 'date-fns';
 import { Send, Loader2, ChevronDown, MessageSquare } from 'lucide-react';
@@ -33,11 +36,9 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({ user }) => {
     if (!user) return;
     // The query requires a composite index if we combine `where` and `orderBy` on different fields.
     // To avoid this, we fetch based on the user and sort the results on the client.
-    const q = query(
-      collection(db, "feedback"),
-      where("userId", "==", user.uid)
-    );
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const q = db.collection("feedback").where("userId", "==", user.uid);
+
+    const unsubscribe = q.onSnapshot((querySnapshot) => {
       const history: Feedback[] = [];
       querySnapshot.forEach((doc) => {
         const data = doc.data();
@@ -66,14 +67,14 @@ const FeedbackSection: React.FC<FeedbackSectionProps> = ({ user }) => {
     
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, "feedback"), {
+      await db.collection("feedback").add({
         userId: user.uid,
         rating,
         category,
         comment,
         status: 'pending',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
       showToast('Feedback submitted successfully!');
       setRating(0);

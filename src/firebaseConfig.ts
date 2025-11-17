@@ -1,16 +1,22 @@
-import { initializeApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import firebase from "firebase/compat/app";
+import "firebase/compat/auth";
+import "firebase/compat/firestore";
+import "firebase/compat/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDzEay5fGB-2r5_V9UXOO8cOv-nJdHwDRg",
   authDomain: "rush-coffee.firebaseapp.com",
   projectId: "rush-coffee",
-  storageBucket: "rush-coffee.firebasestorage.app",
+  storageBucket: "rush-coffee.appspot.com",
   messagingSenderId: "423413538635",
   appId: "1:423413538635:web:ded0369f50c3a9086bd2ce"
 };
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// FIX: Use compat library imports for v8 syntax.
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
+}
+
+export const auth = firebase.auth();
+export const db = firebase.firestore();
+export const storage = firebase.storage();

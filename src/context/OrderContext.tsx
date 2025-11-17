@@ -1,7 +1,8 @@
 
 
 import * as React from 'react';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
+// FIX: Use compat import for v8 syntax.
+import firebase from 'firebase/compat/app';
 import { db } from '../firebaseConfig';
 import { useAuth } from './AuthContext';
 
@@ -59,10 +60,10 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
             const fetchHistory = async () => {
                 setIsHistoryLoading(true);
                 try {
-                    const ordersRef = collection(db, 'orders');
+                    const ordersRef = db.collection('orders');
                     // Removed orderBy from query to avoid needing a composite index
-                    const q = query(ordersRef, where('userId', '==', currentUser.uid));
-                    const querySnapshot = await getDocs(q);
+                    const q = ordersRef.where('userId', '==', currentUser.uid);
+                    const querySnapshot = await q.get();
 
                     const history = querySnapshot.docs.map(doc => ({
                         id: doc.id,
@@ -113,9 +114,9 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
     const addOrderToHistory = async (orderData: Omit<QueueItem, 'id' | 'timestamp'>) => {
         try {
-            const docRef = await addDoc(collection(db, 'orders'), {
+            const docRef = await db.collection('orders').add({
                 ...orderData,
-                timestamp: serverTimestamp(),
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             });
 
             // Optimistically update local state

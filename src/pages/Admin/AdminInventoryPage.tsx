@@ -1,6 +1,8 @@
 
+
 import React, { useState, useEffect } from 'react';
-import { collection, onSnapshot, query, orderBy, doc, updateDoc, increment, getDocs, addDoc } from 'firebase/firestore';
+// FIX: Use compat import for v8 syntax.
+import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
 import { Loader2, Package, AlertTriangle, CheckCircle, XCircle, Plus } from 'lucide-react';
 import UpdateStockModal from '../../components/admin/UpdateStockModal';
@@ -22,17 +24,17 @@ const AdminInventoryPage: React.FC = () => {
 
     useEffect(() => {
         const seedAndFetch = async () => {
-            const ingredientsCollectionRef = collection(db, "ingredients");
-            const initialSnapshot = await getDocs(query(ingredientsCollectionRef));
+            const ingredientsCollectionRef = db.collection("ingredients");
+            const initialSnapshot = await ingredientsCollectionRef.get();
 
             if (initialSnapshot.empty) {
                 console.log("Seeding ingredients...");
-                const promises = mockIngredients.map(ingredient => addDoc(ingredientsCollectionRef, ingredient));
+                const promises = mockIngredients.map(ingredient => ingredientsCollectionRef.add(ingredient));
                 await Promise.all(promises);
             }
 
-            const q = query(collection(db, "ingredients"), orderBy("name", "asc"));
-            const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const q = db.collection("ingredients").orderBy("name", "asc");
+            const unsubscribe = q.onSnapshot((querySnapshot) => {
                 const ingredientsList: Ingredient[] = [];
                 querySnapshot.forEach((doc) => {
                     ingredientsList.push({ id: doc.id, ...doc.data() } as Ingredient);
@@ -67,12 +69,12 @@ const AdminInventoryPage: React.FC = () => {
     };
 
     const handleUpdateStock = async (ingredientId: string, amount: number, type: 'add' | 'set') => {
-        const ingredientRef = doc(db, "ingredients", ingredientId);
+        const ingredientRef = db.collection("ingredients").doc(ingredientId);
         try {
             if (type === 'add') {
-                await updateDoc(ingredientRef, { stock: increment(amount) });
+                await ingredientRef.update({ stock: firebase.firestore.FieldValue.increment(amount) });
             } else {
-                await updateDoc(ingredientRef, { stock: amount });
+                await ingredientRef.update({ stock: amount });
             }
             handleCloseModal();
         } catch (error) {
