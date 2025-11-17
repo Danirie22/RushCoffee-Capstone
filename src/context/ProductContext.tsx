@@ -56,52 +56,31 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     }, []);
 
     useEffect(() => {
-        const seedAndFetchProducts = async () => {
+        const syncAndFetchProducts = async () => {
+            setIsLoading(true);
             const productsCollectionRef = db.collection('products');
-            const initialSnapshot = await productsCollectionRef.get();
-            if (initialSnapshot.empty) {
-                console.log("Products collection is empty. Seeding database...");
-                try {
-                    const batch = db.batch();
-                    mockProducts.forEach(product => {
-                        const { id, ...productData } = product;
-                        const docRef = productsCollectionRef.doc(id);
-                        batch.set(docRef, productData);
-                    });
-                    await batch.commit();
-                    console.log("Seeding complete.");
-                } catch (seedError) {
-                    console.error("Error seeding products:", seedError);
-                    setError("Failed to seed the database.");
-                    setIsLoading(false);
-                    return;
-                }
-            } else {
-                // Non-destructive migration: Add missing products from the mock list
-                const existingProductIds = new Set(initialSnapshot.docs.map(doc => doc.id));
-                const missingProducts = mockProducts.filter(p => !existingProductIds.has(p.id));
-
-                if (missingProducts.length > 0) {
-                    console.log(`Found ${missingProducts.length} missing products. Adding them now...`);
-                    try {
-                        const batch = db.batch();
-                        missingProducts.forEach(product => {
-                            const { id, ...productData } = product;
-                            const docRef = productsCollectionRef.doc(id);
-                            batch.set(docRef, productData);
-                        });
-                        await batch.commit();
-                        console.log("Missing products added successfully.");
-                    } catch (migrationError) {
-                        console.error("Error adding missing products:", migrationError);
-                        // Don't block the app, just log the error. The fetch below will proceed.
-                    }
-                }
+            
+            console.log("Syncing products with the latest mock data to ensure freshness...");
+            try {
+                const batch = db.batch();
+                mockProducts.forEach(product => {
+                    const { id, ...productData } = product;
+                    const docRef = productsCollectionRef.doc(id);
+                    batch.set(docRef, productData);
+                });
+                await batch.commit();
+                console.log("Product sync complete.");
+            } catch (syncError) {
+                console.error("Error syncing products:", syncError);
+                setError("Failed to sync the product database.");
+                setIsLoading(false);
+                return;
             }
+
             await fetchProducts();
         };
 
-        seedAndFetchProducts();
+        syncAndFetchProducts();
     }, [fetchProducts]);
 
     const addProduct = async (productData: ProductFormData) => {

@@ -1,5 +1,6 @@
 
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 // FIX: Update Firebase imports for v8 compatibility.
 import firebase from 'firebase/compat/app';
@@ -95,12 +96,23 @@ const AdminQueuePage: React.FC = () => {
                     if (userDoc.exists) {
                         const userData = userDoc.data() as UserProfile;
                         
-                        // Calculate points based on tier
+                        // Calculate points based on items
+                        let basePoints = 0;
+                        for (const item of orderData.orderItems) {
+                            if (item.productName.includes('(Grande)')) {
+                                basePoints += 4 * item.quantity;
+                            } else if (item.productName.includes('(Venti)')) {
+                                basePoints += 5 * item.quantity;
+                            }
+                        }
+
+                        // Calculate final points based on tier multiplier
                         let pointsMultiplier = 1;
                         if (userData.tier === 'silver') pointsMultiplier = 1.5;
                         if (userData.tier === 'gold') pointsMultiplier = 2;
                         
-                        const pointsEarned = Math.floor(orderData.totalAmount / 10) * pointsMultiplier;
+                        const pointsEarned = Math.floor(basePoints * pointsMultiplier);
+
 
                         // Check for tier upgrade
                         const newLifetimePoints = userData.lifetimePoints + pointsEarned;

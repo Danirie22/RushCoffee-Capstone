@@ -5,7 +5,7 @@ export const mockAvailableRewards: Omit<AvailableReward, 'id'>[] = [
   {
     name: 'Free Grande Drink',
     description: 'Redeem your points for any Grande-sized drink on our menu. A perfect treat!',
-    pointsCost: 250,
+    pointsCost: 200,
     imageUrl: '/Menu/free-grande-drink.jpg',
     category: 'drink',
     available: true,
@@ -14,7 +14,7 @@ export const mockAvailableRewards: Omit<AvailableReward, 'id'>[] = [
   {
     name: '10% Off Total Order',
     description: 'Get a 10% discount on your entire order. Great for when you\'re treating friends!',
-    pointsCost: 400,
+    pointsCost: 300,
     imageUrl: '/Menu/10-off-total-order.jpg',
     category: 'discount',
     available: true,

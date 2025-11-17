@@ -11,6 +11,7 @@ export interface Product {
   category: 'Coffee Based' | 'Non-Coffee Based' | 'Matcha Series' | 'Refreshments' | 'Meals';
   sizes: ProductSize[];
   imageUrl: string;
+  comboImageUrl?: string;
   available: boolean;
   stock: number;
   popular?: boolean;
@@ -540,7 +541,8 @@ export const mockProducts: Product[] = [
         { name: 'Ala Carte', size: 'w/ Fries', price: 119 },
         { name: 'Combo Meal', size: 'w/ Fries & Drink', price: 139 },
     ],
-    imageUrl: '/menu/ala-carte-breaded-bacon-with-white-sauce-and-fries.jpg',
+    imageUrl: '/menu/ala-carte-breaded-bacon-with-white-sauce and fries.jpg',
+    comboImageUrl: '/menu/combo-meals-breaded-bacon-with-white-sauce,-fries-and-a-drink.jpg',
     available: true,
     stock: 99,
     popular: true,
@@ -556,6 +558,7 @@ export const mockProducts: Product[] = [
         { name: 'Combo Meal', size: 'w/ Fries & Drink', price: 149 },
     ],
     imageUrl: '/menu/ala-carte-breaded-porkchop-with-white-sauce-and-fries.jpg',
+    comboImageUrl: '/menu/combo-meals-breaded-porkchop-with-white-sauce-and-fries-w-drink.jpg',
     available: true,
     stock: 99,
     popular: true,
@@ -570,7 +573,8 @@ export const mockProducts: Product[] = [
         { name: 'Ala Carte', size: 'w/ Fries', price: 119 },
         { name: 'Combo Meal', size: 'w/ Fries & Drink', price: 139 },
     ],
-    imageUrl: '/menu/ala-carte-breaded-chicken-with-white-sauce-and-fries.jpg',
+    imageUrl: '/menu/ala-carte-chicken-with-white-sauce-and-fries.jpg',
+    comboImageUrl: '/menu/combo-meals-breaded-chicken-with-white-sauce,-fries-and-a-drink.jpg',
     available: true,
     stock: 99,
     displayOrder: 37,

@@ -13,10 +13,15 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLoggedIn }) => {
-  const { name, description, category, imageUrl, available, stock, popular, new: isNew } = product;
+  const { name, description, category, imageUrl, comboImageUrl, available, stock, popular, new: isNew } = product;
   const navigate = useNavigate();
   
   const [selectedSize, setSelectedSize] = React.useState<ProductSize>(product.sizes[0]);
+
+  const displayImageUrl = 
+    selectedSize.name === 'Combo Meal' && comboImageUrl 
+    ? comboImageUrl 
+    : imageUrl;
 
   const isOutOfStock = !available || stock === 0;
 
@@ -42,7 +47,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLogge
     <Card className="flex flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-1" hover>
       <div className="relative">
         <img
-          src={imageUrl}
+          src={displayImageUrl}
           alt={name}
           className="h-48 w-full object-cover"
         />

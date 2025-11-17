@@ -94,45 +94,51 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
           ) : (
             <div className="flex-1 overflow-y-auto p-6">
               <ul className="-my-4 divide-y divide-gray-200">
-                {cartItems.map((item) => (
-                  <li key={item.id} className="relative flex items-center gap-4 py-4">
-                     <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
-                        <img src={item.product.imageUrl} alt={item.product.name} className="h-full w-full object-cover object-center"/>
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-800">{item.product.name}</h4>
-                      <p className="text-sm text-gray-500">{item.selectedSize.name} - ₱{item.selectedSize.price.toFixed(2)}</p>
+                {cartItems.map((item) => {
+                  const isCombo = item.selectedSize.name === 'Combo Meal';
+                  const displayName = isCombo ? `${item.product.name} (${item.selectedSize.name})` : item.product.name;
+                  const displayImageUrl = isCombo && item.product.comboImageUrl ? item.product.comboImageUrl : item.product.imageUrl;
 
-                      <div className="mt-2 flex items-center">
-                        <button
-                          onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                          disabled={item.quantity === 1}
-                          className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
-                          aria-label={`Decrease quantity of ${item.product.name}`}
-                        >
-                          <Minus className="h-4 w-4" />
-                        </button>
-                        <span className="w-12 text-center font-semibold text-gray-800" aria-live="polite">{item.quantity}</span>
-                        <button
-                          onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                           className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-gray-600 transition hover:bg-gray-100"
-                          aria-label={`Increase quantity of ${item.product.name}`}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
+                  return (
+                    <li key={item.id} className="relative flex items-center gap-4 py-4">
+                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
+                          <img src={displayImageUrl} alt={displayName} className="h-full w-full object-cover object-center"/>
                       </div>
-                    </div>
-                     <p className="font-semibold text-gray-900">₱{(item.selectedSize.price * item.quantity).toFixed(2)}</p>
-                     
-                     <button
-                        onClick={() => onRemoveItem(item.id)}
-                        className="absolute top-4 right-0 p-1 text-gray-400 transition-colors hover:text-red-600"
-                        aria-label={`Remove ${item.product.name} from cart`}
-                     >
-                        <Trash2 className="h-5 w-5" />
-                     </button>
-                  </li>
-                ))}
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-800">{displayName}</h4>
+                        <p className="text-sm text-gray-500">{item.selectedSize.size} - ₱{item.selectedSize.price.toFixed(2)}</p>
+
+                        <div className="mt-2 flex items-center">
+                          <button
+                            onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                            disabled={item.quantity === 1}
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-gray-600 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                            aria-label={`Decrease quantity of ${displayName}`}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <span className="w-12 text-center font-semibold text-gray-800" aria-live="polite">{item.quantity}</span>
+                          <button
+                            onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                            className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-gray-600 transition hover:bg-gray-100"
+                            aria-label={`Increase quantity of ${displayName}`}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                       <p className="font-semibold text-gray-900">₱{(item.selectedSize.price * item.quantity).toFixed(2)}</p>
+                       
+                       <button
+                          onClick={() => onRemoveItem(item.id)}
+                          className="absolute top-4 right-0 p-1 text-gray-400 transition-colors hover:text-red-600"
+                          aria-label={`Remove ${displayName} from cart`}
+                       >
+                          <Trash2 className="h-5 w-5" />
+                       </button>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           )}
