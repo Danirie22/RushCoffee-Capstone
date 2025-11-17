@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
@@ -24,10 +25,11 @@ const LoginPage: React.FC = () => {
     const [showPassword, setShowPassword] = React.useState(false);
     const [rememberMe, setRememberMe] = React.useState(false);
     const [errors, setErrors] = React.useState<{ email?: string; password?: string }>({});
-    const [apiError, setApiError] = React.useState<string | null>(null);
+    const [apiError, setApiError] = React.useState<React.ReactNode | null>(null);
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { login, signInWithGoogle } = useAuth();
 
     const validate = () => {
         const newErrors: { email?: string; password?: string } = {};
@@ -74,6 +76,20 @@ const LoginPage: React.FC = () => {
         }
     };
 
+    const handleGoogleSignIn = async () => {
+        setApiError(null);
+        setIsGoogleLoading(true);
+        try {
+            await signInWithGoogle();
+            navigate('/');
+        } catch (error: any) {
+            console.error("Google Sign-In Error: ", error.code, error.message);
+            setApiError('Failed to sign in with Google. Please try again.');
+        } finally {
+            setIsGoogleLoading(false);
+        }
+    };
+
     return (
         <div className="flex min-h-screen flex-col bg-gradient-to-br from-primary-50 via-coffee-50 to-white">
             <Header />
@@ -89,9 +105,9 @@ const LoginPage: React.FC = () => {
                         </div>
 
                         {apiError && (
-                            <div className="mb-4 flex items-center gap-2 rounded-lg bg-red-50 p-3 text-sm text-red-700" role="alert">
-                                <AlertCircle className="h-5 w-5 flex-shrink-0" />
-                                <span>{apiError}</span>
+                            <div className="mb-4 flex items-start gap-3 rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">
+                                <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                                <div>{apiError}</div>
                             </div>
                         )}
 
@@ -107,7 +123,7 @@ const LoginPage: React.FC = () => {
                                     required
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                                    className={`w-full rounded-lg border py-3 pl-10 pr-3 text-gray-400 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${errors.email ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
+                                    className={`w-full rounded-lg border py-3 pl-10 pr-3 text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${errors.email ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
                                     placeholder="Email address"
                                     aria-invalid={!!errors.email}
                                     aria-describedby="email-error"
@@ -126,7 +142,7 @@ const LoginPage: React.FC = () => {
                                     required
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    className={`w-full rounded-lg border py-3 pl-10 pr-10 text-gray-400 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${errors.password ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
+                                    className={`w-full rounded-lg border py-3 pl-10 pr-10 text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${errors.password ? 'border-red-500 ring-red-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
                                     placeholder="Password"
                                     aria-invalid={!!errors.password}
                                     aria-describedby="password-error"
@@ -143,14 +159,14 @@ const LoginPage: React.FC = () => {
                                     <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">Remember me</label>
                                 </div>
                                 <div className="text-sm">
-                                    <Link to="#" className="font-medium text-primary-600 hover:text-primary-500">Forgot your password?</Link>
+                                    <Link to="/auth/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">Forgot your password?</Link>
                                 </div>
                             </div>
 
                             <div>
                                 <button
                                     type="submit"
-                                    disabled={isLoading}
+                                    disabled={isLoading || isGoogleLoading}
                                     className="flex w-full justify-center rounded-full bg-primary-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-primary-400"
                                 >
                                     {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Login'}
@@ -164,17 +180,15 @@ const LoginPage: React.FC = () => {
                             <div className="flex-grow border-t border-gray-300"></div>
                         </div>
 
-                        <div className="relative">
-                             <button
-                                type="button"
-                                disabled
-                                className="flex w-full items-center justify-center gap-3 rounded-full border border-gray-300 px-4 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-                            >
-                                <GoogleIcon />
-                                Continue with Google
-                            </button>
-                            <Badge className="absolute -top-2 right-2 bg-gray-500 text-white text-xs px-2 py-0.5">Coming Soon</Badge>
-                        </div>
+                        <button
+                            type="button"
+                            disabled={isLoading || isGoogleLoading}
+                            onClick={handleGoogleSignIn}
+                            className="flex w-full items-center justify-center gap-3 rounded-full border border-gray-300 px-4 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                            {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleIcon />}
+                            Continue with Google
+                        </button>
 
 
                         <p className="mt-8 text-center text-sm text-gray-600">

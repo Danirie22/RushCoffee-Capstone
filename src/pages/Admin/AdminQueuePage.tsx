@@ -6,6 +6,7 @@ import { db } from '../../firebaseConfig';
 import { QueueItem } from '../../context/OrderContext';
 import QueueColumn from '../../components/admin/QueueColumn';
 import { Loader2, Coffee } from 'lucide-react';
+// FIX: The useCart hook is exported from CartContext, not AuthContext.
 import { useCart } from '../../context/CartContext';
 import { tierThresholds } from '../../data/mockRewards';
 import { UserProfile } from '../../context/AuthContext';
@@ -20,8 +21,8 @@ const AdminQueuePage: React.FC = () => {
     useEffect(() => {
         const q = query(
             collection(db, "orders"),
-            where("status", "in", ["waiting", "preparing", "ready"]),
-            orderBy("timestamp", "asc")
+            where("status", "in", ["waiting", "preparing", "ready"])
+            // orderBy("timestamp", "asc") // Removed to avoid composite index. Sorting is now done client-side.
         );
 
         const unsubscribe = onSnapshot(q, (querySnapshot) => {
@@ -34,6 +35,8 @@ const AdminQueuePage: React.FC = () => {
                 } as QueueItem);
             });
             
+            // Sort on the client-side because composite indexes are not available by default.
+            activeOrders.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
             setOrders(activeOrders);
             setIsLoading(false);
         }, (error) => {

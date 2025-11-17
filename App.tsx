@@ -1,6 +1,4 @@
 
-
-
 import * as React from 'react';
 import { HashRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -8,6 +6,7 @@ import Header from './src/components/layout/Header';
 import Footer from './src/components/layout/Footer';
 import LoginPage from './src/pages/Auth/LoginPage';
 import RegisterPage from './src/pages/Auth/RegisterPage';
+import ForgotPasswordPage from './src/pages/Auth/ForgotPasswordPage';
 import MenuPage from './src/pages/Menu/MenuPage';
 import CheckoutPage from './src/pages/Checkout/CheckoutPage';
 import QueuePage from './src/pages/Queue/QueuePage';
@@ -99,6 +98,7 @@ const AppContent: React.FC = () => {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/auth/login" element={<LoginPage />} />
         <Route path="/auth/register" element={<RegisterPage />} />
+        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/queue" element={<QueuePage />} />
         <Route path="/rewards" element={<RewardsPage />} />

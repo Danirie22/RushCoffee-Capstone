@@ -1,5 +1,4 @@
 
-
 import * as React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone, Shield } from 'lucide-react';

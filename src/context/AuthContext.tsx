@@ -1,7 +1,7 @@
 
 
 import * as React from 'react';
-import { User, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence, browserSessionPersistence, browserLocalPersistence } from 'firebase/auth';
+import { User, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence, browserSessionPersistence, browserLocalPersistence, sendPasswordResetEmail, GoogleAuthProvider, signInWithPopup, getAdditionalUserInfo } from 'firebase/auth';
 import { doc, setDoc, getDoc, updateDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import { QueueItem } from './OrderContext';
@@ -54,6 +54,8 @@ interface AuthContextType {
     register: (email: string, password: string, firstName: string, lastName: string, phone: string) => Promise<void>;
     login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
     logout: () => Promise<void>;
+    sendPasswordReset: (email: string) => Promise<void>;
+    signInWithGoogle: () => Promise<void>;
     updateUserProfile: (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => Promise<void>;
     updateUserPhoto: (photoURL: string) => Promise<void>;
 }
@@ -108,7 +110,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                         };
                         setCurrentUser(userProfile);
                     } else {
-                        setCurrentUser(null);
+                        // This might happen briefly if a user signs up with Google and the doc isn't created yet.
+                        // We will let the sign-in/register functions handle doc creation.
+                        console.log("User document not found for UID:", user.uid);
                     }
                     setLoading(false);
                 }, (error) => {
@@ -159,6 +163,46 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         await setDoc(doc(db, 'users', user.uid), userProfileData);
     };
+    
+    const signInWithGoogle = async () => {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        const additionalUserInfo = getAdditionalUserInfo(result);
+
+        if (additionalUserInfo?.isNewUser) {
+            // New user: create their profile document
+            const nameParts = user.displayName?.split(' ') || ['New', 'User'];
+            const firstName = nameParts[0];
+            const lastName = nameParts.slice(1).join(' ') || '';
+
+            const welcomeBonus: RewardHistory = {
+                id: `rh-${Date.now()}`,
+                type: 'earned',
+                points: 25,
+                description: 'Welcome Bonus',
+                date: new Date(),
+            };
+    
+            const userProfileData: Omit<UserProfile, 'uid' | 'email'> = {
+                firstName,
+                lastName,
+                photoURL: user.photoURL || undefined,
+                createdAt: new Date(),
+                totalOrders: 0,
+                totalSpent: 0,
+                currentPoints: 25, // Welcome bonus
+                lifetimePoints: 25,
+                tier: 'bronze',
+                rewardsHistory: [welcomeBonus],
+                preferences: { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } },
+                cart: [],
+            };
+
+            await setDoc(doc(db, 'users', user.uid), userProfileData);
+        }
+        // Existing users will be handled by the onAuthStateChanged listener
+    };
 
     const login = async (email: string, password: string, rememberMe: boolean) => {
         const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
@@ -168,6 +212,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     const logout = async () => {
         await signOut(auth);
+    };
+    
+    const sendPasswordReset = async (email: string) => {
+        await sendPasswordResetEmail(auth, email);
     };
     
     const updateUserProfile = async (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => {
@@ -190,6 +238,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         register,
         login,
         logout,
+        sendPasswordReset,
+        signInWithGoogle,
         updateUserProfile,
         updateUserPhoto,
     };
