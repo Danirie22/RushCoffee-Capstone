@@ -6,7 +6,7 @@ export interface ProductSize {
 
 export interface Product {
   id: string;
-  name:string;
+  name: string;
   description: string;
   category: 'Coffee Based' | 'Non-Coffee Based' | 'Matcha Series' | 'Refreshments' | 'Meals';
   sizes: ProductSize[];
@@ -37,8 +37,8 @@ export const mockProducts: Product[] = [
     description: 'A creamy and sweet latte with a Spanish twist, featuring condensed milk for a rich flavor.',
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 59 },
-        { name: 'Venti', size: '22oz', price: 69 },
+      { name: 'Grande', size: '16oz', price: 59 },
+      { name: 'Venti', size: '22oz', price: 69 },
     ],
     imageUrl: getImageUrl('coffee-based/spanish-latte.png'),
     available: true,
@@ -46,9 +46,9 @@ export const mockProducts: Product[] = [
     popular: true,
     displayOrder: 1,
     recipe: [
-        { ingredientId: 'espresso-shot', quantity: 2 },
-        { ingredientId: 'milk', quantity: 150 },
-        { ingredientId: 'condensed-milk', quantity: 30 },
+      { ingredientId: 'espresso-shot', quantity: 2 },
+      { ingredientId: 'milk', quantity: 150 },
+      { ingredientId: 'condensed-milk', quantity: 30 },
     ],
   },
   {
@@ -57,8 +57,8 @@ export const mockProducts: Product[] = [
     description: "Our signature house blend, perfectly balanced for a smooth and satisfying coffee experience.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 69 },
-        { name: 'Venti', size: '22oz', price: 89 },
+      { name: 'Grande', size: '16oz', price: 69 },
+      { name: 'Venti', size: '22oz', price: 89 },
     ],
     imageUrl: getImageUrl('coffee-based/rush-coffee-blend.png'),
     available: true,
@@ -66,8 +66,8 @@ export const mockProducts: Product[] = [
     popular: true,
     displayOrder: 2,
     recipe: [
-        { ingredientId: 'coffee-beans-blend', quantity: 18 },
-        { ingredientId: 'hot-water', quantity: 200 },
+      { ingredientId: 'coffee-beans-blend', quantity: 18 },
+      { ingredientId: 'hot-water', quantity: 200 },
     ],
   },
   {
@@ -76,8 +76,8 @@ export const mockProducts: Product[] = [
     description: "A decadent mix of rich chocolate, espresso, and creamy caramel for the ultimate treat.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 59 },
-        { name: 'Venti', size: '22oz', price: 69 },
+      { name: 'Grande', size: '16oz', price: 59 },
+      { name: 'Venti', size: '22oz', price: 69 },
     ],
     imageUrl: getImageUrl('coffee-based/caramel-chocolate-mocha.jpg'),
     available: true,
@@ -85,10 +85,10 @@ export const mockProducts: Product[] = [
     popular: true,
     displayOrder: 3,
     recipe: [
-        { ingredientId: 'espresso-shot', quantity: 2 },
-        { ingredientId: 'milk', quantity: 150 },
-        { ingredientId: 'chocolate-sauce', quantity: 20 },
-        { ingredientId: 'caramel-sauce', quantity: 15 },
+      { ingredientId: 'espresso-shot', quantity: 2 },
+      { ingredientId: 'milk', quantity: 150 },
+      { ingredientId: 'chocolate-sauce', quantity: 20 },
+      { ingredientId: 'caramel-sauce', quantity: 15 },
     ],
   },
   {
@@ -97,8 +97,8 @@ export const mockProducts: Product[] = [
     description: "A bold and intense mocha experience with premium dark chocolate and strong espresso.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 59 },
-        { name: 'Venti', size: '22oz', price: 69 },
+      { name: 'Grande', size: '16oz', price: 59 },
+      { name: 'Venti', size: '22oz', price: 69 },
     ],
     imageUrl: getImageUrl('coffee-based/dark-chocolate-mocha.jpg'),
     available: true,
@@ -111,8 +111,8 @@ export const mockProducts: Product[] = [
     description: "A classic blend of smooth espresso, rich chocolate sauce, and steamed milk.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 59 },
-        { name: 'Venti', size: '22oz', price: 69 },
+      { name: 'Grande', size: '16oz', price: 59 },
+      { name: 'Venti', size: '22oz', price: 69 },
     ],
     imageUrl: getImageUrl('coffee-based/mocha-latte.jpg'),
     available: true,
@@ -125,8 +125,8 @@ export const mockProducts: Product[] = [
     description: "Bold espresso shots topped with hot water to create a light layer of crema.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 59 },
-        { name: 'Venti', size: '22oz', price: 69 },
+      { name: 'Grande', size: '16oz', price: 59 },
+      { name: 'Venti', size: '22oz', price: 69 },
     ],
     imageUrl: getImageUrl('coffee-based/americano.jpg'),
     available: true,
@@ -139,8 +139,8 @@ export const mockProducts: Product[] = [
     description: "An indulgent latte infused with the irresistible flavor of caramelized Biscoff cookies.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 99 },
-        { name: 'Venti', size: '22oz', price: 199 },
+      { name: 'Grande', size: '16oz', price: 99 },
+      { name: 'Venti', size: '22oz', price: 199 },
     ],
     imageUrl: getImageUrl('coffee-based/biscoff-latte.jpg'),
     available: true,
@@ -153,8 +153,8 @@ export const mockProducts: Product[] = [
     description: "The perfect combination of peanut butter, chocolate, and espresso. A candy lover's dream.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 79 },
-        { name: 'Venti', size: '22oz', price: 99 },
+      { name: 'Grande', size: '16oz', price: 79 },
+      { name: 'Venti', size: '22oz', price: 99 },
     ],
     imageUrl: getImageUrl('coffee-based/reeses-latte.jpg'),
     available: true,
@@ -167,8 +167,8 @@ export const mockProducts: Product[] = [
     description: "A comforting latte sweetened with rich, molasses-like brown sugar syrup.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 59 },
-        { name: 'Venti', size: '22oz', price: 79 },
+      { name: 'Grande', size: '16oz', price: 59 },
+      { name: 'Venti', size: '22oz', price: 79 },
     ],
     imageUrl: getImageUrl('coffee-based/brown-sugar-latte.jpg'),
     available: true,
@@ -181,8 +181,8 @@ export const mockProducts: Product[] = [
     description: "A simple classic. Chilled espresso with cold milk served over ice.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 69 },
-        { name: 'Venti', size: '22oz', price: 69 },
+      { name: 'Grande', size: '16oz', price: 69 },
+      { name: 'Venti', size: '22oz', price: 69 },
     ],
     imageUrl: getImageUrl('coffee-based/iced-latte.jpg'),
     available: true,
@@ -195,8 +195,8 @@ export const mockProducts: Product[] = [
     description: "A unique and refreshing latte with a zesty hint of natural orange flavor.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 79 },
-        { name: 'Venti', size: '22oz', price: 89 },
+      { name: 'Grande', size: '16oz', price: 79 },
+      { name: 'Venti', size: '22oz', price: 89 },
     ],
     imageUrl: getImageUrl('coffee-based/orange-latte.jpg'),
     available: true,
@@ -209,8 +209,8 @@ export const mockProducts: Product[] = [
     description: "A delightful iced coffee drink with chewy, coffee-flavored jelly cubes.",
     category: 'Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 89 },
-        { name: 'Venti', size: '22oz', price: 99 },
+      { name: 'Grande', size: '16oz', price: 89 },
+      { name: 'Venti', size: '22oz', price: 99 },
     ],
     imageUrl: getImageUrl('coffee-based/coffee-jelly.jpg'),
     available: true,
@@ -225,8 +225,8 @@ export const mockProducts: Product[] = [
     description: "A sweet and creamy drink inspired by the classic red velvet cake, with hints of cocoa and vanilla.",
     category: 'Non-Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 89 },
-        { name: 'Venti', size: '22oz', price: 109 },
+      { name: 'Grande', size: '16oz', price: 89 },
+      { name: 'Venti', size: '22oz', price: 109 },
     ],
     imageUrl: getImageUrl('non-coffee/red-velvet.jpg'),
     available: true,
@@ -239,8 +239,8 @@ export const mockProducts: Product[] = [
     description: "A beautiful and delicious blend of earthy matcha and sweet red velvet flavors.",
     category: 'Non-Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 89 },
-        { name: 'Venti', size: '22oz', price: 109 },
+      { name: 'Grande', size: '16oz', price: 89 },
+      { name: 'Venti', size: '22oz', price: 109 },
     ],
     imageUrl: getImageUrl('non-coffee/red-velvet-matcha-latte.jpg'),
     available: true,
@@ -253,8 +253,8 @@ export const mockProducts: Product[] = [
     description: "A rich and comforting chocolate drink made with high-quality cocoa and fresh milk.",
     category: 'Non-Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 89 },
-        { name: 'Venti', size: '22oz', price: 109 },
+      { name: 'Grande', size: '16oz', price: 89 },
+      { name: 'Venti', size: '22oz', price: 109 },
     ],
     imageUrl: getImageUrl('non-coffee/milky-choco.jpg'),
     available: true,
@@ -267,8 +267,8 @@ export const mockProducts: Product[] = [
     description: "A refreshing and creamy drink made with real strawberries and fresh milk.",
     category: 'Non-Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 89 },
-        { name: 'Venti', size: '22oz', price: 109 },
+      { name: 'Grande', size: '16oz', price: 89 },
+      { name: 'Venti', size: '22oz', price: 109 },
     ],
     imageUrl: getImageUrl('non-coffee/strawberry-milk.jpg'),
     available: true,
@@ -281,8 +281,8 @@ export const mockProducts: Product[] = [
     description: "A non-coffee treat blending the sweet, caramelized taste of Biscoff with creamy milk.",
     category: 'Non-Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 89 },
-        { name: 'Venti', size: '22oz', price: 109 },
+      { name: 'Grande', size: '16oz', price: 89 },
+      { name: 'Venti', size: '22oz', price: 109 },
     ],
     imageUrl: getImageUrl('non-coffee/biscoff-milky.jpg'),
     available: true,
@@ -295,8 +295,8 @@ export const mockProducts: Product[] = [
     description: "A fun and delicious drink packed with the classic cookies and cream flavor of Oreos.",
     category: 'Non-Coffee Based',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 89 },
-        { name: 'Venti', size: '22oz', price: 109 },
+      { name: 'Grande', size: '16oz', price: 89 },
+      { name: 'Venti', size: '22oz', price: 109 },
     ],
     imageUrl: getImageUrl('non-coffee/oreo-latte.jpg'),
     available: true,
@@ -311,17 +311,17 @@ export const mockProducts: Product[] = [
     description: "Premium Japanese matcha green tea with steamed milk, a perfect balance of earthy and creamy.",
     category: 'Matcha Series',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 69 },
-        { name: 'Venti', size: '22oz', price: 89 },
+      { name: 'Grande', size: '16oz', price: 69 },
+      { name: 'Venti', size: '22oz', price: 89 },
     ],
     imageUrl: getImageUrl('matcha-series/matcha-latte.jpg'),
     available: true,
     stock: 99,
     popular: true,
     displayOrder: 19,
-     recipe: [
-        { ingredientId: 'matcha-powder', quantity: 5 },
-        { ingredientId: 'milk', quantity: 200 },
+    recipe: [
+      { ingredientId: 'matcha-powder', quantity: 5 },
+      { ingredientId: 'milk', quantity: 200 },
     ],
   },
   {
@@ -330,8 +330,8 @@ export const mockProducts: Product[] = [
     description: "A delightful pairing of sweet strawberry puree and high-quality matcha green tea.",
     category: 'Matcha Series',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 99 },
-        { name: 'Venti', size: '22oz', price: 109 },
+      { name: 'Grande', size: '16oz', price: 99 },
+      { name: 'Venti', size: '22oz', price: 109 },
     ],
     imageUrl: getImageUrl('matcha-series/strawberry-matcha.jpg'),
     available: true,
@@ -344,8 +344,8 @@ export const mockProducts: Product[] = [
     description: "Earthy matcha topped with a rich, savory, and slightly sweet cream cheese foam.",
     category: 'Matcha Series',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 99 },
-        { name: 'Venti', size: '22oz', price: 109 },
+      { name: 'Grande', size: '16oz', price: 99 },
+      { name: 'Venti', size: '22oz', price: 109 },
     ],
     imageUrl: getImageUrl('matcha-series/matcha-cream-cheese.jpg'),
     available: true,
@@ -358,8 +358,8 @@ export const mockProducts: Product[] = [
     description: "A creative blend of matcha and crushed Oreo cookies for a unique texture and flavor.",
     category: 'Matcha Series',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 79 },
-        { name: 'Venti', size: '22oz', price: 99 },
+      { name: 'Grande', size: '16oz', price: 79 },
+      { name: 'Venti', size: '22oz', price: 99 },
     ],
     imageUrl: getImageUrl('matcha-series/matcha-oreo.jpg'),
     available: true,
@@ -374,8 +374,8 @@ export const mockProducts: Product[] = [
     description: 'An explosive mix of flamingo and mango for an overload of fruity goodness.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 69 },
-        { name: 'Venti', size: '22oz', price: 79 },
+      { name: 'Grande', size: '16oz', price: 69 },
+      { name: 'Venti', size: '22oz', price: 79 },
     ],
     imageUrl: getImageUrl('refreshments/flamangooverload.jpg'),
     available: true,
@@ -388,8 +388,8 @@ export const mockProducts: Product[] = [
     description: 'A delightful blend of sweet mangoes and tangy berries, perfectly refreshing.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 79 },
-        { name: 'Venti', size: '22oz', price: 99 },
+      { name: 'Grande', size: '16oz', price: 79 },
+      { name: 'Venti', size: '22oz', price: 99 },
     ],
     imageUrl: getImageUrl('refreshments/mangoberry.jpg'),
     available: true,
@@ -402,8 +402,8 @@ export const mockProducts: Product[] = [
     description: 'Creamy mango shake drizzled with rich, buttery caramel sauce.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 79 },
-        { name: 'Venti', size: '22oz', price: 99 },
+      { name: 'Grande', size: '16oz', price: 79 },
+      { name: 'Venti', size: '22oz', price: 99 },
     ],
     imageUrl: getImageUrl('refreshments/mango-caramel.jpg'),
     available: true,
@@ -416,8 +416,8 @@ export const mockProducts: Product[] = [
     description: 'A classic fruit shake made with sweet and juicy blueberries.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 79 },
-        { name: 'Venti', size: '22oz', price: 99 },
+      { name: 'Grande', size: '16oz', price: 79 },
+      { name: 'Venti', size: '22oz', price: 99 },
     ],
     imageUrl: getImageUrl('refreshments/blueberry-shake.jpg'),
     available: true,
@@ -430,8 +430,8 @@ export const mockProducts: Product[] = [
     description: 'A creamy and delicious shake made with ripe, sweet strawberries.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 79 },
-        { name: 'Venti', size: '22oz', price: 99 },
+      { name: 'Grande', size: '16oz', price: 79 },
+      { name: 'Venti', size: '22oz', price: 99 },
     ],
     imageUrl: getImageUrl('refreshments/strawberry-shake.jpg'),
     available: true,
@@ -444,8 +444,8 @@ export const mockProducts: Product[] = [
     description: 'A tart and refreshing shake with the crisp taste of green apples.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 79 },
-        { name: 'Venti', size: '22oz', price: 99 },
+      { name: 'Grande', size: '16oz', price: 79 },
+      { name: 'Venti', size: '22oz', price: 99 },
     ],
     imageUrl: getImageUrl('refreshments/green-apple-shake.jpg'),
     available: true,
@@ -458,8 +458,8 @@ export const mockProducts: Product[] = [
     description: 'Fizzy and fun, this soda pop is bursting with sweet blueberry flavor.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 69 },
-        { name: 'Venti', size: '22oz', price: 79 },
+      { name: 'Grande', size: '16oz', price: 69 },
+      { name: 'Venti', size: '22oz', price: 79 },
     ],
     imageUrl: getImageUrl('refreshments/blueberry-soda.jpg'),
     available: true,
@@ -472,22 +472,22 @@ export const mockProducts: Product[] = [
     description: 'A refreshing soda pop with the sweet taste of summer strawberries.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 69 },
-        { name: 'Venti', size: '22oz', price: 79 },
+      { name: 'Grande', size: '16oz', price: 69 },
+      { name: 'Venti', size: '22oz', price: 79 },
     ],
     imageUrl: getImageUrl('refreshments/strawberry-soda.jpg'),
     available: true,
     stock: 99,
     displayOrder: 30,
   },
-    {
+  {
     id: 'rf-09',
     name: 'Green Apple Soda Pop',
     description: 'A crisp and bubbly soda with a tangy green apple twist.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 69 },
-        { name: 'Venti', size: '22oz', price: 79 },
+      { name: 'Grande', size: '16oz', price: 69 },
+      { name: 'Venti', size: '22oz', price: 79 },
     ],
     imageUrl: getImageUrl('refreshments/green-apple-soda.jpg'),
     available: true,
@@ -500,8 +500,8 @@ export const mockProducts: Product[] = [
     description: 'A zesty and invigorating soda pop with a classic lemon flavor.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 69 },
-        { name: 'Venti', size: '22oz', price: 79 },
+      { name: 'Grande', size: '16oz', price: 69 },
+      { name: 'Venti', size: '22oz', price: 79 },
     ],
     imageUrl: getImageUrl('refreshments/lemon-soda.jpg'),
     available: true,
@@ -514,8 +514,8 @@ export const mockProducts: Product[] = [
     description: 'An exotic and fragrant soda pop with the sweet, floral taste of lychee.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 69 },
-        { name: 'Venti', size: '22oz', price: 79 },
+      { name: 'Grande', size: '16oz', price: 69 },
+      { name: 'Venti', size: '22oz', price: 79 },
     ],
     imageUrl: getImageUrl('refreshments/lychee-soda.jpg'),
     available: true,
@@ -528,8 +528,8 @@ export const mockProducts: Product[] = [
     description: 'A tropical and bubbly soda bursting with sweet mango flavor.',
     category: 'Refreshments',
     sizes: [
-        { name: 'Grande', size: '16oz', price: 69 },
-        { name: 'Venti', size: '22oz', price: 79 },
+      { name: 'Grande', size: '16oz', price: 69 },
+      { name: 'Venti', size: '22oz', price: 79 },
     ],
     imageUrl: getImageUrl('refreshments/mango-soda.jpg'),
     available: true,
@@ -544,8 +544,8 @@ export const mockProducts: Product[] = [
     description: 'Crispy breaded bacon served with creamy white sauce and golden fries.',
     category: 'Meals',
     sizes: [
-        { name: 'Ala Carte', size: 'w/ Fries', price: 119 },
-        { name: 'Combo Meal', size: 'w/ Fries & Drink', price: 139 },
+      { name: 'Ala Carte', size: 'w/ Fries', price: 119 },
+      { name: 'Combo Meal', size: 'w/ Fries & Drink', price: 139 },
     ],
     imageUrl: getImageUrl('menu/ala-carte-breaded-bacon-with-white-sauce and fries.jpg'),
     comboImageUrl: getImageUrl('menu/combo-meals-breaded-bacon-with-white-sauce,-fries-and-a-drink.jpg'),
@@ -560,8 +560,8 @@ export const mockProducts: Product[] = [
     description: 'A juicy breaded porkchop fried to perfection, served with white sauce and fries.',
     category: 'Meals',
     sizes: [
-        { name: 'Ala Carte', size: 'w/ Fries', price: 129 },
-        { name: 'Combo Meal', size: 'w/ Fries & Drink', price: 149 },
+      { name: 'Ala Carte', size: 'w/ Fries', price: 129 },
+      { name: 'Combo Meal', size: 'w/ Fries & Drink', price: 149 },
     ],
     imageUrl: getImageUrl('menu/ala-carte-breaded-porkchop-with-white-sauce-and-fries.jpg'),
     comboImageUrl: getImageUrl('menu/combo-meals-breaded-porkchop-with-white-sauce-and-fries-w-drink.jpg'),
@@ -576,8 +576,8 @@ export const mockProducts: Product[] = [
     description: 'Tender breaded chicken fillet with a side of fries and our signature white sauce.',
     category: 'Meals',
     sizes: [
-        { name: 'Ala Carte', size: 'w/ Fries', price: 119 },
-        { name: 'Combo Meal', size: 'w/ Fries & Drink', price: 139 },
+      { name: 'Ala Carte', size: 'w/ Fries', price: 119 },
+      { name: 'Combo Meal', size: 'w/ Fries & Drink', price: 139 },
     ],
     imageUrl: getImageUrl('menu/ala-carte-chicken-with-white-sauce-and-fries.jpg'),
     comboImageUrl: getImageUrl('menu/combo-meals-breaded-chicken-with-white-sauce,-fries-and-a-drink.jpg'),

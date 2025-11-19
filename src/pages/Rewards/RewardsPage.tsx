@@ -58,7 +58,7 @@ const RewardsPage: React.FC = () => {
                 id: doc.id,
                 ...doc.data()
             })) as AvailableReward[];
-            
+
             setAvailableRewards(rewardsListFromDb);
             setIsLoading(false);
         };
@@ -67,12 +67,12 @@ const RewardsPage: React.FC = () => {
 
     const nextTier = currentUser?.tier === 'bronze' ? 'silver' : (currentUser?.tier === 'silver' ? 'gold' : null);
     const nextTierPoints = nextTier ? tierThresholds[nextTier]?.min || 0 : 0;
-    
+
     const openRedeemModal = (reward: AvailableReward) => {
         setSelectedReward(reward);
         setIsRedeemModalOpen(true);
     };
-    
+
     const handleRedeem = async () => {
         if (!currentUser || !selectedReward) return;
 
@@ -97,30 +97,30 @@ const RewardsPage: React.FC = () => {
             });
 
             setRedeemCode(`RC-REDEEM-${Math.random().toString(36).substr(2, 9).toUpperCase()}`);
-            
+
         } catch (error: any) {
             showToast(error.message || 'Failed to redeem reward.');
             setIsRedeeming(false);
         }
     };
-    
+
     const handleCopyCode = () => {
         if (navigator.clipboard) {
             navigator.clipboard.writeText(redeemCode);
             showToast('Code copied to clipboard!');
         }
     };
-    
+
     const closeRedeemModal = () => {
         setIsRedeemModalOpen(false);
         setSelectedReward(null);
         setIsRedeeming(false);
         setRedeemCode('');
     };
-    
+
     if (!currentUser) {
         return (
-             <div className="flex min-h-screen flex-col bg-gray-50">
+            <div className="flex min-h-screen flex-col bg-gray-50">
                 <Header />
                 <main className="flex flex-1 items-center justify-center px-6 py-20 text-center">
                     <div>
@@ -135,7 +135,7 @@ const RewardsPage: React.FC = () => {
                             <Link to="/auth/login" className="rounded-full bg-primary-600 px-8 py-3 font-semibold text-white transition-transform hover:scale-105">
                                 Login
                             </Link>
-                             <Link to="/auth/register" className="rounded-full border-2 border-primary-600 px-8 py-3 font-semibold text-primary-600 transition-transform hover:scale-105 hover:bg-primary-50">
+                            <Link to="/auth/register" className="rounded-full border-2 border-primary-600 px-8 py-3 font-semibold text-primary-600 transition-transform hover:scale-105 hover:bg-primary-50">
                                 Sign Up
                             </Link>
                         </div>
@@ -145,7 +145,7 @@ const RewardsPage: React.FC = () => {
             </div>
         );
     }
-    
+
     return (
         <div className="min-h-screen bg-gray-50">
             <Header />
@@ -162,7 +162,7 @@ const RewardsPage: React.FC = () => {
                                 </p>
                             </div>
                             <div className="flex justify-center md:justify-end">
-                                <RewardsTierBadge 
+                                <RewardsTierBadge
                                     tier={currentUser.tier}
                                     currentPoints={currentUser.currentPoints}
                                     nextTierPoints={nextTierPoints}
@@ -171,7 +171,7 @@ const RewardsPage: React.FC = () => {
                         </div>
                     </div>
                 </section>
-                
+
                 <section className="px-6 py-16">
                     <div className="container mx-auto max-w-7xl">
                         <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
@@ -191,7 +191,7 @@ const RewardsPage: React.FC = () => {
                         ) : availableRewards.length > 0 ? (
                             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                                 {availableRewards.map(reward => (
-                                    <RewardCard 
+                                    <RewardCard
                                         key={reward.id}
                                         reward={reward}
                                         currentPoints={currentUser.currentPoints}
@@ -201,7 +201,7 @@ const RewardsPage: React.FC = () => {
                             </div>
                         ) : (
                             <Card className="py-20 text-center">
-                                <Gift className="mx-auto h-16 w-16 text-gray-300"/>
+                                <Gift className="mx-auto h-16 w-16 text-gray-300" />
                                 <h3 className="mt-4 font-semibold text-gray-800">No Rewards Available</h3>
                                 <p className="mt-1 text-gray-500">Please check back later for new rewards.</p>
                             </Card>
@@ -216,7 +216,7 @@ const RewardsPage: React.FC = () => {
                 </section>
             </main>
             <Footer />
-            
+
             <Modal isOpen={isRedeemModalOpen} onClose={closeRedeemModal} title={redeemCode ? 'Reward Claimed!' : `Redeem: ${selectedReward?.name || ''}`}>
                 {!redeemCode ? (
                     <>
@@ -226,7 +226,7 @@ const RewardsPage: React.FC = () => {
                         <div className="mt-6 flex justify-end gap-3">
                             <Button variant="ghost" onClick={closeRedeemModal}>Cancel</Button>
                             <Button onClick={handleRedeem} disabled={isRedeeming}>
-                                {isRedeeming ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Check className="mr-2 h-4 w-4" />}
+                                {isRedeeming ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
                                 Confirm
                             </Button>
                         </div>
@@ -234,23 +234,23 @@ const RewardsPage: React.FC = () => {
                 ) : (
                     <div className="text-center">
                         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                            <Check className="h-8 w-8 text-green-600"/>
+                            <Check className="h-8 w-8 text-green-600" />
                         </div>
                         <h3 className="mt-4 text-lg font-semibold text-gray-900">Success!</h3>
                         <p className="mt-1 text-gray-600">Show this code at the counter to claim your reward:</p>
-                        
+
                         <div className="relative my-4 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-4">
                             <p className="font-mono text-2xl font-bold text-primary-700 tracking-widest">{redeemCode}</p>
                             <button onClick={handleCopyCode} className="absolute top-2 right-2 text-gray-400 hover:text-primary-600">
-                                <ClipboardCopy className="h-5 w-5"/>
+                                <ClipboardCopy className="h-5 w-5" />
                             </button>
                         </div>
 
                         <div className="mt-2 flex items-center justify-center gap-2 rounded-lg bg-yellow-50 p-3 text-sm text-yellow-800">
-                            <AlertCircle className="h-5 w-5 flex-shrink-0"/>
+                            <AlertCircle className="h-5 w-5 flex-shrink-0" />
                             <span>This code is for one-time use only.</span>
                         </div>
-                        
+
                         <div className="mt-6">
                             <Button onClick={closeRedeemModal}>Close</Button>
                         </div>

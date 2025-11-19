@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../firebaseConfig';
 import { Users, Coffee, DollarSign, BarChart3 } from 'lucide-react';
 import StatCard from '../../components/admin/StatCard';
-import Card from '../../components/ui/Card';
+import SalesOverview from '../../components/admin/SalesOverview';
 
 const AdminDashboardPage: React.FC = () => {
     const [stats, setStats] = useState({
@@ -44,7 +44,7 @@ const AdminDashboardPage: React.FC = () => {
         const unsubscribePending = pendingOrdersQuery.onSnapshot(snapshot => {
             setStats(prev => ({ ...prev, pendingOrders: snapshot.size }));
         }, err => console.error("Error fetching pending orders:", err));
-        
+
         // Use Promise.all to manage initial loading state, making sure all initial fetches complete
         const initialFetches = [
             ordersQuery.get(),
@@ -68,42 +68,37 @@ const AdminDashboardPage: React.FC = () => {
         <div>
             <h1 className="mb-6 font-display text-3xl font-bold text-gray-800">Admin Dashboard</h1>
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard 
-                    title="Total Revenue Today" 
-                    value={`₱${stats.revenueToday.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} 
-                    Icon={DollarSign} 
-                    isLoading={isLoading} 
-                    color="blue" 
+                <StatCard
+                    title="Total Revenue Today"
+                    value={`₱${stats.revenueToday.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    Icon={DollarSign}
+                    isLoading={isLoading}
+                    color="blue"
                 />
-                <StatCard 
-                    title="Orders Today" 
-                    value={stats.ordersToday} 
-                    Icon={Coffee} 
-                    isLoading={isLoading} 
-                    color="green" 
+                <StatCard
+                    title="Orders Today"
+                    value={stats.ordersToday}
+                    Icon={Coffee}
+                    isLoading={isLoading}
+                    color="green"
                 />
-                <StatCard 
-                    title="New Customers Today" 
-                    value={stats.newCustomersToday} 
-                    Icon={Users} 
-                    isLoading={isLoading} 
-                    color="yellow" 
+                <StatCard
+                    title="New Customers Today"
+                    value={stats.newCustomersToday}
+                    Icon={Users}
+                    isLoading={isLoading}
+                    color="yellow"
                 />
-                <StatCard 
-                    title="Pending Orders" 
-                    value={stats.pendingOrders} 
-                    Icon={BarChart3} 
-                    isLoading={isLoading} 
-                    color="purple" 
+                <StatCard
+                    title="Pending Orders"
+                    value={stats.pendingOrders}
+                    Icon={BarChart3}
+                    isLoading={isLoading}
+                    color="purple"
                 />
             </div>
             <div className="mt-8">
-                <Card>
-                    <h2 className="text-xl font-bold text-gray-800">Sales Overview</h2>
-                    <div className="mt-4 flex h-64 items-center justify-center bg-gray-100">
-                        <p className="text-gray-500">[Chart Placeholder]</p>
-                    </div>
-                </Card>
+                <SalesOverview />
             </div>
         </div>
     );
