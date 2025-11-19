@@ -37,7 +37,7 @@ const Header: React.FC = () => {
     const { currentUser, logout } = useAuth();
     const { totalCartItems, openCart } = useCart();
     const navigate = useNavigate();
-    
+
     const navLinks = currentUser ? loggedInNavLinks : loggedOutNavLinks;
 
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
@@ -90,9 +90,9 @@ const Header: React.FC = () => {
         const clickHandler = isMobile ? closeMobileMenu : undefined;
 
         if (currentUser) {
-             return (
-                 <div className={`relative ${isMobile ? 'w-full' : ''}`} ref={userMenuRef}>
-                    <button 
+            return (
+                <div className={`relative ${isMobile ? 'w-full' : ''}`} ref={userMenuRef}>
+                    <button
                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                         className={`flex w-full items-center justify-center gap-2 rounded-full border border-primary-600 px-4 py-2 text-sm font-semibold text-primary-600 transition-colors hover:bg-primary-50 ${isMobile ? 'text-base' : ''}`}
                         aria-haspopup="true"
@@ -105,20 +105,20 @@ const Header: React.FC = () => {
                         <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                             <div className="py-1" role="menu" aria-orientation="vertical">
                                 {userDropdownLinks.map(link => (
-                                     <NavLink 
+                                    <NavLink
                                         key={link.label}
-                                        to={link.href} 
+                                        to={link.href}
                                         onClick={() => setIsUserMenuOpen(false)}
                                         className={({ isActive }) => `flex items-center gap-3 px-4 py-2 text-sm transition-colors hover:bg-gray-100 ${isActive ? 'text-primary-600 font-semibold' : 'text-gray-700'}`}
                                         role="menuitem"
-                                     >
+                                    >
                                         <link.Icon className="h-4 w-4" />
                                         {link.label}
                                     </NavLink>
                                 ))}
                                 {currentUser.role === 'admin' && (
                                     <>
-                                        <hr className="my-1"/>
+                                        <hr className="my-1" />
                                         <NavLink
                                             to="/admin"
                                             onClick={() => setIsUserMenuOpen(false)}
@@ -130,8 +130,8 @@ const Header: React.FC = () => {
                                         </NavLink>
                                     </>
                                 )}
-                                <hr className="my-1"/>
-                                <button 
+                                <hr className="my-1" />
+                                <button
                                     onClick={handleLogout}
                                     className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
                                     role="menuitem"
@@ -145,17 +145,17 @@ const Header: React.FC = () => {
                 </div>
             );
         }
-        
+
         return (
             <div className={`flex items-center ${isMobile ? 'flex-col space-y-3' : 'gap-4'}`}>
-                 <NavLink 
-                    to="/auth/login" 
+                <NavLink
+                    to="/auth/login"
                     onClick={clickHandler}
                     className={`${baseButtonClass} border border-primary-600 text-primary-600 hover:bg-primary-50 ${isMobile ? mobileButtonClass : desktopButtonClass}`}>
                     Login
                 </NavLink>
-                <NavLink 
-                    to="/auth/register" 
+                <NavLink
+                    to="/auth/register"
                     onClick={clickHandler}
                     className={`${baseButtonClass} bg-primary-600 text-white shadow-sm hover:bg-primary-700 ${isMobile ? mobileButtonClass : desktopButtonClass}`}>
                     Sign Up
@@ -163,7 +163,7 @@ const Header: React.FC = () => {
             </div>
         );
     }
-    
+
     const CartButton = () => (
         <button
             onClick={openCart}
@@ -182,7 +182,7 @@ const Header: React.FC = () => {
     return (
         <>
             <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/95 shadow-md backdrop-blur-sm">
-                <div className="container mx-auto flex h-20 items-center justify-between px-4 sm:px-6 lg:px-8">
+                <div className="container mx-auto grid h-20 grid-cols-3 items-center px-4 sm:px-6 lg:px-8">
                     <NavLink to="/" className="flex items-center gap-2">
                         <RushCoffeeLogo className="h-8 w-8 text-primary-600" />
                         <span className="text-2xl font-bold text-primary-600">
@@ -190,15 +190,15 @@ const Header: React.FC = () => {
                         </span>
                     </NavLink>
 
-                    <nav className="hidden items-center space-x-8 md:flex">
+                    <nav className="hidden items-center justify-center space-x-8 md:flex">
                         {navLinks.map((link) => (
                             <NavLink
                                 key={link.label}
                                 to={link.href}
                                 className={({ isActive }) =>
-                                    `text-base font-medium transition-colors hover:text-primary-600 ${
-                                        isActive ? 'text-primary-600' : 'text-gray-700'
-                                    }`
+                                    `relative text-sm font-normal uppercase transition-colors hover:text-primary-600 ${isActive ? 'text-primary-600' : 'text-gray-700'
+                                    } after:absolute after:bottom-0 after:left-0 after:h-[1px] after:w-full after:origin-center after:transform after:bg-primary-600 after:transition-transform after:duration-300 ${isActive ? 'after:scale-x-100' : 'after:scale-x-0'
+                                    } hover:after:scale-x-100`
                                 }
                             >
                                 {link.label}
@@ -206,7 +206,7 @@ const Header: React.FC = () => {
                         ))}
                     </nav>
 
-                    <div className="hidden items-center gap-2 md:flex">
+                    <div className="hidden items-center justify-end gap-2 md:flex">
                         {renderAuthControls()}
                         {currentUser && <CartButton />}
                     </div>
@@ -227,9 +227,8 @@ const Header: React.FC = () => {
 
             {/* Mobile Menu */}
             <div
-                className={`fixed inset-0 z-40 transform transition-opacity duration-300 md:hidden ${
-                    isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                }`}
+                className={`fixed inset-0 z-40 transform transition-opacity duration-300 md:hidden ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                    }`}
             >
                 <div
                     className="absolute inset-0 bg-black/50"
@@ -238,15 +237,14 @@ const Header: React.FC = () => {
                 ></div>
 
                 <div
-                    className={`fixed top-0 right-0 flex h-full w-4/5 max-w-sm flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out ${
-                        isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-                    }`}
+                    className={`fixed top-0 right-0 flex h-full w-4/5 max-w-sm flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
+                        }`}
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="mobile-menu-title"
                 >
                     <div className="flex items-center justify-between border-b p-4">
-                         <NavLink to="/" className="flex items-center gap-2" onClick={closeMobileMenu}>
+                        <NavLink to="/" className="flex items-center gap-2" onClick={closeMobileMenu}>
                             <RushCoffeeLogo className="h-7 w-7 text-primary-600" />
                             <span id="mobile-menu-title" className="text-xl font-bold text-primary-600">
                                 Rush Coffee
@@ -267,15 +265,14 @@ const Header: React.FC = () => {
                                 to={link.href}
                                 onClick={closeMobileMenu}
                                 className={({ isActive }) =>
-                                    `rounded-md px-3 py-2 text-lg font-medium transition-colors hover:bg-gray-100 ${
-                                        isActive ? 'bg-primary-50 text-primary-600' : 'text-gray-800'
+                                    `rounded-md px-3 py-2 text-lg font-medium transition-colors hover:bg-gray-100 ${isActive ? 'bg-primary-50 text-primary-600' : 'text-gray-800'
                                     }`
                                 }
                             >
                                 {link.label}
                             </NavLink>
                         ))}
-                         {currentUser && (
+                        {currentUser && (
                             <div className="border-t pt-4 mt-2">
                                 {userDropdownLinks.map(link => (
                                     <NavLink
@@ -283,12 +280,11 @@ const Header: React.FC = () => {
                                         to={link.href}
                                         onClick={closeMobileMenu}
                                         className={({ isActive }) =>
-                                            `flex items-center gap-3 rounded-md px-3 py-2 text-lg font-medium transition-colors hover:bg-gray-100 ${
-                                                isActive ? 'bg-primary-50 text-primary-600' : 'text-gray-800'
+                                            `flex items-center gap-3 rounded-md px-3 py-2 text-lg font-medium transition-colors hover:bg-gray-100 ${isActive ? 'bg-primary-50 text-primary-600' : 'text-gray-800'
                                             }`
                                         }
                                     >
-                                        <link.Icon className="h-5 w-5"/>
+                                        <link.Icon className="h-5 w-5" />
                                         {link.label}
                                     </NavLink>
                                 ))}
@@ -297,12 +293,11 @@ const Header: React.FC = () => {
                                         to="/admin"
                                         onClick={closeMobileMenu}
                                         className={({ isActive }) =>
-                                            `flex items-center gap-3 rounded-md px-3 py-2 text-lg font-medium transition-colors hover:bg-yellow-50 ${
-                                                isActive ? 'bg-yellow-100 text-yellow-800' : 'text-yellow-700'
+                                            `flex items-center gap-3 rounded-md px-3 py-2 text-lg font-medium transition-colors hover:bg-yellow-50 ${isActive ? 'bg-yellow-100 text-yellow-800' : 'text-yellow-700'
                                             }`
                                         }
                                     >
-                                        <Shield className="h-5 w-5"/>
+                                        <Shield className="h-5 w-5" />
                                         Admin Dashboard
                                     </NavLink>
                                 )}
@@ -310,17 +305,17 @@ const Header: React.FC = () => {
                         )}
                     </nav>
                     <div className="mt-auto border-t p-4 space-y-3">
-                       {currentUser ? (
-                           <button 
+                        {currentUser ? (
+                            <button
                                 onClick={handleLogout}
                                 className="flex w-full items-center justify-center gap-2 rounded-full bg-red-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-red-600"
                             >
                                 <LogOut className="h-5 w-5" />
                                 Logout
                             </button>
-                       ) : (
-                           renderAuthControls(true)
-                       )}
+                        ) : (
+                            renderAuthControls(true)
+                        )}
                     </div>
                 </div>
             </div>

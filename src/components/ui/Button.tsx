@@ -74,9 +74,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
           />
         </svg>
       )}
-      {!isLoading && startIcon && <span className="flex-shrink-0">{startIcon}</span>}
-      <span>{children}</span>
-      {!isLoading && endIcon && <span className="flex-shrink-0">{endIcon}</span>}
+      {!isLoading && startIcon && <span className="inline-flex items-center flex-shrink-0">{startIcon}</span>}
+      <span className="inline-flex items-center">{children}</span>
+      {!isLoading && endIcon && <span className="inline-flex items-center flex-shrink-0">{endIcon}</span>}
     </>
   );
 

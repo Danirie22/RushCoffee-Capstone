@@ -133,13 +133,15 @@ const HomePage: React.FC = () => {
                                         <RushCoffeeLogo className="h-5 w-5" />
                                         Order Now
                                     </Link>
-                                    <a
-                                        href="#features"
+                                    <button
+                                        onClick={() => {
+                                            document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        }}
                                         className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-primary-600 px-8 py-4 text-lg font-semibold text-primary-600 transition-transform hover:scale-105 hover:bg-primary-50 sm:w-auto"
                                     >
                                         <ChevronsDown className="h-5 w-5" />
                                         View Features
-                                    </a>
+                                    </button>
                                 </div>
 
                                 <p className="mt-6 text-sm text-gray-500" style={{ animation: 'fade-in-up 0.8s ease-out 800ms forwards', opacity: 0 }}>

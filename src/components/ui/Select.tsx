@@ -50,7 +50,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
               pr-10
               ${error
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
-                                : 'border-gray-300 shadow-sm hover:border-primary-400'
+                                : 'border-gray-500 shadow-sm hover:border-primary-400'
                             }
               ${className || ''}
             `}

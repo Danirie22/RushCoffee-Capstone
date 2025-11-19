@@ -54,7 +54,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                         type={type}
                         className={`
               w-full rounded-xl border bg-white text-gray-900 
-              placeholder:text-gray-400 transition-all duration-200 ease-in-out
+              placeholder:text-gray-500 placeholder:font-medium transition-all duration-200 ease-in-out
               focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10
               disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500
               ${startIcon ? 'pl-10' : ''}
@@ -64,7 +64,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
                                 ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10'
                                 : success
                                     ? 'border-green-300 focus:border-green-500 focus:ring-green-500/10'
-                                    : 'border-gray-300 shadow-sm hover:border-primary-400'
+                                    : 'border-gray-500 shadow-sm hover:border-primary-400'
                             }
               ${className || ''}
             `}

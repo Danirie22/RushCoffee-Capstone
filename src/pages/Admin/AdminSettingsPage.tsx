@@ -4,30 +4,32 @@ import { Loader2, Save, Store, Clock, Mail, Phone, Megaphone, AlertCircle } from
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import ToggleSwitch from '../../components/ui/ToggleSwitch';
+import Input from '../../components/ui/Input';
+import Textarea from '../../components/ui/Textarea';
 import { useCart } from '../../context/CartContext';
 
 interface ShopSettings {
-  shopName: string;
-  address: string;
-  phone: string;
-  email: string;
-  operatingHours: string;
-  announcement: {
-    enabled: boolean;
-    message: string;
-  };
+    shopName: string;
+    address: string;
+    phone: string;
+    email: string;
+    operatingHours: string;
+    announcement: {
+        enabled: boolean;
+        message: string;
+    };
 }
 
 const defaultSettings: ShopSettings = {
-  shopName: 'Rush Coffee',
-  address: '123 Coffee Street, Malate, Manila',
-  phone: '+63 917 123 4567',
-  email: 'hello@rushcoffee.ph',
-  operatingHours: 'Mon-Sun: 7:00 AM - 10:00 PM',
-  announcement: {
-    enabled: false,
-    message: 'Welcome to Rush Coffee! Enjoy our new Matcha series.',
-  },
+    shopName: 'Rush Coffee',
+    address: '123 Coffee Street, Malate, Manila',
+    phone: '+63 917 123 4567',
+    email: 'hello@rushcoffee.ph',
+    operatingHours: 'Mon-Sun: 7:00 AM - 10:00 PM',
+    announcement: {
+        enabled: false,
+        message: 'Welcome to Rush Coffee! Enjoy our new Matcha series.',
+    },
 };
 
 const AdminSettingsPage: React.FC = () => {
@@ -45,7 +47,7 @@ const AdminSettingsPage: React.FC = () => {
                 if (docSnap.exists) {
                     setSettings({ ...defaultSettings, ...docSnap.data() } as ShopSettings);
                 } else {
-                     // This is not an error, just a first-time setup state.
+                    // This is not an error, just a first-time setup state.
                     setSettings(defaultSettings);
                 }
             } catch (error: any) {
@@ -110,7 +112,7 @@ service cloud.firestore {
             if (pageError) setPageError(null); // Clear error on successful save
         } catch (error: any) {
             console.error("Error saving settings:", error);
-             if (error.code === 'permission-denied') {
+            if (error.code === 'permission-denied') {
                 setPageError('Save Failed: Your account does not have permission to write to shop settings. Please check your Firestore security rules. Changes were not saved.');
             } else {
                 setPageError('Failed to save settings. An error occurred.');
@@ -136,7 +138,7 @@ service cloud.firestore {
                 <div className="mb-6 flex items-start gap-3 rounded-lg bg-red-50 p-4 text-sm text-red-700">
                     <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                     <div>
-                       {pageError}
+                        {pageError}
                     </div>
                 </div>
             )}
@@ -149,36 +151,61 @@ service cloud.firestore {
                             Shop Information
                         </h2>
                         <div className="space-y-4">
-                            <div>
-                                <label htmlFor="shopName" className="block text-sm font-medium text-gray-700">Shop Name</label>
-                                <input type="text" name="shopName" id="shopName" value={settings.shopName} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
-                            </div>
-                            <div>
-                                <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address</label>
-                                <input type="text" name="address" id="address" value={settings.address} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
-                            </div>
+                            <Input
+                                label="Shop Name"
+                                name="shopName"
+                                id="shopName"
+                                value={settings.shopName}
+                                onChange={handleChange}
+                                placeholder="Enter shop name"
+                            />
+                            <Input
+                                label="Address"
+                                name="address"
+                                id="address"
+                                value={settings.address}
+                                onChange={handleChange}
+                                placeholder="Enter shop address"
+                            />
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                <div>
-                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Contact Phone</label>
-                                    <input type="tel" name="phone" id="phone" value={settings.phone} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
-                                </div>
-                                <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Contact Email</label>
-                                    <input type="email" name="email" id="email" value={settings.email} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
-                                </div>
+                                <Input
+                                    label="Contact Phone"
+                                    name="phone"
+                                    id="phone"
+                                    type="tel"
+                                    value={settings.phone}
+                                    onChange={handleChange}
+                                    placeholder="Enter contact phone"
+                                />
+                                <Input
+                                    label="Contact Email"
+                                    name="email"
+                                    id="email"
+                                    type="email"
+                                    value={settings.email}
+                                    onChange={handleChange}
+                                    placeholder="Enter contact email"
+                                />
                             </div>
                         </div>
                     </Card>
 
                     <Card>
-                         <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-800">
+                        <h2 className="mb-4 flex items-center gap-2 text-xl font-bold text-gray-800">
                             <Clock className="h-5 w-5 text-primary-600" />
                             Operating Hours
                         </h2>
                         <div>
-                            <label htmlFor="operatingHours" className="block text-sm font-medium text-gray-700">Display Text</label>
-                            <textarea name="operatingHours" id="operatingHours" value={settings.operatingHours} onChange={handleChange} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="e.g., Mon-Fri: 7am - 8pm&#10;Sat-Sun: 8am - 6pm" />
-                            <p className="mt-1 text-xs text-gray-500">This text will be displayed in the footer and contact page.</p>
+                            <Textarea
+                                label="Display Text"
+                                name="operatingHours"
+                                id="operatingHours"
+                                value={settings.operatingHours}
+                                onChange={handleChange}
+                                rows={3}
+                                placeholder="e.g., Mon-Fri: 7am - 8pm&#10;Sat-Sun: 8am - 6pm"
+                                helperText="This text will be displayed in the footer and contact page."
+                            />
                         </div>
                     </Card>
 
@@ -195,16 +222,22 @@ service cloud.firestore {
                                 enabled={settings.announcement.enabled}
                                 onChange={(val) => handleAnnouncementChange('enabled', val)}
                             />
-                             <div>
-                                <label htmlFor="announcementMessage" className="block text-sm font-medium text-gray-700">Announcement Message</label>
-                                <input type="text" name="announcementMessage" id="announcementMessage" value={settings.announcement.message} onChange={(e) => handleAnnouncementChange('message', e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500" />
+                            <div>
+                                <Input
+                                    label="Announcement Message"
+                                    name="announcementMessage"
+                                    id="announcementMessage"
+                                    value={settings.announcement.message}
+                                    onChange={(e) => handleAnnouncementChange('message', e.target.value)}
+                                    placeholder="Enter announcement message"
+                                />
                             </div>
                         </div>
                     </Card>
                 </fieldset>
 
-                <div className="flex justify-end">
-                    <Button type="submit" disabled={isSaving || !!pageError}>
+                <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
+                    <Button type="submit" disabled={isSaving || !!pageError} size="lg" className="w-full sm:w-auto">
                         {isSaving ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save className="mr-2 h-5 w-5" />}
                         Save Settings
                     </Button>
