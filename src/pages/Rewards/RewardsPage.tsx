@@ -34,6 +34,15 @@ const RewardsPage: React.FC = () => {
     React.useEffect(() => {
         const seedAndFetchRewards = async () => {
             setIsLoading(true);
+            // MOCK DATA FOR TESTING
+            const rewardsList = mockAvailableRewards.map((reward, index) => ({
+                ...reward,
+                id: `mock-reward-${index}`
+            }));
+            setAvailableRewards(rewardsList);
+            setIsLoading(false);
+            return; // Skip firestore logic
+
             const rewardsCollectionRef = db.collection('rewards');
             const snapshot = await rewardsCollectionRef.get();
 
@@ -45,19 +54,19 @@ const RewardsPage: React.FC = () => {
 
             const q = rewardsCollectionRef.orderBy('displayOrder');
             const rewardsSnapshot = await q.get();
-            const rewardsList = rewardsSnapshot.docs.map(doc => ({
+            const rewardsListFromDb = rewardsSnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             })) as AvailableReward[];
             
-            setAvailableRewards(rewardsList);
+            setAvailableRewards(rewardsListFromDb);
             setIsLoading(false);
         };
         seedAndFetchRewards();
     }, []);
 
-    const nextTier = currentUser?.tier === 'bronze' ? 'silver' : 'gold';
-    const nextTierPoints = currentUser ? tierThresholds[nextTier as 'silver' | 'gold']?.min || 0 : 0;
+    const nextTier = currentUser?.tier === 'bronze' ? 'silver' : (currentUser?.tier === 'silver' ? 'gold' : null);
+    const nextTierPoints = nextTier ? tierThresholds[nextTier]?.min || 0 : 0;
     
     const openRedeemModal = (reward: AvailableReward) => {
         setSelectedReward(reward);
