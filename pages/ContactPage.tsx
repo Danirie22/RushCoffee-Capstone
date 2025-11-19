@@ -1,43 +1,43 @@
-
-
-
 import * as React from 'react';
-import { MapPin, Phone, Mail, Share2, Send, ChevronDown, User, Hash, MessageSquare, Loader2, CheckCircle, Facebook, Instagram, Twitter } from 'lucide-react';
+import { MapPin, Phone, Mail, Share2, Send, ChevronDown, User, Hash, MessageSquare, CheckCircle, Facebook, Instagram, Twitter } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import Header from '../src/components/layout/Header';
 import Footer from '../src/components/layout/Footer';
 import Card from '../components/ui/Card';
 import Button from '../src/components/ui/Button';
+import Input from '../src/components/ui/Input';
+import Textarea from '../src/components/ui/Textarea';
+import Select from '../src/components/ui/Select';
 
 const faqData = [
-  { question: "What are your operating hours?", answer: "We are open Monday to Friday from 7:00 AM to 8:00 PM, and Saturday to Sunday from 8:00 AM to 6:00 PM." },
-  { question: "How does the digital queue system work?", answer: "Simply place your order through our app or website. You'll be added to our virtual queue and receive real-time updates on your order status, including your position and estimated wait time. You'll get a notification when it's ready for pickup!" },
-  { question: "Can I customize my drink?", answer: "Absolutely! Most of our drinks can be customized. You can choose your milk, sweetness level, add extra shots, and more right from the order page." },
-  { question: "Do you offer catering services for events?", answer: "Yes, we do! We offer a range of catering options for meetings, parties, and events. Please use the contact form and select 'Partnership' as the subject to discuss your needs with us." },
-  { question: "How do I earn and redeem rewards points?", answer: "You earn points with every purchase made through your account. You can view your points balance and redeem available rewards on the 'Rewards' page in the app." },
+    { question: "What are your operating hours?", answer: "We are open Monday to Friday from 7:00 AM to 8:00 PM, and Saturday to Sunday from 8:00 AM to 6:00 PM." },
+    { question: "How does the digital queue system work?", answer: "Simply place your order through our app or website. You'll be added to our virtual queue and receive real-time updates on your order status, including your position and estimated wait time. You'll get a notification when it's ready for pickup!" },
+    { question: "Can I customize my drink?", answer: "Absolutely! Most of our drinks can be customized. You can choose your milk, sweetness level, add extra shots, and more right from the order page." },
+    { question: "Do you offer catering services for events?", answer: "Yes, we do! We offer a range of catering options for meetings, parties, and events. Please use the contact form and select 'Partnership' as the subject to discuss your needs with us." },
+    { question: "How do I earn and redeem rewards points?", answer: "You earn points with every purchase made through your account. You can view your points balance and redeem available rewards on the 'Rewards' page in the app." },
 ];
 
 const AccordionItem: React.FC<{ question: string; answer: string; isOpen: boolean; onClick: () => void; }> = ({ question, answer, isOpen, onClick }) => (
-  <div className="border-b border-gray-200">
-    <button onClick={onClick} className="flex w-full items-center justify-between py-4 text-left text-lg font-medium text-gray-800 focus:outline-none">
-      <span>{question}</span>
-      <ChevronDown className={`h-6 w-6 transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-    </button>
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="overflow-hidden"
-        >
-          <p className="pb-4 text-gray-600">{answer}</p>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  </div>
+    <div className="border-b border-gray-200">
+        <button onClick={onClick} className="flex w-full items-center justify-between py-4 text-left text-lg font-medium text-gray-800 focus:outline-none">
+            <span>{question}</span>
+            <ChevronDown className={`h-6 w-6 transform transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+        </button>
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                >
+                    <p className="pb-4 text-gray-600">{answer}</p>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    </div>
 );
 
 const InfoCard: React.FC<{ icon: React.ElementType; title: string; children: React.ReactNode }> = ({ icon: Icon, title, children }) => (
@@ -73,7 +73,7 @@ const ContactPage: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        
+
         setIsSubmitting(true);
         setIsSuccess(false);
 
@@ -104,58 +104,101 @@ const ContactPage: React.FC = () => {
                             <Card className="p-8">
                                 <h2 className="font-display text-3xl font-bold text-coffee-900">Send us a Message</h2>
                                 {isSuccess && (
-                                     <div className="mt-4 flex items-center gap-2 rounded-lg bg-green-50 p-4 text-green-700">
-                                        <CheckCircle className="h-5 w-5"/>
-                                        <p>Thanks for your message! We'll get back to you soon.</p>
-                                    </div>
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="mt-4 flex items-center gap-3 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 p-4 shadow-sm"
+                                    >
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500">
+                                            <CheckCircle className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-green-900">Message Sent Successfully!</p>
+                                            <p className="text-sm text-green-700">We'll get back to you within 24 hours.</p>
+                                        </div>
+                                    </motion.div>
                                 )}
                                 <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-                                    <div className="relative">
-                                        <label htmlFor="name" className="sr-only">Name</label>
-                                        <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                                        <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} placeholder="Full Name" required className="w-full rounded-md border-gray-300 py-3 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500"/>
-                                        {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
-                                    </div>
-                                    <div className="relative">
-                                        <label htmlFor="email" className="sr-only">Email</label>
-                                        <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                                        <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} placeholder="Email Address" required className="w-full rounded-md border-gray-300 py-3 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500"/>
-                                        {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email}</p>}
-                                    </div>
-                                    <div className="relative">
-                                        <label htmlFor="phone" className="sr-only">Phone</label>
-                                        <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                                        <input type="tel" name="phone" id="phone" value={formData.phone} onChange={handleChange} placeholder="Phone Number (Optional)" className="w-full rounded-md border-gray-300 py-3 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500"/>
-                                    </div>
-                                     <div className="relative">
-                                        <label htmlFor="subject" className="sr-only">Subject</label>
-                                        <Hash className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                                        <select name="subject" id="subject" value={formData.subject} onChange={handleChange} required className="w-full appearance-none rounded-md border-gray-300 bg-white py-3 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500">
-                                            <option value="" disabled>Select a subject...</option>
-                                            <option>General Inquiry</option>
-                                            <option>Feedback</option>
-                                            <option>Partnership</option>
-                                            <option>Support</option>
-                                        </select>
-                                         {errors.subject && <p className="mt-1 text-sm text-red-600">{errors.subject}</p>}
-                                    </div>
-                                    <div className="relative">
-                                        <label htmlFor="message" className="sr-only">Message</label>
-                                         <MessageSquare className="absolute left-3 top-4 h-5 w-5 text-gray-400" />
-                                        <textarea name="message" id="message" value={formData.message} onChange={handleChange} placeholder="Your Message" rows={5} required className="w-full rounded-md border-gray-300 py-3 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500"></textarea>
-                                         {errors.message && <p className="mt-1 text-sm text-red-600">{errors.message}</p>}
-                                    </div>
-                                    <Button type="submit" size="lg" disabled={isSubmitting} className="w-full">
-                                        {isSubmitting ? <Loader2 className="mr-2 h-5 w-5 animate-spin"/> : <Send className="mr-2 h-5 w-5" />}
+                                    <Input
+                                        id="name"
+                                        name="name"
+                                        label="Name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        placeholder="Full Name"
+                                        required
+                                        error={errors.name}
+                                        startIcon={<User className="h-5 w-5" />}
+                                    />
+                                    <Input
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        label="Email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        placeholder="name@company.com"
+                                        required
+                                        error={errors.email}
+                                        startIcon={<Mail className="h-5 w-5" />}
+                                    />
+                                    <Input
+                                        id="phone"
+                                        name="phone"
+                                        type="tel"
+                                        label="Phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        placeholder="Phone Number (Optional)"
+                                        startIcon={<Phone className="h-5 w-5" />}
+                                    />
+                                    <Select
+                                        id="subject"
+                                        name="subject"
+                                        label="Subject"
+                                        value={formData.subject}
+                                        onChange={handleChange}
+                                        required
+                                        error={errors.subject}
+                                        startIcon={<Hash className="h-5 w-5" />}
+                                    >
+                                        <option value="" disabled>Select a subject...</option>
+                                        <option value="general">General Inquiry</option>
+                                        <option value="feedback">Feedback</option>
+                                        <option value="partnership">Partnership</option>
+                                        <option value="support">Support</option>
+                                    </Select>
+                                    <Textarea
+                                        id="message"
+                                        name="message"
+                                        label="Message"
+                                        value={formData.message}
+                                        onChange={handleChange}
+                                        placeholder="How can we help you today?"
+                                        rows={5}
+                                        required
+                                        error={errors.message}
+                                        startIcon={<MessageSquare className="h-5 w-5" />}
+                                        showCharCount
+                                        maxLength={500}
+                                        helperText="Please provide as much detail as possible"
+                                    />
+                                    <Button
+                                        type="submit"
+                                        size="lg"
+                                        fullWidth
+                                        isLoading={isSubmitting}
+                                        startIcon={!isSubmitting && <Send className="h-5 w-5" />}
+                                    >
                                         {isSubmitting ? 'Sending...' : 'Send Message'}
                                     </Button>
                                 </form>
                             </Card>
                         </div>
                         <div className="space-y-8 lg:col-span-2">
-                           <InfoCard icon={MapPin} title="Visit Us"><p className="mt-1 text-gray-600">123 Coffee Street, Malate, Manila</p><Button variant="secondary" size="sm" className="mt-2">Get Directions</Button></InfoCard>
-                           <InfoCard icon={Phone} title="Call Us"><a href="tel:+639171234567" className="mt-1 text-primary-600 transition hover:text-primary-700">+63 917 123 4567</a><p className="text-sm text-gray-500">Mon-Sun: 7AM - 8PM</p></InfoCard>
-                           <InfoCard icon={Mail} title="Email Us"><a href="mailto:hello@rushcoffee.ph" className="mt-1 text-primary-600 transition hover:text-primary-700">hello@rushcoffee.ph</a><p className="text-sm text-gray-500">Responds within 24 hours</p></InfoCard>
+                            <InfoCard icon={MapPin} title="Visit Us"><p className="mt-1 text-gray-600">123 Coffee Street, Malate, Manila</p><Button variant="secondary" size="sm" className="mt-2">Get Directions</Button></InfoCard>
+                            <InfoCard icon={Phone} title="Call Us"><a href="tel:+639171234567" className="mt-1 text-primary-600 transition hover:text-primary-700">+63 917 123 4567</a><p className="text-sm text-gray-500">Mon-Sun: 7AM - 8PM</p></InfoCard>
+                            <InfoCard icon={Mail} title="Email Us"><a href="mailto:hello@rushcoffee.ph" className="mt-1 text-primary-600 transition hover:text-primary-700">hello@rushcoffee.ph</a><p className="text-sm text-gray-500">Responds within 24 hours</p></InfoCard>
                             <InfoCard icon={Share2} title="Follow Us">
                                 <div className="mt-2 flex gap-4">
                                     <a href="#" aria-label="Facebook" className="text-gray-500 transition hover:text-primary-600"><Facebook /></a>

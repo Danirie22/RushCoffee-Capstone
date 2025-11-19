@@ -65,47 +65,47 @@ const steps = [
 ];
 
 const testimonials = [
-  {
-    quote: "Rush Coffee changed my morning routine! No more waiting in long lines. I order on my way and pick up when it's ready. Absolutely love it!",
-    name: "Sarah M.",
-    title: "Regular Customer",
-    initial: "S",
-    avatarBg: "bg-primary-100",
-    avatarText: "text-primary-600",
-  },
-  {
-    quote: "The queue system is genius. I can track exactly when my coffee will be ready. Plus, earning rewards with every purchase is a nice bonus!",
-    name: "Miguel R.",
-    title: "Gold Member",
-    initial: "M",
-    avatarBg: "bg-blue-100",
-    avatarText: "text-blue-600",
-  },
-  {
-    quote: "Best coffee experience in Manila. Fast, convenient, and the coffee is always perfect. The mobile app makes everything so easy!",
-    name: "Ana L.",
-    title: "VIP Member",
-    initial: "A",
-    avatarBg: "bg-green-100",
-    avatarText: "text-green-600",
-  }
+    {
+        quote: "Rush Coffee changed my morning routine! No more waiting in long lines. I order on my way and pick up when it's ready. Absolutely love it!",
+        name: "Sarah M.",
+        title: "Regular Customer",
+        initial: "S",
+        avatarBg: "bg-primary-100",
+        avatarText: "text-primary-600",
+    },
+    {
+        quote: "The queue system is genius. I can track exactly when my coffee will be ready. Plus, earning rewards with every purchase is a nice bonus!",
+        name: "Miguel R.",
+        title: "Gold Member",
+        initial: "M",
+        avatarBg: "bg-blue-100",
+        avatarText: "text-blue-600",
+    },
+    {
+        quote: "Best coffee experience in Manila. Fast, convenient, and the coffee is always perfect. The mobile app makes everything so easy!",
+        name: "Ana L.",
+        title: "VIP Member",
+        initial: "A",
+        avatarBg: "bg-green-100",
+        avatarText: "text-green-600",
+    }
 ];
 
 
 const HomePage: React.FC = () => {
     const { currentUser } = useAuth();
     const orderNowPath = currentUser ? '/menu' : '/auth/register';
-    
+
     return (
         <div className="bg-white">
             <Header />
             <main>
                 <section className="relative flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-white">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-coffee-100 to-white"></div>
-                    
+
                     <div className="container relative mx-auto max-w-7xl px-6 py-20">
                         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
-                            
+
                             <div className="animate-fade-in-up text-center lg:text-left">
                                 <p className="mb-4 font-medium text-primary-600" style={{ animationDelay: '100ms', opacity: 0 }}>
                                     ☕ Welcome to Rush Coffee
@@ -124,7 +124,7 @@ const HomePage: React.FC = () => {
                                     <Badge className="animate-pulse-slow">📱 Mobile Ordering</Badge>
                                     <Badge className="animate-pulse-slow">🎁 Rewards Program</Badge>
                                 </div>
-                                
+
                                 <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 700ms forwards', opacity: 0 }}>
                                     <Link
                                         to={orderNowPath}
@@ -150,7 +150,7 @@ const HomePage: React.FC = () => {
                             <div className="relative hidden h-96 lg:flex lg:items-center lg:justify-center">
                                 <div className="absolute h-80 w-80 animate-float rounded-full bg-primary-200/50 blur-3xl"></div>
                                 <div className="absolute bottom-0 right-0 h-64 w-64 animate-float-delay rounded-full bg-coffee-800/10 blur-2xl"></div>
-                                
+
                                 <div className="relative animate-fade-in-up" style={{ animationDelay: '500ms', opacity: 0 }}>
                                     <RushCoffeeLogo className="h-auto w-[250px] animate-float drop-shadow-2xl lg:w-[350px]" />
                                 </div>
@@ -251,9 +251,9 @@ const HomePage: React.FC = () => {
 
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                             {testimonials.map((testimonial, index) => (
-                                <Card 
-                                    key={index} 
-                                    hover 
+                                <Card
+                                    key={index}
+                                    hover
                                     className="flex flex-col border-l-4 border-primary-400 transition-transform duration-300 hover:scale-105"
                                 >
                                     <Quote className="h-8 w-8 text-primary-200" />
@@ -287,7 +287,7 @@ const HomePage: React.FC = () => {
                     <div className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 opacity-10">
                         <RushCoffeeLogo className="h-64 w-64 animate-float-delay text-white" />
                     </div>
-                    
+
                     <div className="relative z-10 mx-auto max-w-4xl text-center">
                         <div className="relative mx-auto mb-4 inline-block">
                             <span className="text-5xl" role="img" aria-label="Coffee cup">☕</span>
@@ -297,7 +297,7 @@ const HomePage: React.FC = () => {
                                 <div className="absolute left-2/3 h-5 w-px animate-steam-1 rounded-full bg-white/50"></div>
                             </div>
                         </div>
-                        
+
                         <h2 className="mb-4 font-display text-4xl font-bold text-white md:text-5xl">
                             Ready to Rush Through Your Day?
                         </h2>

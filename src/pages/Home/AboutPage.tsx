@@ -27,7 +27,7 @@ const useCountUp = (end: number, duration = 2000) => {
 
           const totalFrames = Math.round(duration / (1000 / 60));
           const increment = (endValue - start) / totalFrames;
-          
+
           const counter = () => {
             start += increment;
             if (start < endValue) {
@@ -50,7 +50,7 @@ const useCountUp = (end: number, duration = 2000) => {
     }
 
     return () => {
-      if(currentRef) {
+      if (currentRef) {
         observer.unobserve(currentRef);
       }
     };
@@ -60,21 +60,21 @@ const useCountUp = (end: number, duration = 2000) => {
 };
 
 const StatCard: React.FC<{ icon: React.ElementType; value: number; label: string; suffix?: string }> = ({ icon: Icon, value, label, suffix = '' }) => {
-    const { count, ref } = useCountUp(value);
-    const hasDecimals = count.includes('.');
-    
-    return (
-        <div className="flex flex-col items-center text-center">
-            <Icon className="mb-2 h-10 w-10 text-primary-600" />
-            <span ref={ref} className="font-display text-4xl font-bold text-coffee-900">
-                {Number(count).toLocaleString(undefined, {
-                    minimumFractionDigits: hasDecimals ? 1 : 0,
-                    maximumFractionDigits: hasDecimals ? 1 : 0,
-                })}{suffix}
-            </span>
-            <p className="mt-1 text-gray-600">{label}</p>
-        </div>
-    );
+  const { count, ref } = useCountUp(value);
+  const hasDecimals = count.includes('.');
+
+  return (
+    <div className="flex flex-col items-center text-center">
+      <Icon className="mb-2 h-10 w-10 text-primary-600" />
+      <span ref={ref} className="font-display text-4xl font-bold text-coffee-900">
+        {Number(count).toLocaleString(undefined, {
+          minimumFractionDigits: hasDecimals ? 1 : 0,
+          maximumFractionDigits: hasDecimals ? 1 : 0,
+        })}{suffix}
+      </span>
+      <p className="mt-1 text-gray-600">{label}</p>
+    </div>
+  );
 };
 
 const AboutPage: React.FC = () => {
@@ -108,8 +108,8 @@ const AboutPage: React.FC = () => {
               </p>
             </div>
             <div className="animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>
-              <img 
-                src="/Menu/free-pastry-item.jpg" 
+              <img
+                src="/Menu/free-pastry-item.jpg"
                 alt="Inside Rush Coffee shop"
                 className="h-80 w-full rounded-lg object-cover shadow-xl"
               />
@@ -137,14 +137,14 @@ const AboutPage: React.FC = () => {
 
         {/* Stats Section */}
         <section className="bg-white px-6 py-20">
-            <div className="container mx-auto max-w-7xl">
-                 <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-                    <StatCard icon={Users} value={10000} label="Happy Customers" suffix="+" />
-                    <StatCard icon={Coffee} value={50000} label="Coffees Served" suffix="+" />
-                    <StatCard icon={Star} value={4.9} label="Average Rating" />
-                    <StatCard icon={Watch} value={5} label="Minutes Average Wait" />
-                </div>
+          <div className="container mx-auto max-w-7xl">
+            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard icon={Users} value={10000} label="Happy Customers" suffix="+" />
+              <StatCard icon={Coffee} value={50000} label="Coffees Served" suffix="+" />
+              <StatCard icon={Star} value={4.9} label="Average Rating" />
+              <StatCard icon={Watch} value={5} label="Minutes Average Wait" />
             </div>
+          </div>
         </section>
 
         {/* Location Section */}
@@ -160,23 +160,32 @@ const AboutPage: React.FC = () => {
               </ul>
               <Button size="lg" className="mt-8">Get Directions</Button>
             </div>
-            <div className="h-96 overflow-hidden rounded-lg shadow-xl"><div className="flex h-full w-full items-center justify-center bg-gray-300 bg-cover bg-center" style={{backgroundImage: "url('/Coffee Based/coffee-jelly.jpg')"}}><span className="rounded bg-white/80 px-4 py-2 font-semibold text-gray-700 backdrop-blur-sm">[Google Maps Placeholder]</span></div></div>
+            <div className="h-96 overflow-hidden rounded-lg shadow-xl"><div className="flex h-full w-full items-center justify-center bg-gray-300 bg-cover bg-center" style={{ backgroundImage: "url('/Coffee Based/coffee-jelly.jpg')" }}><span className="rounded bg-white/80 px-4 py-2 font-semibold text-gray-700 backdrop-blur-sm">[Google Maps Placeholder]</span></div></div>
           </div>
         </section>
 
         {/* CTA Section */}
         <section className="relative bg-gradient-to-r from-primary-600 via-coffee-600 to-primary-700 px-6 py-20">
-            <div className="absolute -left-1/4 -top-1/4 opacity-10"><RushCoffeeLogo className="h-64 w-64 animate-float text-white" /></div>
-            <div className="absolute -bottom-1/4 -right-1/4 opacity-10"><RushCoffeeLogo className="h-80 w-80 animate-float-delay text-white" /></div>
-            <div className="relative z-10 mx-auto max-w-4xl text-center">
-                <h2 className="font-display text-4xl font-bold text-white md:text-5xl">Ready to Experience the Rush?</h2>
-                <p className="mb-8 mt-4 text-xl text-primary-100">Join thousands of customers who've already skipped the line.</p>
-                <Link to="/menu">
-                    <Button size="lg" className="bg-white text-primary-600 transition-transform hover:scale-105 hover:bg-primary-50">
-                        Order Now <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                </Link>
-            </div>
+          <div className="absolute -left-1/4 -top-1/4 opacity-10"><RushCoffeeLogo className="h-64 w-64 animate-float text-white" /></div>
+          <div className="absolute -bottom-1/4 -right-1/4 opacity-10"><RushCoffeeLogo className="h-80 w-80 animate-float-delay text-white" /></div>
+          <div className="relative z-10 mx-auto max-w-4xl text-center">
+            <h2 className="font-display text-4xl font-bold text-white md:text-5xl">Ready to Experience the Rush?</h2>
+            <p className="mb-8 mt-4 text-xl text-primary-100">Join thousands of customers who've already skipped the line.</p>
+            <Link
+              to="/auth/register"
+              className="inline-flex transform items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-semibold text-primary-600 shadow-lg transition hover:scale-105 hover:shadow-2xl"
+            >
+              Order Now
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+
+            <p className="mt-4 text-sm">
+              <span className="text-white/80">Already have an account? </span>
+              <Link to="/auth/login" className="font-semibold text-white underline transition hover:text-primary-100">
+                Login
+              </Link>
+            </p>
+          </div>
         </section>
       </main>
       <Footer />

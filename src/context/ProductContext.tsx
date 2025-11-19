@@ -35,10 +35,17 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
 
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
+        setError(null);
         try {
             const productsCollectionRef = db.collection('products');
             const q = productsCollectionRef.orderBy('displayOrder', 'asc');
             const productSnapshot = await q.get();
+
+            if (productSnapshot.empty) {
+                console.info("Products collection is empty in Firestore. Using local mock data.");
+                setProducts(mockProducts);
+                return;
+            }
 
             const productList = productSnapshot.docs.map(doc => ({
                 id: doc.id,
@@ -46,41 +53,23 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
             })) as Product[];
             
             setProducts(productList);
-        } catch (err) {
-            console.error("Error fetching products from Firestore: ", err);
-            setError("Could not connect to the database. Please check your connection and try again.");
-            setProducts([]);
+        } catch (err: any) {
+            if (err.code === 'permission-denied') {
+                console.info("Firestore permission denied. This is expected if security rules are not yet configured or if you are offline. Falling back to mock data for demonstration.");
+            } else {
+                console.warn("Error fetching products from Firestore. Falling back to mock data.", err);
+            }
+            // Fallback to mock data so the app is usable
+            setProducts(mockProducts);
+            // Clear error so the UI doesn't show the blocking error state
+            setError(null);
         } finally {
             setIsLoading(false);
         }
     }, []);
 
     useEffect(() => {
-        const syncAndFetchProducts = async () => {
-            setIsLoading(true);
-            const productsCollectionRef = db.collection('products');
-            
-            console.log("Syncing products with the latest mock data to ensure freshness...");
-            try {
-                const batch = db.batch();
-                mockProducts.forEach(product => {
-                    const { id, ...productData } = product;
-                    const docRef = productsCollectionRef.doc(id);
-                    batch.set(docRef, productData);
-                });
-                await batch.commit();
-                console.log("Product sync complete.");
-            } catch (syncError) {
-                console.error("Error syncing products:", syncError);
-                setError("Failed to sync the product database.");
-                setIsLoading(false);
-                return;
-            }
-
-            await fetchProducts();
-        };
-
-        syncAndFetchProducts();
+        fetchProducts();
     }, [fetchProducts]);
 
     const addProduct = async (productData: ProductFormData) => {

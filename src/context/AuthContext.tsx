@@ -1,4 +1,5 @@
 
+
 import * as React from 'react';
 // FIX: Update Firebase imports for v8 compatibility.
 import firebase from 'firebase/compat/app';
@@ -50,11 +51,11 @@ export interface UserProfile {
 interface AuthContextType {
     currentUser: UserProfile | null;
     loading: boolean;
-    register: (email: string, password: string, firstName: string, lastName: string, phone: string) => Promise<void>;
-    login: (email: string, password: string, rememberMe: boolean) => Promise<void>;
+    register: (email: string, password: string, firstName: string, lastName: string, phone: string) => Promise<UserProfile>;
+    login: (email: string, password: string, rememberMe: boolean) => Promise<UserProfile>;
     logout: () => Promise<void>;
     sendPasswordReset: (email: string) => Promise<void>;
-    signInWithGoogle: () => Promise<void>;
+    signInWithGoogle: () => Promise<UserProfile>;
     updateUserProfile: (updates: Partial<Pick<UserProfile, 'firstName' | 'lastName' | 'phone'>>) => Promise<void>;
     updateUserPhoto: (photoURL: string) => Promise<void>;
 }
@@ -72,6 +73,33 @@ export const useAuth = () => {
 interface AuthProviderProps {
     children: React.ReactNode;
 }
+
+const fetchUserProfile = async (uid: string): Promise<UserProfile> => {
+    const userDocRef = db.collection('users').doc(uid);
+    const userDoc = await userDocRef.get();
+    if (!userDoc.exists) {
+        throw new Error("User profile not found.");
+    }
+    const data = userDoc.data()!;
+    return {
+        uid,
+        email: data.email, // This might be stale if updated elsewhere, auth object is master
+        firstName: data.firstName || 'User',
+        lastName: data.lastName || '',
+        phone: data.phone || '',
+        photoURL: data.photoURL,
+        createdAt: data.createdAt?.toDate() || new Date(),
+        role: data.role,
+        totalOrders: data.totalOrders ?? 0,
+        totalSpent: data.totalSpent ?? 0,
+        currentPoints: data.currentPoints ?? 0,
+        lifetimePoints: data.lifetimePoints ?? 0,
+        tier: data.tier || 'bronze',
+        rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({ ...h, date: h.date.toDate() })).sort((a: any, b: any) => b.date - a.date),
+        preferences: data.preferences || { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } },
+    };
+};
+
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [currentUser, setCurrentUser] = React.useState<UserProfile | null>(null);
@@ -166,9 +194,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // FIX: Use v8 Firestore syntax to set document.
         await db.collection('users').doc(user.uid).set(userProfileData);
+        return fetchUserProfile(user.uid);
     };
     
-    const signInWithGoogle = async () => {
+    const signInWithGoogle = async (): Promise<UserProfile> => {
         // FIX: Use firebase.auth.GoogleAuthProvider for v8.
         const provider = new firebase.auth.GoogleAuthProvider();
         // FIX: Use auth.signInWithPopup for v8 and get additionalUserInfo from result.
@@ -208,16 +237,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // FIX: Use v8 Firestore syntax to set document.
             await db.collection('users').doc(user.uid).set(userProfileData);
         }
-        // Existing users will be handled by the onAuthStateChanged listener
+        return fetchUserProfile(user.uid);
     };
 
-    const login = async (email: string, password: string, rememberMe: boolean) => {
+    const login = async (email: string, password: string, rememberMe: boolean): Promise<UserProfile> => {
         // FIX: Use firebase.auth.Auth.Persistence for v8.
         const persistence = rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
         // FIX: Use auth.setPersistence for v8.
         await auth.setPersistence(persistence);
         // FIX: Use auth.signInWithEmailAndPassword for v8.
-        await auth.signInWithEmailAndPassword(email, password);
+        const userCredential = await auth.signInWithEmailAndPassword(email, password);
+        return fetchUserProfile(userCredential.user!.uid);
     };
 
     const logout = async () => {

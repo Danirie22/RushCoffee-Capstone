@@ -1,12 +1,12 @@
-
-
 import React, { useState, useEffect } from 'react';
 // FIX: Use compat import for v8 syntax.
 import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
 import { Loader2, Package, AlertTriangle, CheckCircle, XCircle, Plus } from 'lucide-react';
 import UpdateStockModal from '../../components/admin/UpdateStockModal';
-import { mockIngredients } from '../../data/mockIngredients';
+import AddIngredientModal from '../../components/admin/AddIngredientModal';
+import { mockIngredients, IngredientData } from '../../data/mockIngredients';
+import { useCart } from '../../context/CartContext';
 
 export interface Ingredient {
     id: string;
@@ -19,8 +19,10 @@ export interface Ingredient {
 const AdminInventoryPage: React.FC = () => {
     const [ingredients, setIngredients] = useState<Ingredient[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
+    const { showToast } = useCart();
 
     useEffect(() => {
         const seedAndFetch = async () => {
@@ -28,9 +30,14 @@ const AdminInventoryPage: React.FC = () => {
             const initialSnapshot = await ingredientsCollectionRef.get();
 
             if (initialSnapshot.empty) {
-                console.log("Seeding ingredients...");
-                const promises = mockIngredients.map(ingredient => ingredientsCollectionRef.add(ingredient));
-                await Promise.all(promises);
+                console.log("Seeding ingredients with specific IDs...");
+                const batch = db.batch();
+                mockIngredients.forEach(ingredient => {
+                    const { id, ...data } = ingredient; // Destructure to separate id from data
+                    const docRef = ingredientsCollectionRef.doc(id); // Use the specified id
+                    batch.set(docRef, data);
+                });
+                await batch.commit();
             }
 
             const q = db.collection("ingredients").orderBy("name", "asc");
@@ -58,14 +65,34 @@ const AdminInventoryPage: React.FC = () => {
         };
     }, []);
 
-    const handleOpenModal = (ingredient: Ingredient) => {
+    const handleOpenUpdateModal = (ingredient: Ingredient) => {
         setSelectedIngredient(ingredient);
-        setIsModalOpen(true);
+        setIsUpdateModalOpen(true);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+    const handleCloseUpdateModal = () => {
+        setIsUpdateModalOpen(false);
         setSelectedIngredient(null);
+    };
+
+    const handleOpenAddModal = () => {
+        setIsAddModalOpen(true);
+    };
+
+    const handleCloseAddModal = () => {
+        setIsAddModalOpen(false);
+    };
+
+    const handleAddIngredient = async (ingredientData: IngredientData) => {
+        try {
+            await db.collection("ingredients").add(ingredientData);
+            showToast(`Ingredient "${ingredientData.name}" added successfully.`);
+            handleCloseAddModal();
+        } catch (error) {
+            console.error("Error adding ingredient: ", error);
+            showToast("Failed to add ingredient.");
+            throw error;
+        }
     };
 
     const handleUpdateStock = async (ingredientId: string, amount: number, type: 'add' | 'set') => {
@@ -76,7 +103,7 @@ const AdminInventoryPage: React.FC = () => {
             } else {
                 await ingredientRef.update({ stock: amount });
             }
-            handleCloseModal();
+            handleCloseUpdateModal();
         } catch (error) {
             console.error("Error updating stock: ", error);
         }
@@ -100,7 +127,9 @@ const AdminInventoryPage: React.FC = () => {
         <div>
             <div className="flex items-center justify-between mb-6">
                 <h1 className="font-display text-3xl font-bold text-gray-800">Inventory Management</h1>
-                 <button className="flex items-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700">
+                 <button 
+                    onClick={handleOpenAddModal}
+                    className="flex items-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700">
                     <Plus className="h-4 w-4" />
                     Add Ingredient
                 </button>
@@ -134,7 +163,7 @@ const AdminInventoryPage: React.FC = () => {
                                         </div>
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                                        <button onClick={() => handleOpenModal(item)} className="text-primary-600 hover:text-primary-800">Update Stock</button>
+                                        <button onClick={() => handleOpenUpdateModal(item)} className="text-primary-600 hover:text-primary-800">Update Stock</button>
                                     </td>
                                 </tr>
                             );
@@ -143,13 +172,19 @@ const AdminInventoryPage: React.FC = () => {
                 </table>
             </div>
 
-            {isModalOpen && selectedIngredient && (
+            {isUpdateModalOpen && selectedIngredient && (
                 <UpdateStockModal
                     ingredient={selectedIngredient}
-                    onClose={handleCloseModal}
+                    onClose={handleCloseUpdateModal}
                     onUpdate={handleUpdateStock}
                 />
             )}
+
+            <AddIngredientModal 
+                isOpen={isAddModalOpen}
+                onClose={handleCloseAddModal}
+                onAdd={handleAddIngredient}
+            />
         </div>
     );
 };

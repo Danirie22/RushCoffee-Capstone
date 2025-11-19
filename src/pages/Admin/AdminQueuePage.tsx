@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 // FIX: Update Firebase imports for v8 compatibility.
 import firebase from 'firebase/compat/app';
@@ -51,96 +49,136 @@ const AdminQueuePage: React.FC = () => {
     
     const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
         try {
-            // FIX: Use v8 db.runTransaction syntax.
             await db.runTransaction(async (transaction) => {
-                // FIX: Use v8 doc reference syntax.
+                // === PHASE 1: ALL READS FIRST ===
+
+                // 1. Read the order document.
                 const orderRef = db.collection("orders").doc(orderId);
                 const orderDoc = await transaction.get(orderRef);
 
                 if (!orderDoc.exists) {
                     throw new Error("Order does not exist!");
                 }
-                
                 const orderData = orderDoc.data() as QueueItem;
                 const currentStatus = orderData.status;
 
-                // --- INVENTORY DEDUCTION LOGIC ---
-                // Deduct stock only when moving from 'waiting' to 'preparing'
+                let userDoc: firebase.firestore.DocumentSnapshot | null = null;
+                const ingredientDocsToRead = new Map<string, firebase.firestore.DocumentReference>();
+                const ingredientDeductions = new Map<string, number>();
+
+                // 2. If completing order, read user document for rewards.
+                if (newStatus === 'completed' && currentStatus !== 'completed') {
+                    const userRef = db.collection("users").doc(orderData.userId);
+                    userDoc = await transaction.get(userRef);
+                }
+
+                // 3. If preparing order, read product recipes to determine which ingredients to read.
                 if (currentStatus === 'waiting' && newStatus === 'preparing') {
-                    for (const item of orderData.orderItems) {
-                        const productRef = db.collection("products").doc(item.productId);
-                        const productDoc = await transaction.get(productRef);
+                    const productRefs = orderData.orderItems.map(item => db.collection("products").doc(item.productId));
+                    const productDocs = await Promise.all(productRefs.map(ref => transaction.get(ref)));
+
+                    for (let i = 0; i < orderData.orderItems.length; i++) {
+                        const item = orderData.orderItems[i];
+                        const productDoc = productDocs[i];
 
                         if (productDoc.exists && productDoc.data()!.recipe) {
                             for (const recipeItem of productDoc.data()!.recipe) {
                                 const ingredientRef = db.collection("ingredients").doc(recipeItem.ingredientId);
                                 const amountToDeduct = recipeItem.quantity * item.quantity;
                                 
-                                const ingredientDoc = await transaction.get(ingredientRef);
-                                if (!ingredientDoc.exists) throw new Error(`Ingredient '${recipeItem.ingredientId}' not found.`);
-                                if (ingredientDoc.data()!.stock < amountToDeduct) throw new Error(`Insufficient stock for '${ingredientDoc.data()!.name}'.`);
-                                
-                                // FIX: Use firebase.firestore.FieldValue.increment for v8.
-                                transaction.update(ingredientRef, { stock: firebase.firestore.FieldValue.increment(-amountToDeduct) });
+                                ingredientDocsToRead.set(ingredientRef.path, ingredientRef);
+                                ingredientDeductions.set(ingredientRef.path, (ingredientDeductions.get(ingredientRef.path) || 0) + amountToDeduct);
                             }
                         }
                     }
                 }
                 
-                // --- REWARDS & STATS LOGIC ---
-                // Award points only when moving to 'completed'
-                if (newStatus === 'completed' && currentStatus !== 'completed') {
-                    const userRef = db.collection("users").doc(orderData.userId);
-                    const userDoc = await transaction.get(userRef);
+                // 4. Read all unique ingredient documents needed for stock deduction.
+                const ingredientDocs = await Promise.all(
+                    Array.from(ingredientDocsToRead.values()).map(ref => transaction.get(ref))
+                );
 
-                    if (userDoc.exists) {
-                        const userData = userDoc.data() as UserProfile;
-                        
-                        // Calculate points based on items
-                        let basePoints = 0;
-                        for (const item of orderData.orderItems) {
-                            if (item.productName.includes('(Grande)')) {
-                                basePoints += 4 * item.quantity;
-                            } else if (item.productName.includes('(Venti)')) {
-                                basePoints += 5 * item.quantity;
-                            }
+                // === ALL READS ARE NOW COMPLETE ===
+                // === PHASE 2: VALIDATION & LOGIC ===
+
+                // 1. Validate ingredient stock.
+                if (currentStatus === 'waiting' && newStatus === 'preparing') {
+                    const ingredientDocMap = new Map(ingredientDocs.map(doc => [doc.ref.path, doc]));
+
+                    for (const [path, amountToDeduct] of ingredientDeductions.entries()) {
+                        const ingredientDoc = ingredientDocMap.get(path);
+                        if (!ingredientDoc || !ingredientDoc.exists) {
+                            const ingredientId = path.split('/').pop();
+                            throw new Error(`Ingredient '${ingredientId}' not found.`);
                         }
-
-                        // Calculate final points based on tier multiplier
-                        let pointsMultiplier = 1;
-                        if (userData.tier === 'silver') pointsMultiplier = 1.5;
-                        if (userData.tier === 'gold') pointsMultiplier = 2;
-                        
-                        const pointsEarned = Math.floor(basePoints * pointsMultiplier);
-
-
-                        // Check for tier upgrade
-                        const newLifetimePoints = userData.lifetimePoints + pointsEarned;
-                        let newTier = userData.tier;
-                        if (newTier === 'bronze' && newLifetimePoints >= tierThresholds.silver.min) newTier = 'silver';
-                        if (newTier === 'silver' && newLifetimePoints >= tierThresholds.gold.min) newTier = 'gold';
-
-                        const rewardHistoryEntry = {
-                            id: `rh-${Date.now()}`,
-                            type: 'earned' as const,
-                            points: pointsEarned,
-                            description: `Order #${orderData.orderNumber}`,
-                            date: new Date(),
-                        };
-
-                        // FIX: Use firebase.firestore.FieldValue for increment and arrayUnion in v8.
-                        transaction.update(userRef, {
-                            totalOrders: firebase.firestore.FieldValue.increment(1),
-                            totalSpent: firebase.firestore.FieldValue.increment(orderData.totalAmount),
-                            currentPoints: firebase.firestore.FieldValue.increment(pointsEarned),
-                            lifetimePoints: firebase.firestore.FieldValue.increment(pointsEarned),
-                            tier: newTier,
-                            rewardsHistory: firebase.firestore.FieldValue.arrayUnion(rewardHistoryEntry)
-                        });
+                        if (ingredientDoc.data()!.stock < amountToDeduct) {
+                            throw new Error(`Insufficient stock for '${ingredientDoc.data()!.name}'.`);
+                        }
                     }
                 }
 
-                // Finally, update the order status
+                // 2. Calculate rewards points.
+                let pointsEarned = 0;
+                let newTier: 'bronze' | 'silver' | 'gold' = 'bronze';
+
+                if (newStatus === 'completed' && currentStatus !== 'completed' && userDoc && userDoc.exists) {
+                    const userData = userDoc.data() as UserProfile;
+                    
+                    let basePoints = 0;
+                    for (const item of orderData.orderItems) {
+                        if (item.productName.includes('(Grande)')) basePoints += 4 * item.quantity;
+                        else if (item.productName.includes('(Venti)')) basePoints += 5 * item.quantity;
+                    }
+
+                    let pointsMultiplier = 1;
+                    // Fallback to bronze if tier is missing
+                    const currentTier = userData.tier || 'bronze';
+                    
+                    if (currentTier === 'silver') pointsMultiplier = 1.5;
+                    if (currentTier === 'gold') pointsMultiplier = 2;
+                    
+                    pointsEarned = Math.floor(basePoints * pointsMultiplier);
+
+                    // Fallback to 0 if lifetimePoints is missing
+                    const currentLifetimePoints = userData.lifetimePoints || 0;
+                    const newLifetimePoints = currentLifetimePoints + pointsEarned;
+                    
+                    newTier = currentTier;
+                    if (newTier === 'bronze' && newLifetimePoints >= tierThresholds.silver.min) newTier = 'silver';
+                    if (newTier === 'silver' && newLifetimePoints >= tierThresholds.gold.min) newTier = 'gold';
+                }
+
+                // === PHASE 3: ALL WRITES AT THE END ===
+
+                // 1. Update ingredient stock.
+                if (currentStatus === 'waiting' && newStatus === 'preparing') {
+                    for (const [path, amountToDeduct] of ingredientDeductions.entries()) {
+                        const ingredientRef = db.doc(path);
+                        transaction.update(ingredientRef, { stock: firebase.firestore.FieldValue.increment(-amountToDeduct) });
+                    }
+                }
+
+                // 2. Update user stats and rewards.
+                if (newStatus === 'completed' && currentStatus !== 'completed' && userDoc && userDoc.exists) {
+                    const rewardHistoryEntry = {
+                        id: `rh-${Date.now()}`,
+                        type: 'earned' as const,
+                        points: pointsEarned,
+                        description: `Order #${orderData.orderNumber}`,
+                        date: new Date(),
+                    };
+                    const userRef = db.collection("users").doc(orderData.userId);
+                    transaction.update(userRef, {
+                        totalOrders: firebase.firestore.FieldValue.increment(1),
+                        totalSpent: firebase.firestore.FieldValue.increment(orderData.totalAmount),
+                        currentPoints: firebase.firestore.FieldValue.increment(pointsEarned),
+                        lifetimePoints: firebase.firestore.FieldValue.increment(pointsEarned),
+                        tier: newTier,
+                        rewardsHistory: firebase.firestore.FieldValue.arrayUnion(rewardHistoryEntry)
+                    });
+                }
+
+                // 3. Finally, update the order status.
                 transaction.update(orderRef, { status: newStatus });
             });
         } catch (error: any) {

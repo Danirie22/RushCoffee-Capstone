@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import Card from '../../components/ui/Card';
+import Input from '../../components/ui/Input';
 import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
 
 const ForgotPasswordPage: React.FC = () => {
@@ -72,21 +73,18 @@ const ForgotPasswordPage: React.FC = () => {
                         )}
 
                         <form onSubmit={handleSubmit} noValidate className="space-y-6">
-                            <div className="relative">
-                                <label htmlFor="email" className="sr-only">Email address</label>
-                                <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                                <input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    autoComplete="email"
-                                    required
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full rounded-lg border border-gray-300 py-3 pl-10 pr-3 text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 focus:border-primary-500 focus:ring-primary-500"
-                                    placeholder="Email address"
-                                />
-                            </div>
+                            <Input
+                                id="email"
+                                name="email"
+                                type="email"
+                                label="Email address"
+                                autoComplete="email"
+                                required
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Email address"
+                                startIcon={<Mail className="h-5 w-5" />}
+                            />
 
                             <div>
                                 <button
@@ -98,7 +96,7 @@ const ForgotPasswordPage: React.FC = () => {
                                 </button>
                             </div>
                         </form>
-                        
+
                         <p className="mt-8 text-center text-sm text-gray-600">
                             Remember your password?{' '}
                             <Link to="/auth/login" className="font-medium text-primary-600 hover:text-primary-500">

@@ -1,4 +1,5 @@
 
+
 import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, User, Phone, Check, X } from 'lucide-react';
@@ -23,12 +24,14 @@ type ValidationErrors = Partial<Record<keyof Omit<FormFields, 'terms'>, string>>
 // A simple SVG for the Google icon
 const GoogleIcon = () => (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05" />
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
     </svg>
 );
+
+import Input from '../../components/ui/Input';
 
 const calculatePasswordStrength = (password: string) => {
     let strength = 0;
@@ -38,48 +41,6 @@ const calculatePasswordStrength = (password: string) => {
     if (password.match(/[0-9]/)) strength++;
     if (password.match(/[^a-zA-Z0-9]/)) strength++; // Special characters
     return (strength / 5) * 100;
-};
-
-const InputField = ({ name, label, type, placeholder, Icon, children, autoComplete, value, onChange, onBlur, error, touched }: { 
-    name: keyof Omit<FormFields, 'terms'>,
-    label: string, 
-    type: string, 
-    placeholder: string, 
-    Icon: React.ElementType, 
-    children?: React.ReactNode, 
-    autoComplete: string,
-    value: string,
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-    onBlur: (e: React.FocusEvent<HTMLInputElement>) => void,
-    error?: string,
-    touched?: boolean
-}) => {
-    const hasError = touched && error;
-    const isValid = touched && !error && value;
-    return (
-        <div className="relative">
-            <label htmlFor={name} className="sr-only">{label}</label>
-            <Icon className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-            <input
-                id={name}
-                name={name}
-                type={type}
-                autoComplete={autoComplete}
-                required={!['phone'].includes(name)}
-                value={value}
-                onChange={onChange}
-                onBlur={onBlur}
-                className={`w-full rounded-lg border py-3 pl-10 pr-10 text-gray-900 placeholder:text-gray-400 transition-colors focus:outline-none focus:ring-2 ${hasError ? 'border-red-500 ring-red-500' : isValid ? 'border-green-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500'}`}
-                placeholder={placeholder}
-                aria-invalid={!!hasError}
-                aria-describedby={`${name}-error`}
-            />
-            {children}
-            {hasError ? <X className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-red-500" /> : null}
-            {isValid ? <Check className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-green-500" /> : null}
-            {hasError && <p id={`${name}-error`} className="mt-1 text-xs text-red-600" role="alert">{error}</p>}
-        </div>
-    );
 };
 
 const RegisterPage: React.FC = () => {
@@ -120,7 +81,7 @@ const RegisterPage: React.FC = () => {
         if (!formData.password) newErrors.password = 'Password is required';
         else if (formData.password.length < 8) newErrors.password = 'Password must be at least 8 characters';
         else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])/.test(formData.password)) newErrors.password = 'Must contain uppercase, lowercase, and a number';
-        
+
         if (!formData.confirmPassword) newErrors.confirmPassword = 'Please confirm your password';
         else if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
 
@@ -134,7 +95,7 @@ const RegisterPage: React.FC = () => {
             setPasswordStrength(calculatePasswordStrength(formData.password));
         }
     }, [formData.password, touched.password]);
-    
+
     React.useEffect(() => {
         if (Object.keys(touched).length > 0) {
             setErrors(validate());
@@ -175,10 +136,14 @@ const RegisterPage: React.FC = () => {
 
         setIsLoading(true);
         try {
-            await register(formData.email, formData.password, formData.firstName, formData.lastName, formData.phone);
-            navigate('/');
+            const userProfile = await register(formData.email, formData.password, formData.firstName, formData.lastName, formData.phone);
+            if (userProfile.role === 'admin') {
+                navigate('/admin');
+            } else {
+                navigate('/');
+            }
         } catch (error: any) {
-             let errorMessage = 'An unexpected error occurred. Please try again.';
+            let errorMessage = 'An unexpected error occurred. Please try again.';
             switch (error.code) {
                 case 'auth/email-already-in-use':
                     errorMessage = 'This email address is already registered.';
@@ -195,13 +160,17 @@ const RegisterPage: React.FC = () => {
             setIsLoading(false);
         }
     };
-    
+
     const handleGoogleSignIn = async () => {
         setApiError(null);
         setIsGoogleLoading(true);
         try {
-            await signInWithGoogle();
-            navigate('/');
+            const userProfile = await signInWithGoogle();
+            if (userProfile.role === 'admin') {
+                navigate('/admin');
+            } else {
+                navigate('/');
+            }
         } catch (error: any) {
             console.error("Google Sign-Up Error: ", error.code, error.message);
             setApiError('Failed to sign up with Google. Please try again.');
@@ -215,13 +184,13 @@ const RegisterPage: React.FC = () => {
         if (passwordStrength < 80) return 'bg-yellow-500';
         return 'bg-green-500';
     };
-    
+
     const getStrengthText = () => {
         if (passwordStrength < 40) return 'Weak';
         if (passwordStrength < 80) return 'Medium';
         return 'Strong';
     }
-    
+
     return (
         <div className="flex min-h-screen flex-col bg-gradient-to-br from-primary-50 via-coffee-50 to-white">
             <Header />
@@ -243,34 +212,124 @@ const RegisterPage: React.FC = () => {
 
                         <form onSubmit={handleSubmit} noValidate className="space-y-6">
                             <div className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2">
-                                <InputField name="firstName" label="First Name" type="text" placeholder="First Name" Icon={User} autoComplete="given-name" value={formData.firstName} onChange={handleChange} onBlur={handleBlur} error={errors.firstName} touched={touched.firstName} />
-                                <InputField name="lastName" label="Last Name" type="text" placeholder="Last Name" Icon={User} autoComplete="family-name" value={formData.lastName} onChange={handleChange} onBlur={handleBlur} error={errors.lastName} touched={touched.lastName} />
+                                <Input
+                                    id="firstName"
+                                    name="firstName"
+                                    label="First Name"
+                                    type="text"
+                                    placeholder="First Name"
+                                    startIcon={<User className="h-5 w-5" />}
+                                    autoComplete="given-name"
+                                    value={formData.firstName}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    error={touched.firstName ? errors.firstName : undefined}
+                                    required
+                                />
+                                <Input
+                                    id="lastName"
+                                    name="lastName"
+                                    label="Last Name"
+                                    type="text"
+                                    placeholder="Last Name"
+                                    startIcon={<User className="h-5 w-5" />}
+                                    autoComplete="family-name"
+                                    value={formData.lastName}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    error={touched.lastName ? errors.lastName : undefined}
+                                    required
+                                />
                             </div>
-                            
-                            <InputField name="email" label="Email address" type="email" placeholder="Email address" Icon={Mail} autoComplete="email" value={formData.email} onChange={handleChange} onBlur={handleBlur} error={errors.email} touched={touched.email} />
-                            <InputField name="phone" label="Phone Number (Optional)" type="tel" placeholder="Phone Number (e.g., 09xxxxxxxxx)" Icon={Phone} autoComplete="tel" value={formData.phone} onChange={handleChange} onBlur={handleBlur} error={errors.phone} touched={touched.phone} />
-                            
+
+                            <Input
+                                id="email"
+                                name="email"
+                                label="Email address"
+                                type="email"
+                                placeholder="Email address"
+                                startIcon={<Mail className="h-5 w-5" />}
+                                autoComplete="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={touched.email ? errors.email : undefined}
+                                required
+                            />
+
+                            <Input
+                                id="phone"
+                                name="phone"
+                                label="Phone Number (Optional)"
+                                type="tel"
+                                placeholder="Phone Number (e.g., 09xxxxxxxxx)"
+                                startIcon={<Phone className="h-5 w-5" />}
+                                autoComplete="tel"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={touched.phone ? errors.phone : undefined}
+                            />
+
                             <div className="relative">
-                               <InputField name="password" label="Password" type={showPassword ? 'text' : 'password'} placeholder="Password" Icon={Lock} autoComplete="new-password" value={formData.password} onChange={handleChange} onBlur={handleBlur} error={errors.password} touched={touched.password}>
-                                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10" aria-label={showPassword ? 'Hide password' : 'Show password'}>
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                </button>
-                               </InputField>
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    label="Password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    placeholder="Password"
+                                    startIcon={<Lock className="h-5 w-5" />}
+                                    autoComplete="new-password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    onBlur={handleBlur}
+                                    error={touched.password ? errors.password : undefined}
+                                    required
+                                    endIcon={
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="focus:outline-none hover:text-gray-600 transition-colors"
+                                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                        >
+                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        </button>
+                                    }
+                                />
                                 {touched.password && (
-                                  <div className="mt-2 space-y-1">
-                                    <div className="h-2 w-full rounded-full bg-gray-200">
-                                      <div className={`h-2 rounded-full ${getStrengthColor()}`} style={{ width: `${passwordStrength}%`, transition: 'width 0.3s, background-color 0.3s' }}></div>
+                                    <div className="mt-2 space-y-1">
+                                        <div className="h-2 w-full rounded-full bg-gray-200">
+                                            <div className={`h-2 rounded-full ${getStrengthColor()}`} style={{ width: `${passwordStrength}%`, transition: 'width 0.3s, background-color 0.3s' }}></div>
+                                        </div>
+                                        <p className="text-xs font-medium" style={{ color: getStrengthColor().replace('bg-', 'text-') }}>{getStrengthText()}</p>
                                     </div>
-                                    <p className="text-xs font-medium" style={{color: getStrengthColor().replace('bg-','text-')}}>{getStrengthText()}</p>
-                                  </div>
                                 )}
                             </div>
-                            
-                            <InputField name="confirmPassword" label="Confirm Password" type={showConfirmPassword ? 'text' : 'password'} placeholder="Confirm Password" Icon={Lock} autoComplete="new-password" value={formData.confirmPassword} onChange={handleChange} onBlur={handleBlur} error={errors.confirmPassword} touched={touched.confirmPassword}>
-                                 <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10" aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}>
-                                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                </button>
-                            </InputField>
+
+                            <Input
+                                id="confirmPassword"
+                                name="confirmPassword"
+                                label="Confirm Password"
+                                type={showConfirmPassword ? 'text' : 'password'}
+                                placeholder="Confirm Password"
+                                startIcon={<Lock className="h-5 w-5" />}
+                                autoComplete="new-password"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                onBlur={handleBlur}
+                                error={touched.confirmPassword ? errors.confirmPassword : undefined}
+                                required
+                                endIcon={
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="focus:outline-none hover:text-gray-600 transition-colors"
+                                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                }
+                            />
 
                             <div className="flex items-start">
                                 <div className="flex h-6 items-center">
@@ -283,7 +342,7 @@ const RegisterPage: React.FC = () => {
                                         {' and '}
                                         <Link to="/privacy" className="font-semibold text-primary-600 hover:underline">Privacy Policy</Link>.
                                     </label>
-                                     {touched.terms && errors.terms && <p className="mt-1 text-xs text-red-600">{errors.terms}</p>}
+                                    {touched.terms && errors.terms && <p className="mt-1 text-xs text-red-600">{errors.terms}</p>}
                                 </div>
                             </div>
 
@@ -297,7 +356,7 @@ const RegisterPage: React.FC = () => {
                                 </button>
                             </div>
                         </form>
-                        
+
                         <div className="my-6 flex items-center">
                             <div className="flex-grow border-t border-gray-300"></div>
                             <span className="mx-4 flex-shrink text-sm text-gray-500">or</span>
