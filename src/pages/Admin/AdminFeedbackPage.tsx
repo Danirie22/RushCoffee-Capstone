@@ -11,7 +11,7 @@ import { Loader2, MessageSquare } from 'lucide-react';
 type FilterStatus = 'all' | 'pending' | 'reviewed' | 'resolved';
 
 export interface FeedbackWithUser extends Feedback {
-  user?: Pick<UserProfile, 'firstName' | 'lastName' | 'email'>;
+    user?: Pick<UserProfile, 'firstName' | 'lastName' | 'email'>;
 }
 
 const AdminFeedbackPage: React.FC = () => {
@@ -37,20 +37,25 @@ const AdminFeedbackPage: React.FC = () => {
 
         const q = query(collection(db, "feedback"), orderBy("createdAt", "desc"));
         const unsubscribe = onSnapshot(q, async (querySnapshot) => {
-            const users = await fetchUsers();
-            const feedbacks: FeedbackWithUser[] = [];
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                feedbacks.push({
-                    id: doc.id,
-                    ...data,
-                    createdAt: data.createdAt?.toDate(),
-                    updatedAt: data.updatedAt?.toDate(),
-                    user: users.get(data.userId)
-                } as FeedbackWithUser);
-            });
-            setFeedbackList(feedbacks);
-            setIsLoading(false);
+            try {
+                const users = await fetchUsers();
+                const feedbacks: FeedbackWithUser[] = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    feedbacks.push({
+                        id: doc.id,
+                        ...data,
+                        createdAt: data.createdAt?.toDate(),
+                        updatedAt: data.updatedAt?.toDate(),
+                        user: users.get(data.userId)
+                    } as FeedbackWithUser);
+                });
+                setFeedbackList(feedbacks);
+            } catch (error) {
+                console.error("Error processing feedback data:", error);
+            } finally {
+                setIsLoading(false);
+            }
         }, (error) => {
             console.error("Error fetching feedback: ", error);
             setIsLoading(false);
@@ -82,7 +87,7 @@ const AdminFeedbackPage: React.FC = () => {
         <div>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                 <h1 className="font-display text-3xl font-bold text-gray-800">Customer Feedback</h1>
-                <div className="flex mt-4 md:mt-0 gap-2 rounded-full bg-gray-200 p-1">
+                <div className="flex flex-wrap w-fit mx-auto mt-4 md:mt-0 md:mx-0 gap-2 rounded-full bg-gray-200 p-1">
                     {(['pending', 'reviewed', 'resolved', 'all'] as FilterStatus[]).map(f => (
                         <button
                             key={f}
@@ -96,7 +101,7 @@ const AdminFeedbackPage: React.FC = () => {
             </div>
 
             {filteredFeedback.length > 0 ? (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     {filteredFeedback.map(fb => (
                         <FeedbackCard key={fb.id} feedback={fb} onRespond={() => handleRespondClick(fb)} />
                     ))}

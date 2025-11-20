@@ -182,14 +182,16 @@ const Header: React.FC = () => {
     return (
         <>
             <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/95 shadow-md backdrop-blur-sm">
-                <div className="container mx-auto grid h-20 grid-cols-3 items-center px-4 sm:px-6 lg:px-8">
-                    <NavLink to="/" className="flex items-center gap-2">
-                        <RushCoffeeLogo className="h-8 w-8 text-primary-600" />
-                        <span className="text-2xl font-bold text-primary-600">
+                <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
+                    {/* Logo - Left side */}
+                    <NavLink to="/" className="flex items-center gap-2 flex-shrink-0">
+                        <RushCoffeeLogo className="h-7 w-7 text-primary-600 sm:h-8 sm:w-8" />
+                        <span className="text-lg font-bold text-primary-600 whitespace-nowrap sm:text-2xl">
                             Rush Coffee
                         </span>
                     </NavLink>
 
+                    {/* Desktop Navigation - Center */}
                     <nav className="hidden items-center justify-center space-x-8 md:flex">
                         {navLinks.map((link) => (
                             <NavLink
@@ -206,12 +208,14 @@ const Header: React.FC = () => {
                         ))}
                     </nav>
 
+                    {/* Desktop Auth Controls - Right side */}
                     <div className="hidden items-center justify-end gap-2 md:flex">
                         {renderAuthControls()}
                         {currentUser && <CartButton />}
                     </div>
 
-                    <div className="flex items-center gap-2 md:hidden">
+                    {/* Mobile Cart & Menu - Right side */}
+                    <div className="flex items-center justify-end gap-2 md:hidden">
                         {currentUser && <CartButton />}
                         <button
                             onClick={toggleMobileMenu}
@@ -226,19 +230,17 @@ const Header: React.FC = () => {
             </header>
 
             {/* Mobile Menu */}
-            <div
-                className={`fixed inset-0 z-40 transform transition-opacity duration-300 md:hidden ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
-                    }`}
-            >
+            <div className={`fixed inset-0 z-40 md:hidden ${isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+                {/* Backdrop */}
                 <div
-                    className="absolute inset-0 bg-black/50"
+                    className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
                     onClick={closeMobileMenu}
                     aria-hidden="true"
-                ></div>
+                />
 
+                {/* Menu Panel */}
                 <div
-                    className={`fixed top-0 right-0 flex h-full w-4/5 max-w-sm flex-col bg-white shadow-2xl transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-                        }`}
+                    className={`absolute top-0 right-0 h-full w-4/5 max-w-sm transform bg-white shadow-2xl transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="mobile-menu-title"
@@ -252,35 +254,44 @@ const Header: React.FC = () => {
                         </NavLink>
                         <button
                             onClick={closeMobileMenu}
-                            className="rounded-md p-2 text-gray-700 transition hover:bg-gray-100"
+                            className="rounded-full p-2 text-gray-500 transition hover:bg-gray-100 hover:text-gray-700"
                             aria-label="Close menu"
                         >
                             <X className="h-6 w-6" />
                         </button>
                     </div>
-                    <nav className="flex flex-1 flex-col gap-4 overflow-y-auto p-4">
+
+                    <nav className="flex flex-1 flex-col gap-2 overflow-y-auto p-4">
                         {navLinks.map((link) => (
                             <NavLink
                                 key={link.label}
                                 to={link.href}
                                 onClick={closeMobileMenu}
                                 className={({ isActive }) =>
-                                    `rounded-md px-3 py-2 text-lg font-medium transition-colors hover:bg-gray-100 ${isActive ? 'bg-primary-50 text-primary-600' : 'text-gray-800'
+                                    `rounded-xl px-4 py-3 text-lg font-medium transition-all ${isActive
+                                        ? 'bg-primary-50 text-primary-700'
+                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                     }`
                                 }
                             >
                                 {link.label}
                             </NavLink>
                         ))}
+
                         {currentUser && (
-                            <div className="border-t pt-4 mt-2">
+                            <div className="mt-4 border-t pt-4">
+                                <p className="mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-gray-400">
+                                    Account
+                                </p>
                                 {userDropdownLinks.map(link => (
                                     <NavLink
                                         key={link.label}
                                         to={link.href}
                                         onClick={closeMobileMenu}
                                         className={({ isActive }) =>
-                                            `flex items-center gap-3 rounded-md px-3 py-2 text-lg font-medium transition-colors hover:bg-gray-100 ${isActive ? 'bg-primary-50 text-primary-600' : 'text-gray-800'
+                                            `flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-all ${isActive
+                                                ? 'bg-primary-50 text-primary-700'
+                                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                             }`
                                         }
                                     >
@@ -293,7 +304,9 @@ const Header: React.FC = () => {
                                         to="/admin"
                                         onClick={closeMobileMenu}
                                         className={({ isActive }) =>
-                                            `flex items-center gap-3 rounded-md px-3 py-2 text-lg font-medium transition-colors hover:bg-yellow-50 ${isActive ? 'bg-yellow-100 text-yellow-800' : 'text-yellow-700'
+                                            `flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-all ${isActive
+                                                ? 'bg-yellow-50 text-yellow-800'
+                                                : 'text-yellow-700 hover:bg-yellow-50'
                                             }`
                                         }
                                     >
@@ -304,11 +317,12 @@ const Header: React.FC = () => {
                             </div>
                         )}
                     </nav>
-                    <div className="mt-auto border-t p-4 space-y-3">
+
+                    <div className="border-t p-4">
                         {currentUser ? (
                             <button
                                 onClick={handleLogout}
-                                className="flex w-full items-center justify-center gap-2 rounded-full bg-red-500 px-6 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-red-600"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 px-6 py-3 text-base font-semibold text-red-600 transition-colors hover:bg-red-100"
                             >
                                 <LogOut className="h-5 w-5" />
                                 Logout

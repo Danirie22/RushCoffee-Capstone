@@ -11,14 +11,14 @@ import Badge from '../../components/ui/Badge';
 type DateRange = '7d' | '30d' | 'all';
 
 interface ChartData {
-  label: string;
-  value: number;
+    label: string;
+    value: number;
 }
 
 interface TopProduct {
-  name: string;
-  quantity: number;
-  revenue: number;
+    name: string;
+    quantity: number;
+    revenue: number;
 }
 
 const SalesChart: React.FC<{ data: ChartData[], isLoading: boolean }> = ({ data, isLoading }) => {
@@ -29,10 +29,10 @@ const SalesChart: React.FC<{ data: ChartData[], isLoading: boolean }> = ({ data,
             </div>
         );
     }
-    
+
     if (data.length === 0) {
         return (
-             <div className="flex h-64 items-center justify-center bg-gray-50 rounded-lg">
+            <div className="flex h-64 items-center justify-center bg-gray-50 rounded-lg">
                 <p className="text-gray-500">No sales data for this period.</p>
             </div>
         )
@@ -44,8 +44,8 @@ const SalesChart: React.FC<{ data: ChartData[], isLoading: boolean }> = ({ data,
         <div className="h-64 flex items-end justify-around gap-2 pt-4">
             {data.map((item, index) => (
                 <div key={index} className="flex h-full flex-col items-center justify-end flex-1 group">
-                    <div 
-                        className="w-full bg-primary-200 rounded-t-md hover:bg-primary-400 transition-all duration-300" 
+                    <div
+                        className="w-full bg-primary-200 rounded-t-md hover:bg-primary-400 transition-all duration-300"
                         style={{ height: `${(item.value / maxValue) * 100}%` }}
                     >
                         <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gray-800 text-white text-xs rounded-md py-1 px-2 absolute -top-8 left-1/2 -translate-x-1/2">
@@ -72,8 +72,8 @@ const AdminAnalyticsPage: React.FC = () => {
 
             const now = new Date();
             let startDate: Date;
-            
-            switch(dateRange) {
+
+            switch (dateRange) {
                 case '7d':
                     startDate = startOfDay(subDays(now, 6));
                     break;
@@ -83,14 +83,14 @@ const AdminAnalyticsPage: React.FC = () => {
                 case 'all':
                 default:
                     // A reasonable "all time" start date to avoid fetching everything
-                    startDate = new Date(2020, 0, 1); 
+                    startDate = new Date(2020, 0, 1);
                     break;
             }
 
             // --- Fetch Data ---
             const ordersQuery = db.collection('orders')
                 .where('timestamp', '>=', startDate);
-            
+
             const usersQuery = db.collection('users')
                 .where('createdAt', '>=', startDate);
 
@@ -98,7 +98,7 @@ const AdminAnalyticsPage: React.FC = () => {
                 ordersQuery.get(),
                 usersQuery.get()
             ]);
-            
+
             const allOrdersInRange = orderSnapshot.docs.map(doc => ({ ...doc.data(), timestamp: doc.data().timestamp.toDate() })) as Omit<QueueItem, 'id'>[];
             const orders = allOrdersInRange.filter(order => order.status === 'completed');
 
@@ -124,7 +124,7 @@ const AdminAnalyticsPage: React.FC = () => {
                         salesByDay[day] += order.totalAmount;
                     }
                 });
-                
+
                 const formattedChartData = Object.entries(salesByDay).map(([day, value]) => ({
                     label: format(new Date(day), 'd MMM'),
                     // FIX: Explicitly cast value to number to satisfy ChartData interface.
@@ -152,38 +152,38 @@ const AdminAnalyticsPage: React.FC = () => {
                 .sort((a, b) => b.quantity - a.quantity)
                 .slice(0, 5);
             setTopProducts(sortedProducts);
-            
+
             setIsLoading(false);
         };
 
         fetchData().catch(console.error);
     }, [dateRange]);
-    
+
     return (
         <div>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                <h1 className="font-display text-3xl font-bold text-gray-800">Analytics & Reports</h1>
-                <div className="flex mt-4 md:mt-0 gap-2 rounded-full bg-gray-200 p-1">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
+                <h1 className="font-display text-2xl font-bold text-gray-800 sm:text-3xl">Analytics & Reports</h1>
+                <div className="flex w-fit mx-auto gap-2 rounded-full bg-gray-200 p-1 sm:mx-0">
                     {(['7d', '30d', 'all'] as DateRange[]).map(dr => (
                         <button
                             key={dr}
                             onClick={() => setDateRange(dr)}
-                            className={`rounded-full px-4 py-1.5 text-sm font-semibold capitalize transition-colors ${dateRange === dr ? 'bg-primary-600 text-white shadow' : 'text-gray-600 hover:bg-primary-50'}`}
+                            className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold capitalize transition-colors sm:px-4 sm:text-sm ${dateRange === dr ? 'bg-primary-600 text-white shadow' : 'text-gray-600 hover:bg-primary-50'}`}
                         >
-                            {dr === '7d' ? 'Last 7 Days' : dr === '30d' ? 'Last 30 Days' : 'All Time'}
+                            <span className="whitespace-nowrap">{dr === '7d' ? 'Last 7 Days' : dr === '30d' ? 'Last 30 Days' : 'All Time'}</span>
                         </button>
                     ))}
                 </div>
             </div>
-            
+
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-                 <StatCard title="Total Revenue" value={`₱${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} Icon={DollarSign} isLoading={isLoading} color="blue" />
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard title="Total Revenue" value={`₱${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} Icon={DollarSign} isLoading={isLoading} color="blue" />
                 <StatCard title="Total Orders" value={stats.totalOrders.toLocaleString()} Icon={ShoppingBag} isLoading={isLoading} color="green" />
                 <StatCard title="Avg. Order Value" value={`₱${stats.avgOrderValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} Icon={TrendingUp} isLoading={isLoading} color="purple" />
                 <StatCard title="New Customers" value={stats.newCustomers.toLocaleString()} Icon={Users} isLoading={isLoading} color="yellow" />
             </div>
-            
+
             {/* Charts */}
             <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-5">
                 <Card className="lg:col-span-3">
@@ -193,10 +193,10 @@ const AdminAnalyticsPage: React.FC = () => {
                 </Card>
                 <Card className="lg:col-span-2">
                     <h2 className="text-xl font-bold text-gray-800">Top Selling Products</h2>
-                     <p className="text-sm text-gray-500">By units sold in the selected period.</p>
-                     <div className="mt-4 space-y-3">
+                    <p className="text-sm text-gray-500">By units sold in the selected period.</p>
+                    <div className="mt-4 space-y-3">
                         {isLoading ? (
-                            Array.from({length: 5}).map((_, i) => (
+                            Array.from({ length: 5 }).map((_, i) => (
                                 <div key={i} className="flex items-center justify-between animate-pulse">
                                     <div className="h-5 w-3/5 rounded-md bg-gray-200"></div>
                                     <div className="h-5 w-1/5 rounded-md bg-gray-200"></div>
@@ -217,7 +217,7 @@ const AdminAnalyticsPage: React.FC = () => {
                                 <p className="text-gray-500">No product data for this period.</p>
                             </div>
                         )}
-                     </div>
+                    </div>
                 </Card>
             </div>
         </div>

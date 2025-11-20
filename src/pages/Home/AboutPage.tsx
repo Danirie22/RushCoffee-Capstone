@@ -83,20 +83,44 @@ const AboutPage: React.FC = () => {
       <Header />
       <main>
         {/* Hero Section */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-primary-50 via-coffee-100 to-white px-6 py-24 text-center">
-          <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/az-subtle.png')] opacity-30"></div>
+        {/* Hero Section */}
+        <section className="relative flex min-h-[40vh] items-center justify-center overflow-hidden bg-coffee-900 px-6 py-24 text-center text-white">
+          {/* Background Image */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?q=80&w=2561&auto=format&fit=crop"
+              alt="Coffee beans close up"
+              className="h-full w-full object-cover opacity-40"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-coffee-900/60 via-coffee-900/40 to-coffee-900/90"></div>
+          </div>
+
+          {/* Content */}
           <div className="relative z-10 mx-auto max-w-4xl">
-            <h1 className="animate-fade-in-up font-display text-5xl font-bold text-coffee-900 md:text-6xl" style={{ animationDelay: '100ms', opacity: 0 }}>
-              About Rush Coffee
+            <span className="mb-4 inline-block rounded-full bg-primary-500/20 px-4 py-1.5 text-sm font-medium text-primary-300 backdrop-blur-sm">
+              Our Story & Mission
+            </span>
+            <h1 className="animate-fade-in-up font-display text-5xl font-bold md:text-7xl" style={{ animationDelay: '100ms', opacity: 0 }}>
+              Brewing the Future
             </h1>
-            <p className="animate-fade-in-up mt-4 text-xl text-gray-700 md:text-2xl" style={{ animationDelay: '300ms', opacity: 0 }}>
-              More than just coffee, it's a revolution in your daily ritual.
+            <p className="animate-fade-in-up mx-auto mt-6 max-w-2xl text-xl text-gray-200 md:text-2xl" style={{ animationDelay: '300ms', opacity: 0 }}>
+              Where artisanal tradition meets modern convenience. We're redefining your daily coffee ritual.
             </p>
           </div>
+
+          {/* Scroll Indicator */}
+          {/* Scroll Indicator */}
+          <button
+            onClick={() => document.getElementById('our-story')?.scrollIntoView({ behavior: 'smooth' })}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-white/50 hover:text-white transition-colors cursor-pointer"
+            aria-label="Scroll down"
+          >
+            <ArrowRight className="h-6 w-6 rotate-90" />
+          </button>
         </section>
 
         {/* Our Story Section */}
-        <section className="px-6 py-20">
+        <section id="our-story" className="px-6 py-32">
           <div className="container mx-auto grid max-w-7xl items-center gap-12 md:grid-cols-2">
             <div className="animate-fade-in-up">
               <h2 className="font-display text-3xl font-bold text-coffee-900 md:text-4xl">Our Story</h2>
@@ -109,7 +133,7 @@ const AboutPage: React.FC = () => {
             </div>
             <div className="animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>
               <img
-                src="/Menu/free-pastry-item.jpg"
+                src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=2047&auto=format&fit=crop"
                 alt="Inside Rush Coffee shop"
                 className="h-80 w-full rounded-lg object-cover shadow-xl"
               />
@@ -118,7 +142,7 @@ const AboutPage: React.FC = () => {
         </section>
 
         {/* Values Section */}
-        <section className="bg-gray-50 px-6 py-20">
+        <section className="bg-gray-50 px-6 py-32">
           <div className="container mx-auto max-w-7xl">
             <div className="text-center">
               <h2 className="font-display text-3xl font-bold text-coffee-900 md:text-4xl">What We Stand For</h2>
@@ -165,24 +189,49 @@ const AboutPage: React.FC = () => {
         </section>
 
         {/* CTA Section */}
-        <section className="relative bg-gradient-to-r from-primary-600 via-coffee-600 to-primary-700 px-6 py-20">
-          <div className="absolute -left-1/4 -top-1/4 opacity-10"><RushCoffeeLogo className="h-64 w-64 animate-float text-white" /></div>
-          <div className="absolute -bottom-1/4 -right-1/4 opacity-10"><RushCoffeeLogo className="h-80 w-80 animate-float-delay text-white" /></div>
-          <div className="relative z-10 mx-auto max-w-4xl text-center">
-            <h2 className="font-display text-4xl font-bold text-white md:text-5xl">Ready to Experience the Rush?</h2>
-            <p className="mb-8 mt-4 text-xl text-primary-100">Join thousands of customers who've already skipped the line.</p>
-            <Link
-              to="/auth/register"
-              className="inline-flex transform items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-semibold text-primary-600 shadow-lg transition hover:scale-105 hover:shadow-2xl"
-            >
-              Order Now
-              <ArrowRight className="h-5 w-5" />
-            </Link>
+        {/* CTA Section */}
+        <section className="relative overflow-hidden bg-coffee-900 px-6 py-24 text-center text-white">
+          {/* Background Pattern/Image */}
+          <div className="absolute inset-0 z-0">
+            <img
+              src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070&auto=format&fit=crop"
+              alt="Coffee shop atmosphere"
+              className="h-full w-full object-cover opacity-20"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-coffee-900/90 via-coffee-800/90 to-coffee-900/90"></div>
+          </div>
 
-            <p className="mt-4 text-sm">
-              <span className="text-white/80">Already have an account? </span>
-              <Link to="/auth/login" className="font-semibold text-white underline transition hover:text-primary-100">
-                Login
+          <div className="absolute -left-1/4 -top-1/4 opacity-5"><RushCoffeeLogo className="h-96 w-96 animate-float text-white" /></div>
+          <div className="absolute -bottom-1/4 -right-1/4 opacity-5"><RushCoffeeLogo className="h-[30rem] w-[30rem] animate-float-delay text-white" /></div>
+
+          <div className="relative z-10 mx-auto max-w-3xl">
+            <h2 className="font-display text-4xl font-bold md:text-5xl lg:text-6xl">
+              Ready to Experience the Rush?
+            </h2>
+            <p className="mx-auto mb-10 mt-6 max-w-2xl text-xl text-gray-300">
+              Join thousands of happy customers who've already upgraded their coffee routine. Skip the line, not the quality.
+            </p>
+
+            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <Link
+                to="/auth/register"
+                className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all hover:bg-primary-500 hover:shadow-primary-600/30 hover:-translate-y-1"
+              >
+                Start Ordering
+                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+              </Link>
+              <Link
+                to="/menu"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 text-lg font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:-translate-y-1"
+              >
+                View Menu
+              </Link>
+            </div>
+
+            <p className="mt-8 text-sm text-gray-400">
+              Already have an account?{' '}
+              <Link to="/auth/login" className="font-medium text-primary-400 hover:text-primary-300 hover:underline">
+                Log in here
               </Link>
             </p>
           </div>

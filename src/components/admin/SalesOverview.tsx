@@ -33,9 +33,9 @@ const SalesOverview: React.FC = () => {
     return (
         <div className="space-y-6">
             {/* Time Range Selector */}
-            <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-800">Sales Overview</h2>
-                <div className="flex gap-2">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <h2 className="text-xl font-bold text-gray-800 sm:text-2xl">Sales Overview</h2>
+                <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0">
                     {timeRangeOptions.map(option => {
                         const Icon = option.icon;
                         return (
@@ -43,7 +43,7 @@ const SalesOverview: React.FC = () => {
                                 key={option.value}
                                 onClick={() => setTimeRange(option.value)}
                                 className={`
-                  flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all
+                  flex flex-shrink-0 items-center gap-2 px-3 py-2 rounded-lg font-medium transition-all text-sm sm:px-4
                   ${timeRange === option.value
                                         ? 'bg-blue-600 text-white shadow-md'
                                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -51,7 +51,7 @@ const SalesOverview: React.FC = () => {
                 `}
                             >
                                 <Icon className="w-4 h-4" />
-                                {option.label}
+                                <span className="whitespace-nowrap">{option.label}</span>
                             </button>
                         );
                     })}

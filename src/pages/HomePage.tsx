@@ -1,5 +1,3 @@
-
-
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Clock, Gift, Wallet, Users, Bell, ArrowRight, Quote, ChevronsDown } from 'lucide-react';
@@ -100,29 +98,37 @@ const HomePage: React.FC = () => {
         <div className="bg-white">
             <Header />
             <main>
-                <section className="relative flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-white">
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-coffee-100 to-white"></div>
+                <section className="relative flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-gray-900">
+                    {/* Background Image with Overlay */}
+                    <div className="absolute inset-0 z-0">
+                        <img
+                            src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=2071&auto=format&fit=crop"
+                            alt="Coffee Shop Atmosphere"
+                            className="h-full w-full object-cover opacity-40"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent"></div>
+                    </div>
 
-                    <div className="container relative mx-auto max-w-7xl px-6 py-20">
+                    <div className="container relative z-10 mx-auto max-w-7xl px-6 py-20">
                         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
 
                             <div className="animate-fade-in-up text-center lg:text-left">
-                                <p className="mb-4 font-medium text-primary-600" style={{ animationDelay: '100ms', opacity: 0 }}>
+                                <p className="mb-4 font-medium text-primary-400" style={{ animationDelay: '100ms', opacity: 0 }}>
                                     ☕ Welcome to Rush Coffee
                                 </p>
-                                <h1 className="font-display text-5xl font-bold text-coffee-900 md:text-6xl lg:text-7xl">
+                                <h1 className="font-display text-5xl font-bold text-white md:text-6xl lg:text-7xl">
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 200ms forwards', opacity: 0 }}>Skip the Line,</span>
-                                    <span className="block text-primary-600" style={{ animation: 'fade-in-up 0.8s ease-out 300ms forwards', opacity: 0 }}>Get Your Coffee</span>
+                                    <span className="block text-primary-400" style={{ animation: 'fade-in-up 0.8s ease-out 300ms forwards', opacity: 0 }}>Get Your Coffee</span>
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 400ms forwards', opacity: 0 }}>Faster.</span>
                                 </h1>
-                                <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 md:text-xl lg:mx-0" style={{ animation: 'fade-in-up 0.8s ease-out 500ms forwards', opacity: 0 }}>
+                                <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-300 md:text-xl lg:mx-0" style={{ animation: 'fade-in-up 0.8s ease-out 500ms forwards', opacity: 0 }}>
                                     Join our digital queue system. Order ahead, track your position in real-time, and breeze through pickup. Your perfect cup awaits—without the wait.
                                 </p>
 
                                 <div className="mt-8 flex flex-wrap justify-center gap-2 lg:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 600ms forwards', opacity: 0 }}>
-                                    <Badge className="animate-pulse-slow">⚡ Real-Time Queue</Badge>
-                                    <Badge className="animate-pulse-slow">📱 Mobile Ordering</Badge>
-                                    <Badge className="animate-pulse-slow">🎁 Rewards Program</Badge>
+                                    <Badge className="bg-primary-900/50 text-white border border-primary-700">⚡ Real-Time Queue</Badge>
+                                    <Badge className="bg-primary-900/50 text-white border border-primary-700">📱 Mobile Ordering</Badge>
+                                    <Badge className="bg-primary-900/50 text-white border border-primary-700">🎁 Rewards Program</Badge>
                                 </div>
 
                                 <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 700ms forwards', opacity: 0 }}>
@@ -137,24 +143,25 @@ const HomePage: React.FC = () => {
                                         onClick={() => {
                                             document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                                         }}
-                                        className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-primary-600 px-8 py-4 text-lg font-semibold text-primary-600 transition-transform hover:scale-105 hover:bg-primary-50 sm:w-auto"
+                                        className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-white/20 bg-white/5 px-8 py-4 text-lg font-semibold text-white backdrop-blur-sm transition-transform hover:scale-105 hover:bg-white/10 sm:w-auto"
                                     >
                                         <ChevronsDown className="h-5 w-5" />
                                         View Features
                                     </button>
                                 </div>
 
-                                <p className="mt-6 text-sm text-gray-500" style={{ animation: 'fade-in-up 0.8s ease-out 800ms forwards', opacity: 0 }}>
+                                <p className="mt-6 text-sm text-gray-400" style={{ animation: 'fade-in-up 0.8s ease-out 800ms forwards', opacity: 0 }}>
                                     Join 5,000+ happy customers ⭐⭐⭐⭐⭐
                                 </p>
                             </div>
 
                             <div className="relative hidden h-96 lg:flex lg:items-center lg:justify-center">
-                                <div className="absolute h-80 w-80 animate-float rounded-full bg-primary-200/50 blur-3xl"></div>
-                                <div className="absolute bottom-0 right-0 h-64 w-64 animate-float-delay rounded-full bg-coffee-800/10 blur-2xl"></div>
+                                {/* Floating 3D-like elements or just the logo with a nice glow */}
+                                <div className="absolute h-80 w-80 animate-float rounded-full bg-primary-500/20 blur-3xl"></div>
+                                <div className="absolute bottom-0 right-0 h-64 w-64 animate-float-delay rounded-full bg-coffee-500/20 blur-2xl"></div>
 
                                 <div className="relative animate-fade-in-up" style={{ animationDelay: '500ms', opacity: 0 }}>
-                                    <RushCoffeeLogo className="h-auto w-[250px] animate-float drop-shadow-2xl lg:w-[350px]" />
+                                    <RushCoffeeLogo className="h-auto w-[250px] animate-float drop-shadow-2xl text-white lg:w-[350px]" />
                                 </div>
                             </div>
                         </div>
@@ -173,7 +180,7 @@ const HomePage: React.FC = () => {
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
                             {features.map((feature, index) => (
                                 <Card key={index} hover className="text-center">
                                     <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xl ${feature.iconBgColor}`}>
@@ -203,37 +210,32 @@ const HomePage: React.FC = () => {
                             </p>
                         </div>
 
-                        <div className="flex flex-col items-stretch justify-center gap-16 lg:flex-row lg:items-center lg:gap-8">
+                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                             {steps.map((step, index) => (
-                                <React.Fragment key={step.number}>
-                                    <div className="relative w-full max-w-sm flex-1 text-center">
-                                        <div className="absolute -top-4 left-1/2 z-10 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-primary-600 font-display text-xl font-bold text-white shadow-lg">
-                                            {step.number}
-                                        </div>
-                                        <Card className="pt-8">
-                                            <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-100 to-coffee-100 p-4">
-                                                {step.hasAnimation && (
-                                                    <div className="absolute inset-0 overflow-hidden rounded-2xl">
-                                                        <div className="absolute left-1/2 top-2 h-4 w-px -translate-x-1/2 animate-steam-1 rounded-full bg-primary-300/80"></div>
-                                                        <div className="absolute left-1/3 top-2 h-5 w-px animate-steam-2 rounded-full bg-primary-300/80"></div>
-                                                        <div className="absolute left-2/3 top-2 h-3 w-px animate-steam-1 rounded-full bg-primary-300/80"></div>
-                                                    </div>
-                                                )}
-                                                <step.Icon className={`h-10 w-10 text-primary-600 ${step.isPulsing ? 'animate-pulse-slow' : ''}`} />
-                                            </div>
-                                            <h3 className="mb-2 mt-4 font-display text-xl font-semibold text-coffee-900">
-                                                {step.title}
-                                            </h3>
-                                            <p className="text-sm text-gray-600">{step.description}</p>
-                                        </Card>
+                                <div
+                                    key={step.number}
+                                    className={`relative w-full text-center ${index === 2 ? 'col-span-2 lg:col-span-1 w-[calc(50%-0.5rem)] mx-auto lg:w-full' : ''}`}
+                                >
+                                    <div className="absolute -top-4 left-1/2 z-10 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-primary-600 font-display text-xl font-bold text-white shadow-lg">
+                                        {step.number}
                                     </div>
-
-                                    {index < steps.length - 1 && (
-                                        <div className="hidden text-primary-400 lg:flex">
-                                            <ArrowRight className="h-10 w-10" />
+                                    <Card className="pt-8 h-full">
+                                        <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-100 to-coffee-100 p-4">
+                                            {step.hasAnimation && (
+                                                <div className="absolute inset-0 overflow-hidden rounded-2xl">
+                                                    <div className="absolute left-1/2 top-2 h-4 w-px -translate-x-1/2 animate-steam-1 rounded-full bg-primary-300/80"></div>
+                                                    <div className="absolute left-1/3 top-2 h-5 w-px animate-steam-2 rounded-full bg-primary-300/80"></div>
+                                                    <div className="absolute left-2/3 top-2 h-3 w-px animate-steam-1 rounded-full bg-primary-300/80"></div>
+                                                </div>
+                                            )}
+                                            <step.Icon className={`h-10 w-10 text-primary-600 ${step.isPulsing ? 'animate-pulse-slow' : ''}`} />
                                         </div>
-                                    )}
-                                </React.Fragment>
+                                        <h3 className="mb-2 mt-4 font-display text-xl font-semibold text-coffee-900">
+                                            {step.title}
+                                        </h3>
+                                        <p className="text-sm text-gray-600">{step.description}</p>
+                                    </Card>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -251,12 +253,12 @@ const HomePage: React.FC = () => {
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
                             {testimonials.map((testimonial, index) => (
                                 <Card
                                     key={index}
                                     hover
-                                    className="flex flex-col border-l-4 border-primary-400 transition-transform duration-300 hover:scale-105"
+                                    className={`flex flex-col border-l-4 border-primary-400 transition-transform duration-300 hover:scale-105 ${index === 2 ? 'col-span-2 lg:col-span-1 w-[calc(50%-0.5rem)] mx-auto lg:w-full' : ''}`}
                                 >
                                     <Quote className="h-8 w-8 text-primary-200" />
                                     <div className="my-4 text-yellow-400">
@@ -282,17 +284,23 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                <section className="relative overflow-hidden bg-gradient-to-r from-primary-600 via-coffee-600 to-primary-700 py-16 px-6">
-                    <div className="absolute top-0 left-0 -translate-x-1/3 -translate-y-1/3 opacity-10">
-                        <RushCoffeeLogo className="h-48 w-48 animate-float text-white" />
-                    </div>
-                    <div className="absolute bottom-0 right-0 translate-x-1/3 translate-y-1/3 opacity-10">
-                        <RushCoffeeLogo className="h-64 w-64 animate-float-delay text-white" />
+                <section className="relative overflow-hidden bg-coffee-900 px-6 py-24 text-center text-white">
+                    {/* Background Pattern/Image */}
+                    <div className="absolute inset-0 z-0">
+                        <img
+                            src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070&auto=format&fit=crop"
+                            alt="Coffee shop atmosphere"
+                            className="h-full w-full object-cover opacity-20"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-r from-coffee-900/90 via-coffee-800/90 to-coffee-900/90"></div>
                     </div>
 
-                    <div className="relative z-10 mx-auto max-w-4xl text-center">
-                        <div className="relative mx-auto mb-4 inline-block">
-                            <span className="text-5xl" role="img" aria-label="Coffee cup">☕</span>
+                    <div className="absolute -left-1/4 -top-1/4 opacity-5"><RushCoffeeLogo className="h-96 w-96 animate-float text-white" /></div>
+                    <div className="absolute -bottom-1/4 -right-1/4 opacity-5"><RushCoffeeLogo className="h-[30rem] w-[30rem] animate-float-delay text-white" /></div>
+
+                    <div className="relative z-10 mx-auto max-w-3xl">
+                        <div className="relative mx-auto mb-6 inline-block">
+                            <span className="text-6xl" role="img" aria-label="Coffee cup">☕</span>
                             <div className="absolute -top-4 left-0 right-0 h-12">
                                 <div className="absolute left-1/2 h-6 w-px -translate-x-1/2 animate-steam-1 rounded-full bg-white/50"></div>
                                 <div className="absolute left-1/3 h-8 w-px animate-steam-2 rounded-full bg-white/50"></div>
@@ -300,37 +308,45 @@ const HomePage: React.FC = () => {
                             </div>
                         </div>
 
-                        <h2 className="mb-4 font-display text-4xl font-bold text-white md:text-5xl">
+                        <h2 className="font-display text-4xl font-bold md:text-5xl lg:text-6xl">
                             Ready to Rush Through Your Day?
                         </h2>
-                        <p className="mb-2 text-xl text-primary-100">
-                            Join 5,000+ customers who've already skipped the line.
+                        <p className="mx-auto mb-8 mt-6 max-w-2xl text-xl text-gray-300">
+                            Join 5,000+ customers who've already skipped the line. Experience the future of coffee ordering.
                         </p>
 
-                        <div className="my-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                            <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur">
+                        <div className="mb-10 flex flex-wrap justify-center gap-3">
+                            <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">
                                 10,000+ Orders Completed
                             </span>
-                            <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur">
+                            <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">
                                 4.9★ Average Rating
                             </span>
-                            <span className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur">
+                            <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">
                                 &lt; 5 min Average Wait
                             </span>
                         </div>
 
-                        <Link
-                            to={orderNowPath}
-                            className="inline-flex transform items-center justify-center gap-2 rounded-full bg-white px-8 py-4 text-lg font-semibold text-primary-600 shadow-lg transition hover:scale-105 hover:shadow-2xl"
-                        >
-                            Start Ordering Now
-                            <ArrowRight className="h-5 w-5" />
-                        </Link>
+                        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+                            <Link
+                                to={orderNowPath}
+                                className="group inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all hover:bg-primary-500 hover:shadow-primary-600/30 hover:-translate-y-1"
+                            >
+                                Start Ordering Now
+                                <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                            </Link>
+                            <Link
+                                to="/menu"
+                                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/20 bg-white/5 px-8 py-4 text-lg font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10 hover:-translate-y-1"
+                            >
+                                View Menu
+                            </Link>
+                        </div>
 
-                        <p className="mt-4 text-sm">
-                            <span className="text-white/80">Already have an account? </span>
-                            <Link to="/auth/login" className="font-semibold text-white underline transition hover:text-primary-100">
-                                Login
+                        <p className="mt-8 text-sm text-gray-400">
+                            Already have an account?{' '}
+                            <Link to="/auth/login" className="font-medium text-primary-400 hover:text-primary-300 hover:underline">
+                                Log in here
                             </Link>
                         </p>
                     </div>

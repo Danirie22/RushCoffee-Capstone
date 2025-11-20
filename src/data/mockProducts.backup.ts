@@ -66,7 +66,7 @@ export const mockProducts: Product[] = [
     popular: true,
     displayOrder: 2,
     recipe: [
-      { ingredientId: 'coffee-beans', quantity: 18 },
+      { ingredientId: 'coffee-beans-blend', quantity: 18 },
       { ingredientId: 'hot-water', quantity: 200 },
     ],
   },
@@ -104,11 +104,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 4,
-    recipe: [
-      { ingredientId: 'espresso-shot', quantity: 2 },
-      { ingredientId: 'milk', quantity: 150 },
-      { ingredientId: 'chocolate-sauce', quantity: 25 },
-    ],
   },
   {
     id: 'cb-05',
@@ -123,11 +118,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 5,
-    recipe: [
-      { ingredientId: 'espresso-shot', quantity: 2 },
-      { ingredientId: 'milk', quantity: 180 },
-      { ingredientId: 'chocolate-sauce', quantity: 20 },
-    ],
   },
   {
     id: 'cb-06',
@@ -142,10 +132,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 6,
-    recipe: [
-      { ingredientId: 'espresso-shot', quantity: 2 },
-      { ingredientId: 'hot-water', quantity: 220 },
-    ],
   },
   {
     id: 'cb-07',
@@ -160,11 +146,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 7,
-    recipe: [
-      { ingredientId: 'espresso-shot', quantity: 2 },
-      { ingredientId: 'milk', quantity: 170 },
-      { ingredientId: 'biscoff-spread', quantity: 30 },
-    ],
   },
   {
     id: 'cb-08',
@@ -179,12 +160,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 8,
-    recipe: [
-      { ingredientId: 'espresso-shot', quantity: 2 },
-      { ingredientId: 'milk', quantity: 160 },
-      { ingredientId: 'chocolate-sauce', quantity: 15 },
-      { ingredientId: 'peanut-butter', quantity: 20 },
-    ],
   },
   {
     id: 'cb-09',
@@ -199,11 +174,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 9,
-    recipe: [
-      { ingredientId: 'espresso-shot', quantity: 2 },
-      { ingredientId: 'milk', quantity: 180 },
-      { ingredientId: 'brown-sugar-syrup', quantity: 25 },
-    ],
   },
   {
     id: 'cb-10',
@@ -218,11 +188,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 10,
-    recipe: [
-      { ingredientId: 'espresso-shot', quantity: 2 },
-      { ingredientId: 'milk', quantity: 180 },
-      { ingredientId: 'ice-cubes', quantity: 100 },
-    ],
   },
   {
     id: 'cb-11',
@@ -237,11 +202,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 11,
-    recipe: [
-      { ingredientId: 'espresso-shot', quantity: 2 },
-      { ingredientId: 'milk', quantity: 170 },
-      { ingredientId: 'orange-syrup', quantity: 20 },
-    ],
   },
   {
     id: 'cb-12',
@@ -256,12 +216,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 12,
-    recipe: [
-      { ingredientId: 'espresso-shot', quantity: 2 },
-      { ingredientId: 'milk', quantity: 150 },
-      { ingredientId: 'coffee-jelly', quantity: 80 },
-      { ingredientId: 'ice-cubes', quantity: 80 },
-    ],
   },
 
   // Non-Coffee Based
@@ -278,12 +232,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 13,
-    recipe: [
-      { ingredientId: 'milk', quantity: 200 },
-      { ingredientId: 'red-velvet-powder', quantity: 25 },
-      { ingredientId: 'chocolate-sauce', quantity: 10 },
-      { ingredientId: 'vanilla-syrup', quantity: 15 },
-    ],
   },
   {
     id: 'nc-02',
@@ -298,12 +246,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 14,
-    recipe: [
-      { ingredientId: 'milk', quantity: 180 },
-      { ingredientId: 'matcha-powder', quantity: 5 },
-      { ingredientId: 'red-velvet-powder', quantity: 15 },
-      { ingredientId: 'vanilla-syrup', quantity: 10 },
-    ],
   },
   {
     id: 'nc-03',
@@ -318,10 +260,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 15,
-    recipe: [
-      { ingredientId: 'milk', quantity: 220 },
-      { ingredientId: 'chocolate-sauce', quantity: 30 },
-    ],
   },
   {
     id: 'nc-04',
@@ -336,10 +274,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 16,
-    recipe: [
-      { ingredientId: 'milk', quantity: 200 },
-      { ingredientId: 'strawberry-puree', quantity: 50 },
-    ],
   },
   {
     id: 'nc-05',
@@ -354,10 +288,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 17,
-    recipe: [
-      { ingredientId: 'milk', quantity: 200 },
-      { ingredientId: 'biscoff-spread', quantity: 35 },
-    ],
   },
   {
     id: 'nc-06',
@@ -372,11 +302,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 18,
-    recipe: [
-      { ingredientId: 'milk', quantity: 180 },
-      { ingredientId: 'oreo-crumbs', quantity: 40 },
-      { ingredientId: 'chocolate-sauce', quantity: 15 },
-    ],
   },
 
   // Matcha Series
@@ -412,11 +337,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 20,
-    recipe: [
-      { ingredientId: 'matcha-powder', quantity: 5 },
-      { ingredientId: 'milk', quantity: 180 },
-      { ingredientId: 'strawberry-puree', quantity: 40 },
-    ],
   },
   {
     id: 'ms-03',
@@ -431,11 +351,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 21,
-    recipe: [
-      { ingredientId: 'matcha-powder', quantity: 5 },
-      { ingredientId: 'milk', quantity: 180 },
-      { ingredientId: 'cream-cheese', quantity: 30 },
-    ],
   },
   {
     id: 'ms-04',
@@ -450,11 +365,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 22,
-    recipe: [
-      { ingredientId: 'matcha-powder', quantity: 5 },
-      { ingredientId: 'milk', quantity: 180 },
-      { ingredientId: 'oreo-crumbs', quantity: 35 },
-    ],
   },
 
   // Refreshments
@@ -471,12 +381,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 23,
-    recipe: [
-      { ingredientId: 'mango-puree', quantity: 100 },
-      { ingredientId: 'strawberry-puree', quantity: 50 },
-      { ingredientId: 'ice-cubes', quantity: 120 },
-      { ingredientId: 'milk', quantity: 80 },
-    ],
   },
   {
     id: 'rf-02',
@@ -491,12 +395,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 24,
-    recipe: [
-      { ingredientId: 'mango-puree', quantity: 80 },
-      { ingredientId: 'mixed-berries', quantity: 50 },
-      { ingredientId: 'ice-cubes', quantity: 120 },
-      { ingredientId: 'milk', quantity: 80 },
-    ],
   },
   {
     id: 'rf-03',
@@ -511,12 +409,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 25,
-    recipe: [
-      { ingredientId: 'mango-puree', quantity: 100 },
-      { ingredientId: 'caramel-sauce', quantity: 20 },
-      { ingredientId: 'ice-cubes', quantity: 120 },
-      { ingredientId: 'milk', quantity: 80 },
-    ],
   },
   {
     id: 'rf-04',
@@ -531,11 +423,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 26,
-    recipe: [
-      { ingredientId: 'blueberry-puree', quantity: 100 },
-      { ingredientId: 'ice-cubes', quantity: 120 },
-      { ingredientId: 'milk', quantity: 100 },
-    ],
   },
   {
     id: 'rf-05',
@@ -550,11 +437,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 27,
-    recipe: [
-      { ingredientId: 'strawberry-puree', quantity: 100 },
-      { ingredientId: 'ice-cubes', quantity: 120 },
-      { ingredientId: 'milk', quantity: 100 },
-    ],
   },
   {
     id: 'rf-06',
@@ -569,11 +451,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 28,
-    recipe: [
-      { ingredientId: 'green-apple-puree', quantity: 100 },
-      { ingredientId: 'ice-cubes', quantity: 120 },
-      { ingredientId: 'milk', quantity: 100 },
-    ],
   },
   {
     id: 'rf-07',
@@ -588,11 +465,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 29,
-    recipe: [
-      { ingredientId: 'blueberry-puree', quantity: 60 },
-      { ingredientId: 'soda-water', quantity: 200 },
-      { ingredientId: 'ice-cubes', quantity: 100 },
-    ],
   },
   {
     id: 'rf-08',
@@ -607,11 +479,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 30,
-    recipe: [
-      { ingredientId: 'strawberry-puree', quantity: 60 },
-      { ingredientId: 'soda-water', quantity: 200 },
-      { ingredientId: 'ice-cubes', quantity: 100 },
-    ],
   },
   {
     id: 'rf-09',
@@ -626,11 +493,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 31,
-    recipe: [
-      { ingredientId: 'green-apple-puree', quantity: 60 },
-      { ingredientId: 'soda-water', quantity: 200 },
-      { ingredientId: 'ice-cubes', quantity: 100 },
-    ],
   },
   {
     id: 'rf-10',
@@ -645,11 +507,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 32,
-    recipe: [
-      { ingredientId: 'lemon-juice', quantity: 60 },
-      { ingredientId: 'soda-water', quantity: 200 },
-      { ingredientId: 'ice-cubes', quantity: 100 },
-    ],
   },
   {
     id: 'rf-11',
@@ -664,11 +521,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 33,
-    recipe: [
-      { ingredientId: 'lychee-syrup', quantity: 60 },
-      { ingredientId: 'soda-water', quantity: 200 },
-      { ingredientId: 'ice-cubes', quantity: 100 },
-    ],
   },
   {
     id: 'rf-12',
@@ -683,11 +535,6 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 34,
-    recipe: [
-      { ingredientId: 'mango-puree', quantity: 60 },
-      { ingredientId: 'soda-water', quantity: 200 },
-      { ingredientId: 'ice-cubes', quantity: 100 },
-    ],
   },
 
   // Meals
@@ -706,13 +553,6 @@ export const mockProducts: Product[] = [
     stock: 99,
     popular: true,
     displayOrder: 35,
-    recipe: [
-      { ingredientId: 'bacon-strips', quantity: 3 },
-      { ingredientId: 'bread-crumbs', quantity: 50 },
-      { ingredientId: 'french-fries', quantity: 1 },
-      { ingredientId: 'white-sauce', quantity: 30 },
-      { ingredientId: 'cooking-oil', quantity: 100 },
-    ],
   },
   {
     id: 'ml-02',
@@ -729,13 +569,6 @@ export const mockProducts: Product[] = [
     stock: 99,
     popular: true,
     displayOrder: 36,
-    recipe: [
-      { ingredientId: 'porkchop', quantity: 1 },
-      { ingredientId: 'bread-crumbs', quantity: 60 },
-      { ingredientId: 'french-fries', quantity: 1 },
-      { ingredientId: 'white-sauce', quantity: 30 },
-      { ingredientId: 'cooking-oil', quantity: 120 },
-    ],
   },
   {
     id: 'ml-03',
@@ -751,12 +584,5 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 37,
-    recipe: [
-      { ingredientId: 'chicken-fillet', quantity: 1 },
-      { ingredientId: 'bread-crumbs', quantity: 55 },
-      { ingredientId: 'french-fries', quantity: 1 },
-      { ingredientId: 'white-sauce', quantity: 30 },
-      { ingredientId: 'cooking-oil', quantity: 110 },
-    ],
   },
 ];

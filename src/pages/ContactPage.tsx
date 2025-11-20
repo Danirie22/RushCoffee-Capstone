@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { MapPin, Phone, Mail, Share2, Send, ChevronDown, User, Hash, MessageSquare, CheckCircle, Facebook, Instagram, Twitter } from 'lucide-react';
+import { MapPin, Phone, Mail, Share2, Send, ChevronDown, User, Hash, MessageSquare, CheckCircle, Facebook, Instagram, Twitter, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import Header from '../components/layout/Header';
@@ -93,121 +93,192 @@ const ContactPage: React.FC = () => {
         <div className="bg-white">
             <Header />
             <main>
-                <section className="bg-gradient-to-br from-primary-50 to-coffee-50 px-6 py-20 text-center">
-                    <h1 className="font-display text-5xl font-bold text-coffee-900 md:text-6xl">Get in Touch</h1>
-                    <p className="mt-4 text-xl text-gray-700">We're here to help and answer any question you might have.</p>
+                <section className="relative flex min-h-[40vh] items-center justify-center overflow-hidden bg-coffee-900 px-6 py-20 text-center text-white">
+                    {/* Background Image */}
+                    <div className="absolute inset-0 z-0">
+                        <img
+                            src="https://images.unsplash.com/photo-1485182708500-e8f1f318ba72?q=80&w=2610&auto=format&fit=crop"
+                            alt="Coffee shop conversation"
+                            className="h-full w-full object-cover opacity-30"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-b from-coffee-900/80 via-coffee-900/60 to-coffee-900/90"></div>
+                    </div>
+
+                    <div className="relative z-10 mx-auto max-w-3xl">
+                        <span className="mb-4 inline-block rounded-full bg-primary-500/20 px-4 py-1.5 text-sm font-medium text-primary-300 backdrop-blur-sm">
+                            We'd Love to Hear From You
+                        </span>
+                        <h1 className="animate-fade-in-up font-display text-5xl font-bold md:text-6xl" style={{ animationDelay: '100ms', opacity: 0 }}>
+                            Get in Touch
+                        </h1>
+                        <p className="animate-fade-in-up mx-auto mt-4 max-w-2xl text-xl text-gray-200" style={{ animationDelay: '300ms', opacity: 0 }}>
+                            Have a question, feedback, or just want to say hello? We're here to help.
+                        </p>
+                    </div>
                 </section>
 
-                <section className="px-6 py-20">
-                    <div className="container mx-auto grid max-w-7xl gap-12 lg:grid-cols-5">
-                        <div className="lg:col-span-3">
-                            <Card>
-                                <div className="p-8">
-                                    <h2 className="font-display text-3xl font-bold text-coffee-900">Send us a Message</h2>
-                                    {isSuccess && (
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0.95 }}
-                                            animate={{ opacity: 1, scale: 1 }}
-                                            className="mt-4 flex items-center gap-3 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 p-4 shadow-sm"
-                                        >
-                                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500">
-                                                <CheckCircle className="h-6 w-6 text-white" />
-                                            </div>
-                                            <div>
-                                                <p className="font-semibold text-green-900">Message Sent Successfully!</p>
-                                                <p className="text-sm text-green-700">We'll get back to you within 24 hours.</p>
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                    <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            label="Name"
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            placeholder="Full Name"
-                                            required
-                                            error={errors.name}
-                                            startIcon={<User className="h-5 w-5" />}
-                                        />
-                                        <Input
-                                            id="email"
-                                            name="email"
-                                            type="email"
-                                            label="Email"
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            placeholder="name@company.com"
-                                            required
-                                            error={errors.email}
-                                            startIcon={<Mail className="h-5 w-5" />}
-                                        />
-                                        <Input
-                                            id="phone"
-                                            name="phone"
-                                            type="tel"
-                                            label="Phone"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            placeholder="Phone Number (Optional)"
-                                            startIcon={<Phone className="h-5 w-5" />}
-                                        />
-                                        <Select
-                                            id="subject"
-                                            name="subject"
-                                            label="Subject"
-                                            value={formData.subject}
-                                            onChange={handleChange}
-                                            required
-                                            error={errors.subject}
-                                            startIcon={<Hash className="h-5 w-5" />}
-                                        >
-                                            <option value="" disabled>Select a subject...</option>
-                                            <option value="general">General Inquiry</option>
-                                            <option value="feedback">Feedback</option>
-                                            <option value="partnership">Partnership</option>
-                                            <option value="support">Support</option>
-                                        </Select>
-                                        <Textarea
-                                            id="message"
-                                            name="message"
-                                            label="Message"
-                                            value={formData.message}
-                                            onChange={handleChange}
-                                            placeholder="How can we help you today?"
-                                            rows={5}
-                                            required
-                                            error={errors.message}
-                                            startIcon={<MessageSquare className="h-5 w-5" />}
-                                            showCharCount
-                                            maxLength={500}
-                                            helperText="Please provide as much detail as possible"
-                                        />
-                                        <Button
-                                            type="submit"
-                                            size="lg"
-                                            fullWidth
-                                            isLoading={isSubmitting}
-                                            startIcon={!isSubmitting && <Send className="h-5 w-5" />}
-                                        >
-                                            {isSubmitting ? 'Sending...' : 'Send Message'}
-                                        </Button>
-                                    </form>
+                <section className="bg-gray-50 px-6 py-24">
+                    <div className="container mx-auto max-w-6xl">
+                        <div className="overflow-hidden rounded-3xl bg-white shadow-2xl lg:grid lg:grid-cols-5">
+                            {/* Left: Form (3 cols) */}
+                            <div className="p-8 lg:col-span-3 lg:p-12">
+                                <h2 className="font-display text-3xl font-bold text-coffee-900">Send us a Message</h2>
+                                {isSuccess && (
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.95 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="mt-4 flex items-center gap-3 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 p-4 shadow-sm"
+                                    >
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-500">
+                                            <CheckCircle className="h-6 w-6 text-white" />
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-green-900">Message Sent Successfully!</p>
+                                            <p className="text-sm text-green-700">We'll get back to you within 24 hours.</p>
+                                        </div>
+                                    </motion.div>
+                                )}
+                                <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+                                    <Input
+                                        id="name"
+                                        name="name"
+                                        label="Name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        placeholder="Full Name"
+                                        required
+                                        error={errors.name}
+                                        startIcon={<User className="h-5 w-5" />}
+                                    />
+                                    <Input
+                                        id="email"
+                                        name="email"
+                                        type="email"
+                                        label="Email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        placeholder="name@company.com"
+                                        required
+                                        error={errors.email}
+                                        startIcon={<Mail className="h-5 w-5" />}
+                                    />
+                                    <Input
+                                        id="phone"
+                                        name="phone"
+                                        type="tel"
+                                        label="Phone"
+                                        value={formData.phone}
+                                        onChange={handleChange}
+                                        placeholder="Phone Number (Optional)"
+                                        startIcon={<Phone className="h-5 w-5" />}
+                                    />
+                                    <Select
+                                        id="subject"
+                                        name="subject"
+                                        label="Subject"
+                                        value={formData.subject}
+                                        onChange={handleChange}
+                                        required
+                                        error={errors.subject}
+                                        startIcon={<Hash className="h-5 w-5" />}
+                                    >
+                                        <option value="" disabled>Select a subject...</option>
+                                        <option value="general">General Inquiry</option>
+                                        <option value="feedback">Feedback</option>
+                                        <option value="partnership">Partnership</option>
+                                        <option value="support">Support</option>
+                                    </Select>
+                                    <Textarea
+                                        id="message"
+                                        name="message"
+                                        label="Message"
+                                        value={formData.message}
+                                        onChange={handleChange}
+                                        placeholder="How can we help you today?"
+                                        rows={5}
+                                        required
+                                        error={errors.message}
+                                        startIcon={<MessageSquare className="h-5 w-5" />}
+                                        showCharCount
+                                        maxLength={500}
+                                        helperText="Please provide as much detail as possible"
+                                    />
+                                    <Button
+                                        type="submit"
+                                        size="lg"
+                                        fullWidth
+                                        isLoading={isSubmitting}
+                                        startIcon={!isSubmitting && <Send className="h-5 w-5" />}
+                                    >
+                                        {isSubmitting ? 'Sending...' : 'Send Message'}
+                                    </Button>
+                                </form>
+                            </div>
+
+                            {/* Right: Info (2 cols) - Dark Theme */}
+                            <div className="bg-coffee-900 p-8 text-white lg:col-span-2 lg:p-12">
+                                <h3 className="mb-8 font-display text-2xl font-bold">Contact Information</h3>
+                                <div className="space-y-8">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
+                                            <MapPin className="h-6 w-6 text-primary-300" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-lg">Visit Us</h4>
+                                            <p className="mt-1 text-gray-300">11 Visayan Ave. St. Galas, Quezon City, Philippines</p>
+                                            <a
+                                                href="https://www.google.com/maps/dir/?api=1&destination=11+Visayan+Ave+St.+Galas+Quezon+City"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="mt-2 inline-flex items-center text-sm font-medium text-primary-300 hover:text-white"
+                                            >
+                                                Get Directions <ArrowRight className="ml-1 h-4 w-4" />
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
+                                            <Phone className="h-6 w-6 text-primary-300" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-lg">Call Us</h4>
+                                            <a href="tel:+639171234567" className="mt-1 block text-gray-300 hover:text-white transition-colors">
+                                                +63 917 123 4567
+                                            </a>
+                                            <p className="text-sm text-gray-400">Mon-Sun: 7AM - 8PM</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm">
+                                            <Mail className="h-6 w-6 text-primary-300" />
+                                        </div>
+                                        <div>
+                                            <h4 className="font-bold text-lg">Email Us</h4>
+                                            <a href="mailto:hello@rushcoffee.ph" className="mt-1 block text-gray-300 hover:text-white transition-colors">
+                                                hello@rushcoffee.ph
+                                            </a>
+                                            <p className="text-sm text-gray-400">Responds within 24 hours</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="pt-8 border-t border-white/10">
+                                        <h4 className="font-bold text-lg mb-4">Follow Us</h4>
+                                        <div className="flex gap-4">
+                                            <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-primary-600 hover:scale-110">
+                                                <Facebook className="h-5 w-5" />
+                                            </a>
+                                            <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-primary-600 hover:scale-110">
+                                                <Instagram className="h-5 w-5" />
+                                            </a>
+                                            <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-primary-600 hover:scale-110">
+                                                <Twitter className="h-5 w-5" />
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
-                            </Card>
-                        </div>
-                        <div className="space-y-8 lg:col-span-2 lg:pt-16">
-                            <InfoCard icon={MapPin} title="Visit Us"><p className="mt-1 text-gray-600">123 Coffee Street, Malate, Manila</p><Button variant="secondary" size="sm" className="mt-2">Get Directions</Button></InfoCard>
-                            <InfoCard icon={Phone} title="Call Us"><a href="tel:+639171234567" className="mt-1 text-primary-600 transition hover:text-primary-700">+63 917 123 4567</a><p className="text-sm text-gray-500">Mon-Sun: 7AM - 8PM</p></InfoCard>
-                            <InfoCard icon={Mail} title="Email Us"><a href="mailto:hello@rushcoffee.ph" className="mt-1 text-primary-600 transition hover:text-primary-700">hello@rushcoffee.ph</a><p className="text-sm text-gray-500">Responds within 24 hours</p></InfoCard>
-                            <InfoCard icon={Share2} title="Follow Us">
-                                <div className="mt-2 flex gap-4">
-                                    <a href="#" aria-label="Facebook" className="text-gray-500 transition hover:text-primary-600"><Facebook /></a>
-                                    <a href="#" aria-label="Instagram" className="text-gray-500 transition hover:text-primary-600"><Instagram /></a>
-                                    <a href="#" aria-label="Twitter" className="text-gray-500 transition hover:text-primary-600"><Twitter /></a>
-                                </div>
-                            </InfoCard>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -223,9 +294,23 @@ const ContactPage: React.FC = () => {
                     </div>
                 </section>
 
-                <section>
-                    <div className="h-96 w-full bg-gray-300 flex items-center justify-center">
-                        <p className="text-gray-600 font-semibold">[Google Maps Embed Placeholder]</p>
+                <section className="bg-gray-50 px-6 pb-24 pt-12">
+                    <div className="container mx-auto max-w-6xl text-center">
+                        <h2 className="mb-2 font-display text-3xl font-bold text-coffee-900 md:text-4xl">Find Your Way to Us</h2>
+                        <p className="mb-8 text-gray-600">Come visit our cozy spot in the heart of the city.</p>
+
+                        <div className="h-96 w-full overflow-hidden rounded-3xl shadow-xl">
+                            <iframe
+                                src="https://maps.google.com/maps?q=11%20Visayan%20Ave%20St.%20Galas%20Quezon%20City&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                                width="100%"
+                                height="100%"
+                                style={{ border: 0 }}
+                                allowFullScreen
+                                loading="lazy"
+                                referrerPolicy="no-referrer-when-downgrade"
+                                title="Rush Coffee Location"
+                            ></iframe>
+                        </div>
                     </div>
                 </section>
             </main>

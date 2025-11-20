@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { format } from 'date-fns';
 import { User, ShoppingBag, Settings, Edit, Mail, Phone, Calendar, Star, Loader2, Upload, MessageSquare } from 'lucide-react';
@@ -24,11 +25,11 @@ type Tab = 'overview' | 'orders' | 'settings' | 'feedback';
 const ProfilePage: React.FC = () => {
   const { currentUser, updateUserProfile, updateUserPhoto } = useAuth();
   const { orderHistory, isHistoryLoading } = useOrder();
-  
+
   const [user, setUser] = useState<UserProfile | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [isEditing, setIsEditing] = useState(false);
-  
+
   // Photo Upload State
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
@@ -41,17 +42,17 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     setUser(currentUser);
   }, [currentUser]);
-  
+
   useEffect(() => {
     if (!photoFile) {
-        setPhotoPreview(null);
-        return;
+      setPhotoPreview(null);
+      return;
     }
     const objectUrl = URL.createObjectURL(photoFile);
     setPhotoPreview(objectUrl);
     return () => URL.revokeObjectURL(objectUrl);
   }, [photoFile]);
-  
+
   const favoriteProduct = useMemo(() => {
     // This is a mock implementation since we don't track favorite items yet.
     // In a real app, this would be part of the user's stats.
@@ -67,47 +68,47 @@ const ProfilePage: React.FC = () => {
   };
 
   const handleUpdatePreferences = (updates: Partial<UserProfile['preferences']>) => {
-     if (user) {
-      setUser(prevUser => prevUser ? { ...prevUser, preferences: { ...prevUser.preferences, ...updates }} : null);
+    if (user) {
+      setUser(prevUser => prevUser ? { ...prevUser, preferences: { ...prevUser.preferences, ...updates } } : null);
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-        if (e.target.files[0].size > 2 * 1024 * 1024) { // 2MB limit
-            showToast('File size should not exceed 2MB.');
-            return;
-        }
-        setPhotoFile(e.target.files[0]);
+      if (e.target.files[0].size > 2 * 1024 * 1024) { // 2MB limit
+        showToast('File size should not exceed 2MB.');
+        return;
+      }
+      setPhotoFile(e.target.files[0]);
     }
   };
 
   const handleUploadPhoto = () => {
     if (!photoFile || !user || !updateUserPhoto) return;
     setIsUploading(true);
-    
+
     const reader = new FileReader();
     reader.readAsDataURL(photoFile);
     reader.onloadend = async () => {
-        const base64Photo = reader.result as string;
-        try {
-            await updateUserPhoto(base64Photo);
-            setIsUploading(false);
-            setIsPhotoModalOpen(false);
-            setPhotoFile(null);
-            showToast('Profile photo updated!');
-        } catch (error) {
-            console.error("Error updating photo:", error);
-            showToast('Failed to update photo.');
-            setIsUploading(false);
-        }
+      const base64Photo = reader.result as string;
+      try {
+        await updateUserPhoto(base64Photo);
+        setIsUploading(false);
+        setIsPhotoModalOpen(false);
+        setPhotoFile(null);
+        showToast('Profile photo updated!');
+      } catch (error) {
+        console.error("Error updating photo:", error);
+        showToast('Failed to update photo.');
+        setIsUploading(false);
+      }
     };
   };
 
   const handleOrderAgain = () => {
     if (favoriteProduct) {
-        // Add the default (Grande) size to cart
-        addToCart(favoriteProduct, favoriteProduct.sizes[0]);
+      // Add the default (Grande) size to cart
+      addToCart(favoriteProduct, favoriteProduct.sizes[0]);
     }
   };
 
@@ -163,12 +164,12 @@ const ProfilePage: React.FC = () => {
                 </Card>
               )}
               {isHistoryLoading ? (
-                 <Card>
-                    <h3 className="font-display text-xl font-bold text-coffee-900">Recent Orders</h3>
-                    <div className="mt-4 space-y-4">
-                        {Array.from({ length: 3 }).map((_, i) => <OrderHistoryCardSkeleton key={i} />)}
-                    </div>
-                 </Card>
+                <Card>
+                  <h3 className="font-display text-xl font-bold text-coffee-900">Recent Orders</h3>
+                  <div className="mt-4 space-y-4">
+                    {Array.from({ length: 3 }).map((_, i) => <OrderHistoryCardSkeleton key={i} />)}
+                  </div>
+                </Card>
               ) : (
                 <OrderHistory orders={orderHistory} limit={3} showViewAll onViewAll={() => setActiveTab('orders')} />
               )}
@@ -182,19 +183,19 @@ const ProfilePage: React.FC = () => {
                     <div>
                       <p className="font-semibold text-gray-800">{favoriteProduct.name}</p>
                       <p className="text-sm text-gray-500">{favoriteProduct.category}</p>
-                       <Button size="sm" variant="secondary" className="mt-2" onClick={handleOrderAgain}>Order Again</Button>
+                      <Button size="sm" variant="secondary" className="mt-2" onClick={handleOrderAgain}>Order Again</Button>
                     </div>
                   </div>
                 </Card>
               )}
-               <Card>
-                    <h3 className="font-display text-xl font-bold text-coffee-900">Quick Stats</h3>
-                     <ul className="mt-4 space-y-3 text-gray-700">
-                        <li className="flex justify-between"><span>Orders this week:</span> <span className="font-bold">5</span></li>
-                        <li className="flex justify-between"><span>Orders this month:</span> <span className="font-bold">12</span></li>
-                        <li className="flex justify-between"><span>Total Savings:</span> <span className="font-bold text-green-600">₱250.00</span></li>
-                    </ul>
-                </Card>
+              <Card>
+                <h3 className="font-display text-xl font-bold text-coffee-900">Quick Stats</h3>
+                <ul className="mt-4 space-y-3 text-gray-700">
+                  <li className="flex justify-between"><span>Orders this week:</span> <span className="font-bold">5</span></li>
+                  <li className="flex justify-between"><span>Orders this month:</span> <span className="font-bold">12</span></li>
+                  <li className="flex justify-between"><span>Total Savings:</span> <span className="font-bold text-green-600">₱250.00</span></li>
+                </ul>
+              </Card>
             </div>
           </div>
         );
@@ -206,66 +207,65 @@ const ProfilePage: React.FC = () => {
       <Header />
       <main>
         <ProfileHeader user={user} onEditPhoto={() => setIsPhotoModalOpen(true)} />
-        
+
         {/* Tab Navigation */}
-        <div className="sticky top-20 z-30 border-b border-gray-200 bg-white/95 backdrop-blur-sm">
-          <div className="container mx-auto max-w-7xl px-6">
-            <nav className="-mb-px flex space-x-6 overflow-x-auto">
+        <div className="sticky top-16 z-30 border-b border-gray-200 bg-white/95 backdrop-blur-sm sm:top-20">
+          <div className="container mx-auto max-w-7xl px-4 sm:px-6">
+            <nav className="-mb-px flex space-x-4 overflow-x-auto sm:space-x-8 no-scrollbar">
               {tabItems.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as Tab)}
-                  className={`group inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-colors ${
-                    activeTab === tab.id
+                  className={`group inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-all ${activeTab === tab.id
                       ? 'border-primary-600 text-primary-600'
                       : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                  }`}
+                    }`}
                 >
-                  <tab.Icon className={`h-5 w-5 ${activeTab !== tab.id && 'text-gray-400 group-hover:text-gray-500'}`} />
+                  <tab.Icon className={`h-5 w-5 ${activeTab === tab.id ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'}`} />
                   {tab.label}
                 </button>
               ))}
             </nav>
           </div>
         </div>
-        
+
         {/* Tab Content */}
         <div className="container mx-auto max-w-7xl p-6">
           {renderTabContent()}
         </div>
       </main>
       <Footer />
-      
+
       {/* Photo Upload Modal */}
       <Modal isOpen={isPhotoModalOpen} onClose={() => setIsPhotoModalOpen(false)} title="Upload New Photo">
         <div className="space-y-4">
-            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
-            <div 
-                className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center transition hover:bg-gray-100"
-                onClick={() => fileInputRef.current?.click()}
-            >
-                {photoPreview ? (
-                    <img src={photoPreview} alt="Preview" className="h-32 w-32 rounded-full object-cover"/>
-                ) : (
-                    <>
-                        <Upload className="h-12 w-12 text-gray-400" />
-                        <span className="mt-2 block text-sm font-semibold text-gray-600">Click to upload</span>
-                        <span className="mt-1 block text-xs text-gray-500">PNG or JPG (MAX. 2MB)</span>
-                    </>
-                )}
-            </div>
-             {isUploading && (
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div className="bg-primary-600 h-2.5 rounded-full animate-pulse" style={{width: '100%'}}></div>
-                </div>
+          <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" className="hidden" />
+          <div
+            className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 p-6 text-center transition hover:bg-gray-100"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {photoPreview ? (
+              <img src={photoPreview} alt="Preview" className="h-32 w-32 rounded-full object-cover" />
+            ) : (
+              <>
+                <Upload className="h-12 w-12 text-gray-400" />
+                <span className="mt-2 block text-sm font-semibold text-gray-600">Click to upload</span>
+                <span className="mt-1 block text-xs text-gray-500">PNG or JPG (MAX. 2MB)</span>
+              </>
             )}
-            <div className="flex justify-end gap-3">
-                <Button variant="ghost" onClick={() => setIsPhotoModalOpen(false)}>Cancel</Button>
-                <Button onClick={handleUploadPhoto} disabled={!photoFile || isUploading}>
-                    {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Upload className="mr-2 h-4 w-4"/>}
-                    Upload Photo
-                </Button>
+          </div>
+          {isUploading && (
+            <div className="w-full bg-gray-200 rounded-full h-2.5">
+              <div className="bg-primary-600 h-2.5 rounded-full animate-pulse" style={{ width: '100%' }}></div>
             </div>
+          )}
+          <div className="flex justify-end gap-3">
+            <Button variant="ghost" onClick={() => setIsPhotoModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleUploadPhoto} disabled={!photoFile || isUploading}>
+              {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4" />}
+              Upload Photo
+            </Button>
+          </div>
         </div>
       </Modal>
     </div>

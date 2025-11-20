@@ -5,9 +5,9 @@ const ProductCardSkeleton: React.FC = () => {
   return (
     <Card className="flex animate-pulse flex-col overflow-hidden">
       <div className="relative">
-        <div className="h-48 w-full bg-gray-300"></div>
+        <div className="h-32 w-full bg-gray-300 sm:h-48"></div>
       </div>
-      
+
       <div className="flex flex-1 flex-col p-4">
         <div>
           <div className="h-4 w-1/4 rounded bg-gray-300"></div>
@@ -17,7 +17,7 @@ const ProductCardSkeleton: React.FC = () => {
             <div className="h-4 w-5/6 rounded bg-gray-300"></div>
           </div>
         </div>
-        
+
         <div className="mt-auto pt-4">
           <div className="flex items-center justify-between">
             <div className="h-8 w-1/3 rounded bg-gray-300"></div>

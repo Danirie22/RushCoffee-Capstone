@@ -67,7 +67,7 @@ const AdminDashboardPage: React.FC = () => {
     return (
         <div>
             <h1 className="mb-6 font-display text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard
                     title="Total Revenue Today"
                     value={`₱${stats.revenueToday.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}

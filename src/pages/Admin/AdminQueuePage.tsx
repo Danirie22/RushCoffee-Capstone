@@ -34,7 +34,7 @@ const AdminQueuePage: React.FC = () => {
                     timestamp: doc.data().timestamp.toDate(),
                 } as QueueItem);
             });
-            
+
             // Sort on the client-side because composite indexes are not available by default.
             activeOrders.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
             setOrders(activeOrders);
@@ -46,8 +46,10 @@ const AdminQueuePage: React.FC = () => {
 
         return () => unsubscribe();
     }, []);
-    
+
     const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
+        let pointsData: { userId: string; pointsEarned: number; newTier: 'bronze' | 'silver' | 'gold'; totalAmount: number; orderNumber: string } | null = null;
+
         try {
             await db.runTransaction(async (transaction) => {
                 // === PHASE 1: ALL READS FIRST ===
@@ -62,17 +64,10 @@ const AdminQueuePage: React.FC = () => {
                 const orderData = orderDoc.data() as QueueItem;
                 const currentStatus = orderData.status;
 
-                let userDoc: firebase.firestore.DocumentSnapshot | null = null;
                 const ingredientDocsToRead = new Map<string, firebase.firestore.DocumentReference>();
                 const ingredientDeductions = new Map<string, number>();
 
-                // 2. If completing order, read user document for rewards.
-                if (newStatus === 'completed' && currentStatus !== 'completed') {
-                    const userRef = db.collection("users").doc(orderData.userId);
-                    userDoc = await transaction.get(userRef);
-                }
-
-                // 3. If preparing order, read product recipes to determine which ingredients to read.
+                // 2. If preparing order, read product recipes to determine which ingredients to read.
                 if (currentStatus === 'waiting' && newStatus === 'preparing') {
                     const productRefs = orderData.orderItems.map(item => db.collection("products").doc(item.productId));
                     const productDocs = await Promise.all(productRefs.map(ref => transaction.get(ref)));
@@ -85,18 +80,57 @@ const AdminQueuePage: React.FC = () => {
                             for (const recipeItem of productDoc.data()!.recipe) {
                                 const ingredientRef = db.collection("ingredients").doc(recipeItem.ingredientId);
                                 const amountToDeduct = recipeItem.quantity * item.quantity;
-                                
+
                                 ingredientDocsToRead.set(ingredientRef.path, ingredientRef);
                                 ingredientDeductions.set(ingredientRef.path, (ingredientDeductions.get(ingredientRef.path) || 0) + amountToDeduct);
                             }
                         }
                     }
                 }
-                
-                // 4. Read all unique ingredient documents needed for stock deduction.
+
+                // 3. Read all unique ingredient documents needed for stock deduction.
                 const ingredientDocs = await Promise.all(
                     Array.from(ingredientDocsToRead.values()).map(ref => transaction.get(ref))
                 );
+
+                // 4. If completing order, PREPARE data for user update (but don't write yet).
+                // We need to read the user doc to calculate points/tier correctly.
+                if (newStatus === 'completed' && currentStatus !== 'completed') {
+                    const userRef = db.collection("users").doc(orderData.userId);
+                    const userDoc = await transaction.get(userRef);
+
+                    if (userDoc.exists) {
+                        const userData = userDoc.data() as UserProfile;
+
+                        let basePoints = 0;
+                        for (const item of orderData.orderItems) {
+                            if (item.productName.includes('(Grande)')) basePoints += 4 * item.quantity;
+                            else if (item.productName.includes('(Venti)')) basePoints += 5 * item.quantity;
+                        }
+
+                        let pointsMultiplier = 1;
+                        const currentTier = userData.tier || 'bronze';
+                        if (currentTier === 'silver') pointsMultiplier = 1.5;
+                        if (currentTier === 'gold') pointsMultiplier = 2;
+
+                        const pointsEarned = Math.floor(basePoints * pointsMultiplier);
+                        const currentLifetimePoints = userData.lifetimePoints || 0;
+                        const newLifetimePoints = currentLifetimePoints + pointsEarned;
+
+                        let newTier: 'bronze' | 'silver' | 'gold' = currentTier;
+                        if (newTier === 'bronze' && newLifetimePoints >= tierThresholds.silver.min) newTier = 'silver';
+                        if (newTier === 'silver' && newLifetimePoints >= tierThresholds.gold.min) newTier = 'gold';
+
+                        // Save this data to use AFTER the transaction
+                        pointsData = {
+                            userId: orderData.userId,
+                            pointsEarned,
+                            newTier,
+                            totalAmount: orderData.totalAmount,
+                            orderNumber: orderData.orderNumber
+                        };
+                    }
+                }
 
                 // === ALL READS ARE NOW COMPLETE ===
                 // === PHASE 2: VALIDATION & LOGIC ===
@@ -117,38 +151,7 @@ const AdminQueuePage: React.FC = () => {
                     }
                 }
 
-                // 2. Calculate rewards points.
-                let pointsEarned = 0;
-                let newTier: 'bronze' | 'silver' | 'gold' = 'bronze';
-
-                if (newStatus === 'completed' && currentStatus !== 'completed' && userDoc && userDoc.exists) {
-                    const userData = userDoc.data() as UserProfile;
-                    
-                    let basePoints = 0;
-                    for (const item of orderData.orderItems) {
-                        if (item.productName.includes('(Grande)')) basePoints += 4 * item.quantity;
-                        else if (item.productName.includes('(Venti)')) basePoints += 5 * item.quantity;
-                    }
-
-                    let pointsMultiplier = 1;
-                    // Fallback to bronze if tier is missing
-                    const currentTier = userData.tier || 'bronze';
-                    
-                    if (currentTier === 'silver') pointsMultiplier = 1.5;
-                    if (currentTier === 'gold') pointsMultiplier = 2;
-                    
-                    pointsEarned = Math.floor(basePoints * pointsMultiplier);
-
-                    // Fallback to 0 if lifetimePoints is missing
-                    const currentLifetimePoints = userData.lifetimePoints || 0;
-                    const newLifetimePoints = currentLifetimePoints + pointsEarned;
-                    
-                    newTier = currentTier;
-                    if (newTier === 'bronze' && newLifetimePoints >= tierThresholds.silver.min) newTier = 'silver';
-                    if (newTier === 'silver' && newLifetimePoints >= tierThresholds.gold.min) newTier = 'gold';
-                }
-
-                // === PHASE 3: ALL WRITES AT THE END ===
+                // === PHASE 3: WRITES (Order & Stock ONLY) ===
 
                 // 1. Update ingredient stock.
                 if (currentStatus === 'waiting' && newStatus === 'preparing') {
@@ -158,29 +161,38 @@ const AdminQueuePage: React.FC = () => {
                     }
                 }
 
-                // 2. Update user stats and rewards.
-                if (newStatus === 'completed' && currentStatus !== 'completed' && userDoc && userDoc.exists) {
+                // 2. Update the order status.
+                transaction.update(orderRef, { status: newStatus });
+            });
+
+            // === PHASE 4: USER REWARDS (Separate Operation) ===
+            // We do this OUTSIDE the transaction so that if it fails (due to permissions),
+            // it doesn't roll back the Order Completion.
+            if (pointsData) {
+                try {
                     const rewardHistoryEntry = {
                         id: `rh-${Date.now()}`,
                         type: 'earned' as const,
-                        points: pointsEarned,
-                        description: `Order #${orderData.orderNumber}`,
+                        points: pointsData.pointsEarned,
+                        description: `Order #${pointsData.orderNumber}`,
                         date: new Date(),
                     };
-                    const userRef = db.collection("users").doc(orderData.userId);
-                    transaction.update(userRef, {
+
+                    await db.collection("users").doc(pointsData.userId).update({
                         totalOrders: firebase.firestore.FieldValue.increment(1),
-                        totalSpent: firebase.firestore.FieldValue.increment(orderData.totalAmount),
-                        currentPoints: firebase.firestore.FieldValue.increment(pointsEarned),
-                        lifetimePoints: firebase.firestore.FieldValue.increment(pointsEarned),
-                        tier: newTier,
+                        totalSpent: firebase.firestore.FieldValue.increment(pointsData.totalAmount),
+                        currentPoints: firebase.firestore.FieldValue.increment(pointsData.pointsEarned),
+                        lifetimePoints: firebase.firestore.FieldValue.increment(pointsData.pointsEarned),
+                        tier: pointsData.newTier,
                         rewardsHistory: firebase.firestore.FieldValue.arrayUnion(rewardHistoryEntry)
                     });
+                } catch (userError) {
+                    console.error("Failed to update user rewards:", userError);
+                    showToast("Order completed, but failed to update user points (Permission Error).");
+                    return; // Exit early, but order is already saved
                 }
+            }
 
-                // 3. Finally, update the order status.
-                transaction.update(orderRef, { status: newStatus });
-            });
         } catch (error: any) {
             console.error("Error updating order status and stock: ", error);
             showToast(error.message || 'Failed to update order. Please check inventory.');
@@ -209,7 +221,7 @@ const AdminQueuePage: React.FC = () => {
                     <p className="mt-1 text-gray-500">New orders will appear here in real-time.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     <QueueColumn
                         title="Waiting"
                         orders={waitingOrders}

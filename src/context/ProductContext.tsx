@@ -41,9 +41,28 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
             const q = productsCollectionRef.orderBy('displayOrder', 'asc');
             const productSnapshot = await q.get();
 
+            // Auto-seed products if collection is empty
             if (productSnapshot.empty) {
-                console.info("Products collection is empty in Firestore. Using local mock data.");
-                setProducts(mockProducts);
+                console.log("Products collection is empty. Seeding products with specific IDs...");
+                const batch = db.batch();
+
+                mockProducts.forEach(product => {
+                    const { id, ...productData } = product;
+                    const docRef = productsCollectionRef.doc(id); // Use product ID as document ID
+                    batch.set(docRef, productData);
+                });
+
+                await batch.commit();
+                console.log(`Successfully seeded ${mockProducts.length} products to Firestore!`);
+
+                // Fetch again after seeding
+                const newSnapshot = await q.get();
+                const productList = newSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                })) as Product[];
+
+                setProducts(productList);
                 return;
             }
 
@@ -51,7 +70,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
                 id: doc.id,
                 ...doc.data()
             })) as Product[];
-            
+
             setProducts(productList);
         } catch (err: any) {
             if (err.code === 'permission-denied') {
@@ -103,7 +122,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
             throw new Error("Failed to delete product.");
         }
     };
-    
+
     const value = { products, isLoading, error, addProduct, updateProduct, deleteProduct };
 
     return (

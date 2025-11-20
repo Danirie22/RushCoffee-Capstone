@@ -1,5 +1,4 @@
 
-
 import * as React from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Bell, X } from 'lucide-react';
@@ -10,6 +9,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useOrder } from '../../context/OrderContext';
 import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
 import { rushCoffeeLogoBase64 } from '../../assets/rush-coffee-logo-base64';
+import {
+    requestNotificationPermission,
+    showNotification,
+    getNotificationPermission,
+    isNotificationSupported
+} from '../../utils/notifications';
 
 const QueuePage: React.FC = () => {
     const { currentUser } = useAuth();
@@ -17,15 +22,16 @@ const QueuePage: React.FC = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const [notificationPermission, setNotificationPermission] = React.useState('default');
+    const [notificationPermission, setNotificationPermission] = React.useState<NotificationPermission>('default');
     const [showPermissionBanner, setShowPermissionBanner] = React.useState(false);
     const notificationSentForOrder = React.useRef<string | null>(null);
 
     // Check notification permission on mount
     React.useEffect(() => {
-        if ('Notification' in window) {
-            setNotificationPermission(Notification.permission);
-            if (Notification.permission === 'default') {
+        if (isNotificationSupported()) {
+            const permission = getNotificationPermission();
+            setNotificationPermission(permission);
+            if (permission === 'default') {
                 setShowPermissionBanner(true);
             }
         }
@@ -39,21 +45,19 @@ const QueuePage: React.FC = () => {
             notificationPermission === 'granted' &&
             notificationSentForOrder.current !== activeOrder.id
         ) {
-            const title = "Your Order is Ready! ☕";
-            const options = {
+            // Send notification using the new utility
+            showNotification({
+                title: "Your Order is Ready! ☕",
                 body: `Your Rush Coffee order (${activeOrder.orderNumber}) is now ready for pickup.`,
                 icon: rushCoffeeLogoBase64,
                 tag: activeOrder.id, // Prevents duplicate notifications for the same order
-            };
-            
-            const notification = new Notification(title, options);
-
-            // Focus the window when notification is clicked
-            notification.onclick = () => {
-                window.focus();
-            };
-
-            notificationSentForOrder.current = activeOrder.id;
+                data: { orderId: activeOrder.id, orderNumber: activeOrder.orderNumber }
+            }).then((success) => {
+                if (success) {
+                    console.log('Notification sent successfully');
+                    notificationSentForOrder.current = activeOrder.id;
+                }
+            });
         }
 
         // Reset sent flag if there's no active order or it's completed
@@ -63,12 +67,12 @@ const QueuePage: React.FC = () => {
     }, [activeOrder, notificationPermission]);
 
     const handleRequestPermission = async () => {
-        if (!('Notification' in window)) {
-            alert('This browser does not support desktop notification');
+        if (!isNotificationSupported()) {
+            alert('This browser does not support notifications');
             return;
         }
 
-        const permission = await Notification.requestPermission();
+        const permission = await requestNotificationPermission();
         setNotificationPermission(permission);
         if (permission === 'granted' || permission === 'denied') {
             setShowPermissionBanner(false);
@@ -76,7 +80,7 @@ const QueuePage: React.FC = () => {
     };
 
     if (!currentUser) {
-         // Guest view or logged out user
+        // Guest view or logged out user
         return (
             <div className="flex min-h-screen flex-col bg-gray-50">
                 <Header />
@@ -93,7 +97,7 @@ const QueuePage: React.FC = () => {
                             <Link to="/auth/login" className="rounded-full bg-primary-600 px-8 py-3 font-semibold text-white transition-transform hover:scale-105">
                                 Login
                             </Link>
-                             <Link to="/menu" className="rounded-full border-2 border-primary-600 px-8 py-3 font-semibold text-primary-600 transition-transform hover:scale-105 hover:bg-primary-50">
+                            <Link to="/menu" className="rounded-full border-2 border-primary-600 px-8 py-3 font-semibold text-primary-600 transition-transform hover:scale-105 hover:bg-primary-50">
                                 View Menu
                             </Link>
                         </div>
@@ -103,7 +107,7 @@ const QueuePage: React.FC = () => {
             </div>
         );
     }
-    
+
     // Logged-in user with no active order
     if (!activeOrder) {
         return (
@@ -139,7 +143,7 @@ const QueuePage: React.FC = () => {
             <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
                 <div className="flex w-full max-w-md flex-col items-center gap-6">
                     {location.state?.fromCheckout && (
-                         <div className="w-full rounded-lg bg-green-100 p-4 text-center text-green-800 animate-fade-in-up">
+                        <div className="w-full rounded-lg bg-green-100 p-4 text-center text-green-800 animate-fade-in-up">
                             <h2 className="font-bold">Order Placed Successfully!</h2>
                             <p className="text-sm">You are now in the queue. We'll start preparing your order shortly.</p>
                         </div>
@@ -171,7 +175,7 @@ const QueuePage: React.FC = () => {
                             </button>
                         </div>
                     )}
-                    
+
                     <ModernQueueCard order={activeOrder} />
                 </div>
             </main>

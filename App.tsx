@@ -33,6 +33,7 @@ import AdminFeedbackPage from './src/pages/Admin/AdminFeedbackPage';
 import AdminSettingsPage from './src/pages/Admin/AdminSettingsPage';
 import TermsPage from './src/pages/Home/TermsPage';
 import PrivacyPolicyPage from './src/pages/Home/PrivacyPolicyPage';
+import { registerServiceWorker } from './src/utils/notifications';
 
 // Placeholder for pages that are not yet created
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
@@ -107,7 +108,7 @@ const AppContent: React.FC = () => {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/cookies" element={<ComingSoon title="Cookie Policy" />} />
-        
+
         {/* Admin Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
@@ -120,7 +121,7 @@ const AppContent: React.FC = () => {
             <Route path="settings" element={<AdminSettingsPage />} />
           </Route>
         </Route>
-        
+
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CartSidebar
@@ -133,7 +134,7 @@ const AppContent: React.FC = () => {
       />
       {toastMessage && (
         <div className="fixed bottom-4 right-4 z-[100] animate-fade-in-up rounded-lg bg-gray-900 px-4 py-3 text-white shadow-lg">
-            {toastMessage}
+          {toastMessage}
         </div>
       )}
     </>
@@ -141,6 +142,19 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  // Register service worker on app mount for notification support
+  React.useEffect(() => {
+    registerServiceWorker()
+      .then((registration) => {
+        if (registration) {
+          console.log('Service Worker registered for notifications');
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to register service worker:', error);
+      });
+  }, []);
+
   return (
     <AuthProvider>
       <ProductProvider>

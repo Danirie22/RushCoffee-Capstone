@@ -2,7 +2,7 @@ import React, { useState, FormEvent } from 'react';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import { Loader2, Save } from 'lucide-react';
-import { IngredientData } from '../../data/mockIngredients';
+import { IngredientData, IngredientCategory } from '../../data/mockIngredients';
 
 interface AddIngredientModalProps {
     isOpen: boolean;
@@ -11,8 +11,9 @@ interface AddIngredientModalProps {
 }
 
 const AddIngredientModal: React.FC<AddIngredientModalProps> = ({ isOpen, onClose, onAdd }) => {
-    const [formData, setFormData] = useState<IngredientData>({
+    const [formData, setFormData] = useState<Omit<IngredientData, 'id'>>({
         name: '',
+        category: 'Coffee & Beans',
         stock: 0,
         unit: 'g',
         lowStockThreshold: 10,
@@ -34,7 +35,8 @@ const AddIngredientModal: React.FC<AddIngredientModalProps> = ({ isOpen, onClose
         }
         setIsSubmitting(true);
         try {
-            await onAdd(formData);
+            // Cast to IngredientData since handleAddIngredient will generate the id
+            await onAdd(formData as IngredientData);
         } catch (error) {
             console.error("Failed to add ingredient", error);
         } finally {
@@ -57,6 +59,29 @@ const AddIngredientModal: React.FC<AddIngredientModalProps> = ({ isOpen, onClose
                         required
                         autoFocus
                     />
+                </div>
+                <div>
+                    <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+                    <select
+                        id="category"
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                        required
+                    >
+                        <option value="Coffee & Beans">Coffee & Beans</option>
+                        <option value="Dairy">Dairy</option>
+                        <option value="Sauces">Sauces</option>
+                        <option value="Syrups">Syrups</option>
+                        <option value="Specialty">Specialty</option>
+                        <option value="Matcha & Tea">Matcha & Tea</option>
+                        <option value="Fruits & Purees">Fruits & Purees</option>
+                        <option value="Beverages">Beverages</option>
+                        <option value="Frozen">Frozen</option>
+                        <option value="Proteins">Proteins</option>
+                        <option value="Dry Goods">Dry Goods</option>
+                    </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -87,7 +112,7 @@ const AddIngredientModal: React.FC<AddIngredientModalProps> = ({ isOpen, onClose
                         </select>
                     </div>
                 </div>
-                 <div>
+                <div>
                     <label htmlFor="lowStockThreshold" className="block text-sm font-medium text-gray-700">Low Stock Threshold</label>
                     <input
                         type="number"
