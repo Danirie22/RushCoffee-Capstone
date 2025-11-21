@@ -181,23 +181,6 @@ const LoginPage: React.FC = () => {
                             </div>
                         </form>
 
-                        <div className="my-6 flex items-center">
-                            <div className="flex-grow border-t border-gray-300"></div>
-                            <span className="mx-4 flex-shrink text-sm text-gray-500">or</span>
-                            <div className="flex-grow border-t border-gray-300"></div>
-                        </div>
-
-                        <button
-                            type="button"
-                            disabled={isLoading || isGoogleLoading}
-                            onClick={handleGoogleSignIn}
-                            className="flex w-full items-center justify-center gap-3 rounded-full border border-gray-300 px-4 py-3 text-base font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
-                        >
-                            {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleIcon />}
-                            Continue with Google
-                        </button>
-
-
                         <p className="mt-8 text-center text-sm text-gray-600">
                             Don't have an account?{' '}
                             <Link to="/auth/register" className="font-medium text-primary-600 hover:text-primary-500">

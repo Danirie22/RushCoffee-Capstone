@@ -1,5 +1,3 @@
-
-
 import * as React from 'react';
 import { HashRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import HomePage from './pages/HomePage';
@@ -16,6 +14,8 @@ import ProfilePage from './pages/Profile/ProfilePage';
 import AboutPage from './pages/Home/AboutPage';
 import ContactPage from './pages/ContactPage';
 import FAQPage from './pages/Home/FAQPage';
+import { NotificationProvider } from './context/NotificationContext';
+import OrderNotification from './components/ui/OrderNotification';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider, useCart } from './context/CartContext';
 import { OrderProvider } from './context/OrderContext';
@@ -34,6 +34,7 @@ import AdminFeedbackPage from './pages/Admin/AdminFeedbackPage';
 import AdminSettingsPage from './pages/Admin/AdminSettingsPage';
 import TermsPage from './pages/Home/TermsPage';
 import PrivacyPolicyPage from './pages/Home/PrivacyPolicyPage';
+import CookiePolicyPage from './pages/Home/CookiePolicyPage';
 
 // Placeholder for pages that are not yet created
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
@@ -81,7 +82,18 @@ const NotFound: React.FC = () => {
 
 // Wrapper component to use hooks from contexts
 const AppContent: React.FC = () => {
-  const { isCartOpen, closeCart, cartItems, updateQuantity, removeFromCart, toastMessage } = useCart();
+  const {
+    isCartOpen,
+    closeCart,
+    cartItems,
+    updateQuantity,
+    removeFromCart,
+    toastMessage,
+    selectedItemIds,
+    toggleItemSelection,
+    selectAllItems,
+    deselectAllItems
+  } = useCart();
   const navigate = useNavigate();
 
   const handleCheckout = () => {
@@ -92,6 +104,7 @@ const AppContent: React.FC = () => {
   return (
     <>
       <ScrollToTop />
+      <OrderNotification />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/about" element={<AboutPage />} />
@@ -107,8 +120,8 @@ const AppContent: React.FC = () => {
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
-        <Route path="/cookies" element={<ComingSoon title="Cookie Policy" />} />
-        
+        <Route path="/cookies" element={<CookiePolicyPage />} />
+
         {/* Admin Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
@@ -121,7 +134,7 @@ const AppContent: React.FC = () => {
             <Route path="settings" element={<AdminSettingsPage />} />
           </Route>
         </Route>
-        
+
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CartSidebar
@@ -131,10 +144,14 @@ const AppContent: React.FC = () => {
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeFromCart}
         onCheckout={handleCheckout}
+        selectedItemIds={selectedItemIds}
+        onToggleItemSelection={toggleItemSelection}
+        onSelectAll={selectAllItems}
+        onDeselectAll={deselectAllItems}
       />
       {toastMessage && (
         <div className="fixed bottom-4 right-4 z-[100] animate-fade-in-up rounded-lg bg-gray-900 px-4 py-3 text-white shadow-lg">
-            {toastMessage}
+          {toastMessage}
         </div>
       )}
     </>
@@ -144,15 +161,17 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <ProductProvider>
-        <OrderProvider>
-          <CartProvider>
-            <HashRouter>
-              <AppContent />
-            </HashRouter>
-          </CartProvider>
-        </OrderProvider>
-      </ProductProvider>
+      <NotificationProvider>
+        <ProductProvider>
+          <OrderProvider>
+            <CartProvider>
+              <HashRouter>
+                <AppContent />
+              </HashRouter>
+            </CartProvider>
+          </OrderProvider>
+        </ProductProvider>
+      </NotificationProvider>
     </AuthProvider>
   );
 };

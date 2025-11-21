@@ -55,11 +55,11 @@ const Footer: React.FC = () => {
                         <ul className="space-y-4">
                             <li className="flex items-start gap-3">
                                 <MapPin className="mt-1 h-5 w-5 flex-shrink-0 text-primary-500" />
-                                <span>123 Coffee Street, Manila</span>
+                                <span>11 Visayan Ave. St. Galas, Quezon City, Philippines</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Phone className="h-5 w-5 flex-shrink-0 text-primary-500" />
-                                <a href="tel:+639171234567" className="transition-colors hover:text-white">+63 917 123 4567</a>
+                                <a href="tel:09304641022" className="transition-colors hover:text-white">0930 464 1022</a>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Mail className="h-5 w-5 flex-shrink-0 text-primary-500" />
@@ -68,14 +68,11 @@ const Footer: React.FC = () => {
                         </ul>
                     </address>
                     <div className="mt-8 flex gap-4">
-                        <a href="#" aria-label="Facebook" className="rounded-full bg-white/5 p-2 transition-colors hover:bg-primary-600 hover:text-white">
+                        <a href="https://www.facebook.com/profile.php?id=61551613276320" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="rounded-full bg-white/5 p-2 transition-colors hover:bg-primary-600 hover:text-white">
                             <Facebook className="h-5 w-5" />
                         </a>
-                        <a href="#" aria-label="Instagram" className="rounded-full bg-white/5 p-2 transition-colors hover:bg-primary-600 hover:text-white">
+                        <a href="https://www.instagram.com/Rush_Coffee2023/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="rounded-full bg-white/5 p-2 transition-colors hover:bg-primary-600 hover:text-white">
                             <Instagram className="h-5 w-5" />
-                        </a>
-                        <a href="#" aria-label="Twitter" className="rounded-full bg-white/5 p-2 transition-colors hover:bg-primary-600 hover:text-white">
-                            <Twitter className="h-5 w-5" />
                         </a>
                     </div>
                 </div>
@@ -84,7 +81,7 @@ const Footer: React.FC = () => {
             {/* Bottom Bar */}
             <div className="relative z-10 border-t border-white/10 bg-black/20">
                 <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-6 py-6 text-center text-sm text-coffee-300 sm:flex-row">
-                    <p>&copy; {new Date().getFullYear()} Rush Coffee. All rights reserved.</p>
+                    <p>&copy; 2023 Rush Coffee. All rights reserved.</p>
                     <p className="flex items-center gap-1">
                         Made with <span className="text-red-500">❤️</span> and <span className="text-amber-500">☕</span>
                     </p>

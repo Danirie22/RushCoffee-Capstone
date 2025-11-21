@@ -4,17 +4,17 @@ import "firebase/compat/firestore";
 import "firebase/compat/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDzEay5fGB-2r5_V9UXOO8cOv-nJdHwDRg",
-  authDomain: "rush-coffee.firebaseapp.com",
-  projectId: "rush-coffee",
-  storageBucket: "rush-coffee.appspot.com",
-  messagingSenderId: "423413538635",
-  appId: "1:423413538635:web:ded0369f50c3a9086bd2ce"
+    apiKey: "AIzaSyDzEay5fGB-2r5_V9UXOO8cOv-nJdHwDRg",
+    authDomain: "rush-coffee.firebaseapp.com",
+    projectId: "rush-coffee",
+    storageBucket: "rush-coffee.appspot.com",
+    messagingSenderId: "423413538635",
+    appId: "1:423413538635:web:ded0369f50c3a9086bd2ce"
 };
 
 // FIX: Use compat library imports for v8 syntax.
 if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
 }
 
 export const auth = firebase.auth();

@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShoppingCart, Star, Sparkles } from 'lucide-react';
@@ -36,12 +35,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLogge
 
   const renderStockStatus = () => {
     if (isOutOfStock) {
-      return <p className="text-sm font-medium text-red-600">Out of Stock</p>;
+      return <p className="text-[10px] sm:text-sm font-medium text-red-600">Out of Stock</p>;
     }
     if (stock < 5) {
-      return <p className="text-sm font-medium text-orange-600">Only {stock} left</p>;
+      return <p className="text-[10px] sm:text-sm font-medium text-orange-600">Only {stock} left</p>;
     }
-    return <p className="text-sm font-medium text-green-600">In Stock</p>;
+    return <p className="text-[10px] sm:text-sm font-medium text-green-600">In Stock</p>;
   };
 
   return (
@@ -73,30 +72,30 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLogge
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-3 sm:p-4">
+      <div className="flex flex-1 flex-col p-2.5 sm:p-4">
         <div>
-          <p className="text-xs text-gray-500">{category}</p>
-          <h3 className="font-semibold text-coffee-900 text-base sm:text-lg">{name}</h3>
+          <p className="text-[10px] text-gray-500 sm:text-xs">{category}</p>
+          <h3 className="font-semibold text-coffee-900 text-sm sm:text-lg leading-tight">{name}</h3>
           <p className="hidden mt-1 h-10 text-sm text-gray-600 line-clamp-2 sm:block">{description}</p>
         </div>
 
-        <div className="mt-auto pt-3 sm:pt-4">
-          <div className="flex items-center justify-between">
-            <p className="text-lg font-bold text-primary-600 sm:text-xl">₱{selectedSize.price.toFixed(2)}</p>
+        <div className="mt-auto pt-2 sm:pt-4">
+          <div className="flex items-end justify-between gap-1">
+            <p className="text-base font-bold text-primary-600 sm:text-xl">₱{selectedSize.price.toFixed(2)}</p>
             {renderStockStatus()}
           </div>
 
-          <div className="mt-3 flex w-full rounded-full border border-gray-200 bg-gray-50 p-1 sm:mt-4">
+          <div className="mt-2 flex w-full rounded-full border border-gray-200 bg-gray-50 p-1 sm:mt-4">
             {product.sizes.map((size) => (
               <button
                 key={size.name}
                 onClick={() => setSelectedSize(size)}
-                className={`w-1/2 rounded-full py-1 text-xs font-semibold transition-colors sm:py-1.5 sm:text-sm ${selectedSize.name === size.name
+                className={`w-1/2 rounded-full py-1 text-[10px] sm:text-xs font-semibold transition-colors sm:py-1.5 ${selectedSize.name === size.name
                   ? 'bg-primary-600 text-white shadow'
                   : 'text-gray-600 hover:bg-primary-50'
                   }`}
               >
-                {size.name} ({size.size})
+                {size.name} <span className="hidden sm:inline">({size.size})</span>
               </button>
             ))}
           </div>
@@ -104,14 +103,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLogge
           <button
             onClick={handleAddToCartClick}
             disabled={isOutOfStock}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400 sm:mt-3 sm:py-2.5 sm:text-sm"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-3 py-2 text-[10px] font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400 sm:mt-3 sm:px-4 sm:py-2.5 sm:text-sm"
             aria-label={isLoggedIn ? `Add ${name} to cart` : `Login to order ${name}`}
           >
             {isOutOfStock ? (
               'Out of Stock'
             ) : isLoggedIn ? (
               <>
-                <ShoppingCart className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
                 Add to Cart
               </>
             ) : (

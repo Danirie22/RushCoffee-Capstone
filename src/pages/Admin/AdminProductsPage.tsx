@@ -114,7 +114,7 @@ const AdminProductsPage: React.FC = () => {
                 <h1 className="font-display text-2xl font-bold text-gray-800 sm:text-3xl">Product Management</h1>
                 <button
                     onClick={() => handleOpenModal()}
-                    className="flex items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto"
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto"
                 >
                     <Plus className="h-4 w-4" />
                     <span>Add New Product</span>

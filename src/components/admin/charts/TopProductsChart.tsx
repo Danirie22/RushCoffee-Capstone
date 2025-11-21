@@ -68,28 +68,32 @@ const TopProductsChart: React.FC<TopProductsChartProps> = ({
             <BarChart
                 data={data}
                 layout="vertical"
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
             >
-                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" horizontal />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" horizontal={false} vertical={true} />
                 <XAxis
                     type="number"
-                    stroke="#6B7280"
+                    stroke="#9CA3AF"
                     style={{ fontSize: '12px' }}
+                    axisLine={false}
+                    tickLine={false}
                 />
                 <YAxis
                     type="category"
                     dataKey="productName"
-                    stroke="#6B7280"
-                    style={{ fontSize: '11px' }}
-                    width={120}
+                    stroke="#4B5563"
+                    style={{ fontSize: '12px', fontWeight: 500 }}
+                    width={100}
                     tickFormatter={(value) => {
                         // Truncate long product names
-                        return value.length > 15 ? value.substring(0, 15) + '...' : value;
+                        return value.length > 12 ? value.substring(0, 12) + '...' : value;
                     }}
+                    axisLine={false}
+                    tickLine={false}
                 />
                 <Tooltip
                     content={<CustomTooltip />}
-                    cursor={false}
+                    cursor={{ fill: '#F3F4F6', opacity: 0.5 }}
                     wrapperStyle={{ outline: 'none' }}
                 />
                 <Legend
@@ -99,21 +103,14 @@ const TopProductsChart: React.FC<TopProductsChartProps> = ({
                 <Bar
                     dataKey="quantity"
                     name="Quantity Sold"
-                    radius={[0, 8, 8, 0]}
+                    radius={[0, 4, 4, 0]}
+                    barSize={32}
+                    background={{ fill: '#F9FAFB', radius: 4 }}
                 >
                     {data.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                 </Bar>
-                {showRevenue && (
-                    <Bar
-                        dataKey="revenue"
-                        name="Revenue (₱)"
-                        fill="#10B981"
-                        radius={[0, 8, 8, 0]}
-                        opacity={0.7}
-                    />
-                )}
             </BarChart>
         </ResponsiveContainer>
     );

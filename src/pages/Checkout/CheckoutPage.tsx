@@ -16,35 +16,42 @@ import { useOrder, QueueItem } from '../../context/OrderContext';
 
 const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
-    const { cartItems, showToast, totalCartItems, clearCart } = useCart();
+    const { cartItems, showToast, totalCartItems, clearCart, selectedItemIds } = useCart();
     const { currentUser } = useAuth();
     const { setActiveOrder, addOrderToHistory } = useOrder();
-    
+
+
+    // Filter only selected items for checkout
+    const selectedCartItems = React.useMemo(() =>
+        cartItems.filter(item => selectedItemIds.includes(item.id)),
+        [cartItems, selectedItemIds]
+    );
+
     // State
     const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<'gcash' | 'cash' | null>(null);
     const [customerInfo, setCustomerInfo] = React.useState({ name: '', phone: '' });
     const [orderNotes, setOrderNotes] = React.useState('');
     const [errors, setErrors] = React.useState<{ name?: string; phone?: string; payment?: string; gcash?: string }>({});
-    
+
     const [receiptFile, setReceiptFile] = React.useState<File | null>(null);
-    
+
     const [isProcessing, setIsProcessing] = React.useState(false);
     const [orderPlaced, setOrderPlaced] = React.useState(false);
 
     // Memoized calculations for order summary
     const { subtotal, serviceFee, total } = React.useMemo(() => {
-        const sub = cartItems.reduce((acc, item) => acc + item.selectedSize.price * item.quantity, 0);
+        const sub = selectedCartItems.reduce((acc, item) => acc + item.selectedSize.price * item.quantity, 0);
         const fee = 15.00; // Example service fee
         return { subtotal: sub, serviceFee: fee, total: sub + fee };
-    }, [cartItems]);
+    }, [selectedCartItems]);
 
-    const summaryItems = React.useMemo(() => 
-        cartItems.map(item => ({
+    const summaryItems = React.useMemo(() =>
+        selectedCartItems.map(item => ({
             productName: `${item.product.name} (${item.selectedSize.name})`,
             quantity: item.quantity,
             price: item.selectedSize.price,
         })),
-    [cartItems]);
+        [selectedCartItems]);
 
     // Redirect if cart is empty
     React.useEffect(() => {
@@ -97,7 +104,7 @@ const CheckoutPage: React.FC = () => {
 
         setIsProcessing(true);
         const newOrderNumber = `RC-2025-${Math.floor(1000 + Math.random() * 9000)}`;
-        
+
         // Simulate API call
         setTimeout(async () => {
             const orderData = {
@@ -106,7 +113,7 @@ const CheckoutPage: React.FC = () => {
                 orderNumber: newOrderNumber,
                 position: Math.floor(Math.random() * 5) + 1,
                 status: 'waiting',
-                orderItems: cartItems.map(item => ({
+                orderItems: selectedCartItems.map(item => ({
                     productId: item.product.id,
                     productName: `${item.product.name} (${item.selectedSize.name})`,
                     quantity: item.quantity,
@@ -117,14 +124,14 @@ const CheckoutPage: React.FC = () => {
                 paymentStatus: selectedPaymentMethod === 'gcash' ? 'paid' : 'pending',
                 estimatedTime: 10,
             };
-            
+
             // This now just creates the order document.
             // A backend Cloud Function will be triggered on document creation
             // to securely process points and update user stats.
-            await addOrderToHistory(orderData as Omit<QueueItem, 'id'|'timestamp'>);
-            
+            await addOrderToHistory(orderData as Omit<QueueItem, 'id' | 'timestamp'>);
+
             // The user's profile will update automatically via the new real-time listener in AuthContext.
-            
+
             clearCart();
             setIsProcessing(false);
             setOrderPlaced(true);
@@ -133,7 +140,7 @@ const CheckoutPage: React.FC = () => {
         }, 2000);
     };
 
-    const isButtonDisabled = 
+    const isButtonDisabled =
         isProcessing ||
         !selectedPaymentMethod ||
         !customerInfo.name ||
@@ -159,7 +166,7 @@ const CheckoutPage: React.FC = () => {
             </div>
         );
     }
-    
+
     return (
         <div className="flex min-h-screen flex-col bg-gray-50">
             <Header />
@@ -175,14 +182,14 @@ const CheckoutPage: React.FC = () => {
                                 <div className="relative">
                                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
                                     <User className="absolute left-3 top-10 h-5 w-5 text-gray-400" />
-                                    <input type="text" id="name" value={customerInfo.name} onChange={e => setCustomerInfo({...customerInfo, name: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="Juan dela Cruz" />
+                                    <input type="text" id="name" value={customerInfo.name} onChange={e => setCustomerInfo({ ...customerInfo, name: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="Juan dela Cruz" />
                                     {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
                                 </div>
                                 <div className="relative">
                                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
                                     <Phone className="absolute left-3 top-10 h-5 w-5 text-gray-400" />
-                                    <input type="tel" id="phone" value={customerInfo.phone} onChange={e => setCustomerInfo({...customerInfo, phone: e.target.value})} className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="09171234567" />
-                                     {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
+                                    <input type="tel" id="phone" value={customerInfo.phone} onChange={e => setCustomerInfo({ ...customerInfo, phone: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="09171234567" />
+                                    {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
                                 </div>
                             </div>
                         </div>
@@ -190,17 +197,17 @@ const CheckoutPage: React.FC = () => {
                         {/* Payment Method */}
                         <div className="rounded-xl border bg-white p-6">
                             <PaymentMethodSelector selectedMethod={selectedPaymentMethod} onSelectMethod={setSelectedPaymentMethod} />
-                             {errors.payment && <p className="mt-2 text-xs text-red-500">{errors.payment}</p>}
-                            
+                            {errors.payment && <p className="mt-2 text-xs text-red-500">{errors.payment}</p>}
+
                             {selectedPaymentMethod === 'gcash' && (
                                 <div className="mt-6 border-t pt-6">
-                                    <GCashPayment 
-                                        totalAmount={total} 
+                                    <GCashPayment
+                                        totalAmount={total}
                                         orderNumber={`TEMP-${Date.now()}`}
                                         receipt={receiptFile}
                                         onReceiptUpload={setReceiptFile}
                                     />
-                                     {errors.gcash && <p className="mt-2 text-xs text-red-500 text-center">{errors.gcash}</p>}
+                                    {errors.gcash && <p className="mt-2 text-xs text-red-500 text-center">{errors.gcash}</p>}
                                 </div>
                             )}
 
@@ -217,16 +224,16 @@ const CheckoutPage: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                        
-                         {/* Order Notes */}
+
+                        {/* Order Notes */}
                         <div className="rounded-xl border bg-white p-6">
                             <h2 className="mb-4 font-display text-xl font-bold text-coffee-900">Special Instructions (Optional)</h2>
-                             <div className="relative">
+                            <div className="relative">
                                 <MessageSquare className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                                 <textarea id="notes" value={orderNotes} onChange={e => setOrderNotes(e.target.value)} rows={3} className="block w-full rounded-md border-gray-300 py-2 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="e.g., less ice, extra shot..."></textarea>
                             </div>
                         </div>
-                         {/* Desktop Action Button */}
+                        {/* Desktop Action Button */}
                         <div className="hidden lg:block">
                             <button
                                 type="submit"
@@ -255,7 +262,7 @@ const CheckoutPage: React.FC = () => {
                     {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : `Place Order (₱${total.toFixed(2)})`}
                 </button>
             </div>
-            
+
             <Footer />
         </div>
     );

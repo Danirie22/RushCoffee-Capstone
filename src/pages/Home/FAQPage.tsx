@@ -30,7 +30,7 @@ const faqData = [
   { category: 'Technical', question: "The website isn't working correctly. What should I do?", answer: "First, try refreshing the page. If that doesn't work, clearing your browser's cache and cookies often resolves the issue. If you're still experiencing problems, please contact our support team with details about the issue." },
   { category: 'Technical', question: "Do you have a mobile app?", answer: "A dedicated mobile app for iOS and Android is currently in development and will be launching soon! For now, our website is fully responsive and works great on all mobile browsers." },
   // General
-  { category: 'General', question: "What are your operating hours?", answer: "We're open Monday to Sunday, from 7:00 AM to 10:00 PM. Hours may vary on public holidays." },
+  { category: 'General', question: "What are your operating hours?", answer: "We're open Monday to Sunday, from 12:00 PM to 10:00 PM. Hours may vary on public holidays." },
   { category: 'General', question: "Do you offer WiFi in your store?", answer: "Yes, we offer complimentary high-speed WiFi for all our customers. Just ask our staff for the network details." },
   { category: 'General', question: "Can I customize my drink?", answer: "Absolutely! You can customize aspects like milk type, sweetness level, add extra espresso shots, and choose from various syrups and toppings directly on the product page before adding an item to your cart." },
 ];
@@ -43,11 +43,11 @@ const AccordionItem: React.FC<{ question: string; answer: string; isOpen: boolea
       return text;
     }
     const regex = new RegExp(`(${highlight})`, 'gi');
-    return text.split(regex).map((part, index) => 
+    return text.split(regex).map((part, index) =>
       regex.test(part) ? <mark key={index} className="bg-primary-100 text-primary-700 rounded-sm">{part}</mark> : part
     );
   };
-    
+
   return (
     <div className="border-b border-gray-200">
       <button onClick={onClick} className="flex w-full items-center justify-between py-5 text-left text-lg font-medium text-gray-800 focus:outline-none focus:bg-gray-50 rounded-md">
@@ -80,9 +80,9 @@ const FAQPage: React.FC = () => {
   const filteredFaqs = useMemo(() => {
     return faqData.filter(faq => {
       const matchesCategory = activeCategory === 'All' || faq.category === activeCategory;
-      const matchesSearch = searchQuery.trim() === '' || 
-                            faq.question.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = searchQuery.trim() === '' ||
+        faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        faq.answer.toLowerCase().includes(searchQuery.toLowerCase());
       return matchesCategory && matchesSearch;
     });
   }, [searchQuery, activeCategory]);
@@ -97,7 +97,7 @@ const FAQPage: React.FC = () => {
             <p className="mt-4 text-xl text-gray-700">Everything you need to know about Rush Coffee</p>
             <div className="relative mx-auto mt-8 max-w-2xl">
               <Search className="absolute left-6 top-1/2 h-6 w-6 -translate-y-1/2 text-gray-400" />
-              <input 
+              <input
                 type="search"
                 placeholder="Search for answers..."
                 value={searchQuery}
@@ -107,64 +107,63 @@ const FAQPage: React.FC = () => {
             </div>
           </div>
         </section>
-        
+
         <div className="sticky top-20 z-30 border-b border-gray-200 bg-white/95 py-3 backdrop-blur-sm">
-            <div className="container mx-auto flex max-w-7xl gap-2 overflow-x-auto px-6 pb-2">
-                {categories.map(category => (
-                    <button
-                        key={category}
-                        onClick={() => setActiveCategory(category)}
-                        className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                            activeCategory === category
-                                ? 'bg-primary-600 text-white shadow'
-                                : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
-                        }`}
-                    >
-                        {category}
-                    </button>
-                ))}
-            </div>
+          <div className="container mx-auto flex max-w-7xl gap-2 overflow-x-auto px-6 pb-2">
+            {categories.map(category => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${activeCategory === category
+                    ? 'bg-primary-600 text-white shadow'
+                    : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
         </div>
 
         <section className="px-6 py-16">
           <div className="container mx-auto max-w-4xl">
             {filteredFaqs.length > 0 ? (
-                <div>
-                    <p className="mb-4 text-sm text-gray-500">{filteredFaqs.length} question(s) found</p>
-                    {filteredFaqs.map((faq, index) => (
-                        <AccordionItem 
-                            key={`${faq.category}-${index}`}
-                            question={faq.question} 
-                            answer={faq.answer}
-                            isOpen={openIndex === index}
-                            onClick={() => setOpenIndex(openIndex === index ? null : index)}
-                            highlight={searchQuery}
-                        />
-                    ))}
-                </div>
+              <div>
+                <p className="mb-4 text-sm text-gray-500">{filteredFaqs.length} question(s) found</p>
+                {filteredFaqs.map((faq, index) => (
+                  <AccordionItem
+                    key={`${faq.category}-${index}`}
+                    question={faq.question}
+                    answer={faq.answer}
+                    isOpen={openIndex === index}
+                    onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                    highlight={searchQuery}
+                  />
+                ))}
+              </div>
             ) : (
-                <div className="py-20 text-center">
-                    <Search className="mx-auto h-16 w-16 text-gray-300" />
-                    <h3 className="mt-4 text-xl font-semibold text-gray-800">No Results Found</h3>
-                    <p className="mt-2 text-gray-500">We couldn't find any answers for "{searchQuery}". Try a different search term or category.</p>
-                </div>
+              <div className="py-20 text-center">
+                <Search className="mx-auto h-16 w-16 text-gray-300" />
+                <h3 className="mt-4 text-xl font-semibold text-gray-800">No Results Found</h3>
+                <p className="mt-2 text-gray-500">We couldn't find any answers for "{searchQuery}". Try a different search term or category.</p>
+              </div>
             )}
           </div>
         </section>
 
         <section className="bg-gray-50 px-6 py-20">
-            <div className="container mx-auto max-w-4xl">
-                <Card className="text-center">
-                    <HelpCircle className="mx-auto h-12 w-12 text-primary-600"/>
-                    <h2 className="mt-4 font-display text-3xl font-bold text-coffee-900">Still have questions?</h2>
-                    <p className="mt-2 text-gray-600">If you can't find the answer you're looking for, please get in touch with our support team.</p>
-                    <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                        <Link to="/contact">
-                            <Button size="lg"><MessageCircle className="mr-2 h-5 w-5"/>Contact Support</Button>
-                        </Link>
-                    </div>
-                </Card>
-            </div>
+          <div className="container mx-auto max-w-4xl">
+            <Card className="text-center">
+              <HelpCircle className="mx-auto h-12 w-12 text-primary-600" />
+              <h2 className="mt-4 font-display text-3xl font-bold text-coffee-900">Still have questions?</h2>
+              <p className="mt-2 text-gray-600">If you can't find the answer you're looking for, please get in touch with our support team.</p>
+              <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
+                <Link to="/contact">
+                  <Button size="lg"><MessageCircle className="mr-2 h-5 w-5" />Contact Support</Button>
+                </Link>
+              </div>
+            </Card>
+          </div>
         </section>
       </main>
       <Footer />

@@ -11,7 +11,7 @@ import Textarea from '../components/ui/Textarea';
 import Select from '../components/ui/Select';
 
 const faqData = [
-    { question: "What are your operating hours?", answer: "We are open Monday to Friday from 7:00 AM to 8:00 PM, and Saturday to Sunday from 8:00 AM to 6:00 PM." },
+    { question: "What are your operating hours?", answer: "We are open Monday - Sunday 12pm - 10pm." },
     { question: "How does the digital queue system work?", answer: "Simply place your order through our app or website. You'll be added to our virtual queue and receive real-time updates on your order status, including your position and estimated wait time. You'll get a notification when it's ready for pickup!" },
     { question: "Can I customize my drink?", answer: "Absolutely! Most of our drinks can be customized. You can choose your milk, sweetness level, add extra shots, and more right from the order page." },
     { question: "Do you offer catering services for events?", answer: "Yes, we do! We offer a range of catering options for meetings, parties, and events. Please use the contact form and select 'Partnership' as the subject to discuss your needs with us." },
@@ -243,10 +243,10 @@ const ContactPage: React.FC = () => {
                                         </div>
                                         <div>
                                             <h4 className="font-bold text-lg">Call Us</h4>
-                                            <a href="tel:+639171234567" className="mt-1 block text-gray-300 hover:text-white transition-colors">
-                                                +63 917 123 4567
+                                            <a href="tel:09304641022" className="mt-1 block text-gray-300 hover:text-white transition-colors">
+                                                0930 464 1022
                                             </a>
-                                            <p className="text-sm text-gray-400">Mon-Sun: 7AM - 8PM</p>
+                                            <p className="text-sm text-gray-400">Monday - Sunday 12pm - 10pm</p>
                                         </div>
                                     </div>
 
@@ -266,10 +266,10 @@ const ContactPage: React.FC = () => {
                                     <div className="pt-8 border-t border-white/10">
                                         <h4 className="font-bold text-lg mb-4">Follow Us</h4>
                                         <div className="flex gap-4">
-                                            <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-primary-600 hover:scale-110">
+                                            <a href="https://www.facebook.com/profile.php?id=61551613276320" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-primary-600 hover:scale-110">
                                                 <Facebook className="h-5 w-5" />
                                             </a>
-                                            <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-primary-600 hover:scale-110">
+                                            <a href="https://www.instagram.com/Rush_Coffee2023/" target="_blank" rel="noopener noreferrer" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-primary-600 hover:scale-110">
                                                 <Instagram className="h-5 w-5" />
                                             </a>
                                             <a href="#" className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-primary-600 hover:scale-110">

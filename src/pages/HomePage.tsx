@@ -139,19 +139,10 @@ const HomePage: React.FC = () => {
                                         <RushCoffeeLogo className="h-5 w-5" />
                                         Order Now
                                     </Link>
-                                    <button
-                                        onClick={() => {
-                                            document.getElementById('features')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                        }}
-                                        className="flex w-full items-center justify-center gap-2 rounded-full border-2 border-white/20 bg-white/5 px-8 py-4 text-lg font-semibold text-white backdrop-blur-sm transition-transform hover:scale-105 hover:bg-white/10 sm:w-auto"
-                                    >
-                                        <ChevronsDown className="h-5 w-5" />
-                                        View Features
-                                    </button>
                                 </div>
 
                                 <p className="mt-6 text-sm text-gray-400" style={{ animation: 'fade-in-up 0.8s ease-out 800ms forwards', opacity: 0 }}>
-                                    Join 5,000+ happy customers ⭐⭐⭐⭐⭐
+                                    Join 4,000+ happy customers ⭐⭐⭐⭐⭐
                                 </p>
                             </div>
 
@@ -172,24 +163,24 @@ const HomePage: React.FC = () => {
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center">
                             <p className="mb-2 font-medium text-primary-600">Why Rush Coffee?</p>
-                            <h2 className="mb-4 font-display text-3xl font-bold text-coffee-900 md:text-4xl">
+                            <h2 className="mb-4 font-display text-2xl font-bold text-coffee-900 md:text-4xl">
                                 Everything You Need for a Seamless Coffee Experience
                             </h2>
-                            <p className="mx-auto mb-12 max-w-2xl text-gray-600">
+                            <p className="mx-auto mb-12 max-w-2xl text-sm text-gray-600 md:text-base">
                                 From ordering to pickup, we've got you covered.
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4">
                             {features.map((feature, index) => (
-                                <Card key={index} hover className="text-center">
-                                    <div className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-xl ${feature.iconBgColor}`}>
-                                        <feature.Icon className={`h-8 w-8 ${feature.iconTextColor}`} />
+                                <Card key={index} hover padding="none" className="text-center p-4 md:p-6">
+                                    <div className={`mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl md:mb-4 md:h-16 md:w-16 ${feature.iconBgColor}`}>
+                                        <feature.Icon className={`h-6 w-6 md:h-8 md:w-8 ${feature.iconTextColor}`} />
                                     </div>
-                                    <h3 className="mb-2 font-display text-xl font-semibold text-coffee-900">
+                                    <h3 className="mb-1 font-display text-sm font-bold text-coffee-900 md:mb-2 md:text-xl md:font-semibold">
                                         {feature.title}
                                     </h3>
-                                    <p className="text-sm leading-relaxed text-gray-600">
+                                    <p className="text-xs leading-snug text-gray-600 md:text-sm md:leading-relaxed">
                                         {feature.description}
                                     </p>
                                 </Card>
@@ -198,29 +189,29 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                <section id="how-it-works" className="bg-gradient-to-b from-coffee-50 to-white px-6 py-20">
+                <section id="how-it-works" className="bg-gradient-to-b from-coffee-50 to-white px-6 py-12 md:py-20">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center">
                             <p className="mb-2 font-medium text-primary-600">Simple Process</p>
-                            <h2 className="mb-4 font-display text-3xl font-bold text-coffee-900 md:text-4xl">
+                            <h2 className="mb-4 font-display text-2xl font-bold text-coffee-900 md:text-4xl">
                                 How Rush Coffee Works
                             </h2>
-                            <p className="mx-auto mb-16 max-w-2xl text-gray-600">
+                            <p className="mx-auto mb-10 max-w-2xl text-sm text-gray-600 md:mb-16 md:text-base">
                                 Get your perfect cup in three easy steps.
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {steps.map((step, index) => (
                                 <div
                                     key={step.number}
-                                    className={`relative w-full text-center ${index === 2 ? 'col-span-2 lg:col-span-1 w-[calc(50%-0.5rem)] mx-auto lg:w-full' : ''}`}
+                                    className={`relative w-full text-center ${index === 2 ? 'md:col-span-2 lg:col-span-1 md:w-[calc(50%-0.5rem)] md:mx-auto lg:w-full' : ''}`}
                                 >
-                                    <div className="absolute -top-4 left-1/2 z-10 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-primary-600 font-display text-xl font-bold text-white shadow-lg">
+                                    <div className="absolute -top-3 left-1/2 z-10 flex h-10 w-10 -translate-x-1/2 items-center justify-center rounded-full bg-primary-600 font-display text-lg font-bold text-white shadow-lg md:-top-4 md:h-12 md:w-12 md:text-xl">
                                         {step.number}
                                     </div>
-                                    <Card className="pt-8 h-full">
-                                        <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-100 to-coffee-100 p-4">
+                                    <Card className="pt-8 h-full" padding="sm">
+                                        <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-100 to-coffee-100 p-3 md:h-20 md:w-20 md:p-4">
                                             {step.hasAnimation && (
                                                 <div className="absolute inset-0 overflow-hidden rounded-2xl">
                                                     <div className="absolute left-1/2 top-2 h-4 w-px -translate-x-1/2 animate-steam-1 rounded-full bg-primary-300/80"></div>
@@ -228,12 +219,12 @@ const HomePage: React.FC = () => {
                                                     <div className="absolute left-2/3 top-2 h-3 w-px animate-steam-1 rounded-full bg-primary-300/80"></div>
                                                 </div>
                                             )}
-                                            <step.Icon className={`h-10 w-10 text-primary-600 ${step.isPulsing ? 'animate-pulse-slow' : ''}`} />
+                                            <step.Icon className={`h-8 w-8 text-primary-600 md:h-10 md:w-10 ${step.isPulsing ? 'animate-pulse-slow' : ''}`} />
                                         </div>
-                                        <h3 className="mb-2 mt-4 font-display text-xl font-semibold text-coffee-900">
+                                        <h3 className="mb-2 mt-3 font-display text-lg font-semibold text-coffee-900 md:mt-4 md:text-xl">
                                             {step.title}
                                         </h3>
-                                        <p className="text-sm text-gray-600">{step.description}</p>
+                                        <p className="text-xs text-gray-600 md:text-sm">{step.description}</p>
                                     </Card>
                                 </div>
                             ))}
@@ -241,39 +232,40 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                <section id="testimonials" className="bg-white py-20 px-6">
+                <section id="testimonials" className="bg-white py-12 px-6 md:py-20">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center">
                             <p className="mb-2 font-medium text-primary-600">Customer Love</p>
-                            <h2 className="mb-4 font-display text-3xl font-bold text-coffee-900 md:text-4xl">
+                            <h2 className="mb-4 font-display text-2xl font-bold text-coffee-900 md:text-4xl">
                                 What Our Customers Say
                             </h2>
-                            <p className="mx-auto mb-12 max-w-2xl text-gray-600">
+                            <p className="mx-auto mb-10 max-w-2xl text-sm text-gray-600 md:mb-12 md:text-base">
                                 Join thousands of satisfied coffee lovers.
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {testimonials.map((testimonial, index) => (
                                 <Card
                                     key={index}
                                     hover
-                                    className={`flex flex-col border-l-4 border-primary-400 transition-transform duration-300 hover:scale-105 ${index === 2 ? 'col-span-2 lg:col-span-1 w-[calc(50%-0.5rem)] mx-auto lg:w-full' : ''}`}
+                                    padding="sm"
+                                    className={`flex flex-col border-l-4 border-primary-400 transition-transform duration-300 hover:scale-105 ${index === 2 ? 'md:col-span-2 lg:col-span-1 md:w-[calc(50%-0.5rem)] md:mx-auto lg:w-full' : ''}`}
                                 >
-                                    <Quote className="h-8 w-8 text-primary-200" />
-                                    <div className="my-4 text-yellow-400">
+                                    <Quote className="h-6 w-6 text-primary-200 md:h-8 md:w-8" />
+                                    <div className="my-3 text-sm text-yellow-400 md:my-4 md:text-base">
                                         {'⭐⭐⭐⭐⭐'}
                                     </div>
-                                    <p className="flex-grow font-sans italic text-gray-700">
+                                    <p className="flex-grow font-sans italic text-sm text-gray-700 md:text-base">
                                         "{testimonial.quote}"
                                     </p>
-                                    <div className="mt-4 flex items-center gap-4">
-                                        <div className={`flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full font-bold ${testimonial.avatarBg} ${testimonial.avatarText}`}>
+                                    <div className="mt-4 flex items-center gap-3 md:gap-4">
+                                        <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-bold text-sm md:h-12 md:w-12 md:text-base ${testimonial.avatarBg} ${testimonial.avatarText}`}>
                                             {testimonial.initial}
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-coffee-900">{testimonial.name}</p>
-                                            <Badge className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5">
+                                            <p className="text-sm font-semibold text-coffee-900 md:text-base">{testimonial.name}</p>
+                                            <Badge className="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 md:text-xs md:px-2">
                                                 {testimonial.title}
                                             </Badge>
                                         </div>
@@ -312,12 +304,12 @@ const HomePage: React.FC = () => {
                             Ready to Rush Through Your Day?
                         </h2>
                         <p className="mx-auto mb-8 mt-6 max-w-2xl text-xl text-gray-300">
-                            Join 5,000+ customers who've already skipped the line. Experience the future of coffee ordering.
+                            Join 4,000+ customers who've already skipped the line. Experience the future of coffee ordering.
                         </p>
 
                         <div className="mb-10 flex flex-wrap justify-center gap-3">
                             <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">
-                                10,000+ Orders Completed
+                                5,000+ Orders Completed
                             </span>
                             <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">
                                 4.9★ Average Rating

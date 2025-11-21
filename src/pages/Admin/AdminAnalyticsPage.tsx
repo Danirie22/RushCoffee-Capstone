@@ -61,6 +61,12 @@ const SalesChart: React.FC<{ data: ChartData[], isLoading: boolean }> = ({ data,
 
 const AdminAnalyticsPage: React.FC = () => {
     const [stats, setStats] = useState({ totalRevenue: 0, totalOrders: 0, avgOrderValue: 0, newCustomers: 0 });
+    const [trends, setTrends] = useState<{
+        totalRevenue: number | null;
+        totalOrders: number | null;
+        avgOrderValue: number | null;
+        newCustomers: number | null;
+    }>({ totalRevenue: null, totalOrders: null, avgOrderValue: null, newCustomers: null });
     const [chartData, setChartData] = useState<ChartData[]>([]);
     const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
     const [dateRange, setDateRange] = useState<DateRange>('7d');
@@ -72,43 +78,83 @@ const AdminAnalyticsPage: React.FC = () => {
 
             const now = new Date();
             let startDate: Date;
+            let previousStartDate: Date;
+            let previousEndDate: Date;
 
+            // Determine Current and Previous Periods
             switch (dateRange) {
                 case '7d':
                     startDate = startOfDay(subDays(now, 6));
+                    previousEndDate = startOfDay(subDays(now, 7)); // End of previous period is start of current
+                    previousStartDate = startOfDay(subDays(now, 13));
                     break;
                 case '30d':
                     startDate = startOfDay(subDays(now, 29));
+                    previousEndDate = startOfDay(subDays(now, 30));
+                    previousStartDate = startOfDay(subDays(now, 59));
                     break;
                 case 'all':
                 default:
-                    // A reasonable "all time" start date to avoid fetching everything
                     startDate = new Date(2020, 0, 1);
+                    // For 'all time', trends are less meaningful or could be compared to previous year, 
+                    // but for simplicity, let's just disable trends or compare to 0.
+                    previousStartDate = new Date(2019, 0, 1);
+                    previousEndDate = new Date(2020, 0, 1);
                     break;
             }
 
-            // --- Fetch Data ---
-            const ordersQuery = db.collection('orders')
-                .where('timestamp', '>=', startDate);
+            // --- Fetch Current Period Data ---
+            const ordersQuery = db.collection('orders').where('timestamp', '>=', startDate);
+            const usersQuery = db.collection('users').where('createdAt', '>=', startDate);
 
-            const usersQuery = db.collection('users')
-                .where('createdAt', '>=', startDate);
+            // --- Fetch Previous Period Data ---
+            const prevOrdersQuery = db.collection('orders')
+                .where('timestamp', '>=', previousStartDate)
+                .where('timestamp', '<', previousEndDate);
 
-            const [orderSnapshot, usersSnapshot] = await Promise.all([
+            const prevUsersQuery = db.collection('users')
+                .where('createdAt', '>=', previousStartDate)
+                .where('createdAt', '<', previousEndDate);
+
+            const [orderSnapshot, usersSnapshot, prevOrderSnapshot, prevUsersSnapshot] = await Promise.all([
                 ordersQuery.get(),
-                usersQuery.get()
+                usersQuery.get(),
+                prevOrdersQuery.get(),
+                prevUsersQuery.get()
             ]);
 
+            // --- Process Current Data ---
             const allOrdersInRange = orderSnapshot.docs.map(doc => ({ ...doc.data(), timestamp: doc.data().timestamp.toDate() })) as Omit<QueueItem, 'id'>[];
             const orders = allOrdersInRange.filter(order => order.status === 'completed');
 
-
-            // --- Calculate KPIs ---
             const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
             const totalOrders = orders.length;
             const avgOrderValue = totalOrders > 0 ? totalRevenue / totalOrders : 0;
             const newCustomers = usersSnapshot.size;
+
             setStats({ totalRevenue, totalOrders, avgOrderValue, newCustomers });
+
+            // --- Process Previous Data & Calculate Trends ---
+            const prevOrders = prevOrderSnapshot.docs
+                .map(doc => doc.data() as Omit<QueueItem, 'id'>)
+                .filter(order => order.status === 'completed');
+
+            const prevTotalRevenue = prevOrders.reduce((sum, order) => sum + order.totalAmount, 0);
+            const prevTotalOrders = prevOrders.length;
+            const prevAvgOrderValue = prevTotalOrders > 0 ? prevTotalRevenue / prevTotalOrders : 0;
+            const prevNewCustomers = prevUsersSnapshot.size;
+
+            const calculateTrend = (current: number, previous: number) => {
+                if (previous === 0) return null;
+                return Number((((current - previous) / previous) * 100).toFixed(1));
+            };
+
+            setTrends({
+                totalRevenue: calculateTrend(totalRevenue, prevTotalRevenue),
+                totalOrders: calculateTrend(totalOrders, prevTotalOrders),
+                avgOrderValue: calculateTrend(avgOrderValue, prevAvgOrderValue),
+                newCustomers: calculateTrend(newCustomers, prevNewCustomers)
+            });
 
             // --- Process Chart Data ---
             if (dateRange !== 'all') {
@@ -127,12 +173,11 @@ const AdminAnalyticsPage: React.FC = () => {
 
                 const formattedChartData = Object.entries(salesByDay).map(([day, value]) => ({
                     label: format(new Date(day), 'd MMM'),
-                    // FIX: Explicitly cast value to number to satisfy ChartData interface.
                     value: value as number
                 }));
                 setChartData(formattedChartData);
             } else {
-                setChartData([]); // Don't show chart for "all time" to avoid clutter
+                setChartData([]);
             }
 
             // --- Process Top Products ---
@@ -177,11 +222,39 @@ const AdminAnalyticsPage: React.FC = () => {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard title="Total Revenue" value={`₱${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} Icon={DollarSign} isLoading={isLoading} color="blue" />
-                <StatCard title="Total Orders" value={stats.totalOrders.toLocaleString()} Icon={ShoppingBag} isLoading={isLoading} color="green" />
-                <StatCard title="Avg. Order Value" value={`₱${stats.avgOrderValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`} Icon={TrendingUp} isLoading={isLoading} color="purple" />
-                <StatCard title="New Customers" value={stats.newCustomers.toLocaleString()} Icon={Users} isLoading={isLoading} color="yellow" />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                    title="Total Revenue"
+                    value={`₱${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    Icon={DollarSign}
+                    isLoading={isLoading}
+                    color="blue"
+                    trend={dateRange !== 'all' && trends.totalRevenue !== null ? { value: trends.totalRevenue, label: "vs last period" } : undefined}
+                />
+                <StatCard
+                    title="Total Orders"
+                    value={stats.totalOrders.toLocaleString()}
+                    Icon={ShoppingBag}
+                    isLoading={isLoading}
+                    color="green"
+                    trend={dateRange !== 'all' && trends.totalOrders !== null ? { value: trends.totalOrders, label: "vs last period" } : undefined}
+                />
+                <StatCard
+                    title="Avg. Order Value"
+                    value={`₱${stats.avgOrderValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    Icon={TrendingUp}
+                    isLoading={isLoading}
+                    color="purple"
+                    trend={dateRange !== 'all' && trends.avgOrderValue !== null ? { value: trends.avgOrderValue, label: "vs last period" } : undefined}
+                />
+                <StatCard
+                    title="New Customers"
+                    value={stats.newCustomers.toLocaleString()}
+                    Icon={Users}
+                    isLoading={isLoading}
+                    color="yellow"
+                    trend={dateRange !== 'all' && trends.newCustomers !== null ? { value: trends.newCustomers, label: "vs last period" } : undefined}
+                />
             </div>
 
             {/* Charts */}
@@ -204,12 +277,12 @@ const AdminAnalyticsPage: React.FC = () => {
                             ))
                         ) : topProducts.length > 0 ? (
                             topProducts.map((product, index) => (
-                                <div key={product.name} className="flex items-center justify-between text-sm">
-                                    <div className="flex items-center gap-2">
+                                <div key={product.name} className="flex items-center justify-between text-sm gap-4">
+                                    <div className="flex items-center gap-2 flex-1 min-w-0">
                                         <span className={`font-bold ${index < 3 ? 'text-primary-700' : 'text-gray-500'}`}>{index + 1}.</span>
                                         <p className="font-medium text-gray-800 truncate">{product.name}</p>
                                     </div>
-                                    <Badge className="bg-primary-100 text-primary-800">{product.quantity} sold</Badge>
+                                    <Badge className="bg-primary-100 text-primary-800 flex-shrink-0">{product.quantity} sold</Badge>
                                 </div>
                             ))
                         ) : (

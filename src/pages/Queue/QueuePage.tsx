@@ -1,12 +1,13 @@
-
+// Queue Page - Polished Desktop Layout v7 (Completed Order Logic)
 import * as React from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { ArrowRight, Bell, X } from 'lucide-react';
+import { ArrowRight, Bell, X, Clock, TrendingUp, Award, Coffee } from 'lucide-react';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import ModernQueueCard from '../../components/queue/ModernQueueCard';
 import { useAuth } from '../../context/AuthContext';
 import { useOrder } from '../../context/OrderContext';
+import { useProduct } from '../../context/ProductContext';
 import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
 import { rushCoffeeLogoBase64 } from '../../assets/rush-coffee-logo-base64';
 import {
@@ -18,13 +19,47 @@ import {
 
 const QueuePage: React.FC = () => {
     const { currentUser } = useAuth();
-    const { activeOrder } = useOrder();
+    const { activeOrder, orderHistory } = useOrder();
+    const { products } = useProduct();
     const location = useLocation();
     const navigate = useNavigate();
 
     const [notificationPermission, setNotificationPermission] = React.useState<NotificationPermission>('default');
     const [showPermissionBanner, setShowPermissionBanner] = React.useState(false);
     const notificationSentForOrder = React.useRef<string | null>(null);
+
+    // Track dismissed completed orders to prevent them from reappearing
+    const [dismissedOrderIds, setDismissedOrderIds] = React.useState<string[]>([]);
+
+    // Determine which order to display (Active OR Undismissed Completed)
+    const displayOrder = React.useMemo(() => {
+        if (activeOrder) return activeOrder;
+
+        // If no active order, check the most recent order
+        if (orderHistory.length > 0) {
+            const mostRecent = orderHistory[0];
+            // If it's completed and NOT dismissed, show it
+            if (mostRecent.status === 'completed' && !dismissedOrderIds.includes(mostRecent.id)) {
+                return mostRecent;
+            }
+        }
+        return null;
+    }, [activeOrder, orderHistory, dismissedOrderIds]);
+
+    // State for success message
+    const [showSuccessMessage, setShowSuccessMessage] = React.useState(location.state?.fromCheckout || false);
+
+    // Auto-dismiss success message
+    React.useEffect(() => {
+        if (showSuccessMessage) {
+            const timer = setTimeout(() => {
+                setShowSuccessMessage(false);
+                // Clear the state from history so it doesn't reappear on refresh
+                window.history.replaceState({}, document.title);
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [showSuccessMessage]);
 
     // Check notification permission on mount
     React.useEffect(() => {
@@ -79,12 +114,38 @@ const QueuePage: React.FC = () => {
         }
     };
 
+    const handleDismiss = () => {
+        if (displayOrder) {
+            setDismissedOrderIds(prev => [...prev, displayOrder.id]);
+        }
+    };
+
+    // Get recent completed orders (last 3)
+    const recentOrders = React.useMemo(() => {
+        return orderHistory
+            .filter(order => order.status === 'completed')
+            .slice(0, 3);
+    }, [orderHistory]);
+
+    // Helper function to get product image by ID
+    const getProductImage = (productId: string): string | null => {
+        const product = products.find(p => p.id === productId);
+        return product?.imageUrl || null;
+    };
+
     if (!currentUser) {
         // Guest view or logged out user
         return (
-            <div className="flex min-h-screen flex-col bg-gray-50">
+            <div className="flex min-h-screen flex-col bg-gradient-to-br from-coffee-50 via-gray-50 to-primary-50 relative">
+                {/* Background Pattern */}
+                <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-10 left-10 h-32 w-32 rounded-full bg-coffee-600 blur-3xl opacity-5"></div>
+                    <div className="absolute bottom-20 right-10 h-40 w-40 rounded-full bg-primary-600 blur-3xl opacity-5"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-coffee-400 blur-3xl opacity-5"></div>
+                </div>
+
                 <Header />
-                <main className="flex flex-1 items-center justify-center px-6 py-20 text-center">
+                <main className="flex flex-1 items-center justify-center px-6 py-20 text-center relative z-10">
                     <div>
                         <RushCoffeeLogo className="mx-auto h-24 w-24 text-gray-300 opacity-50" />
                         <h1 className="mt-4 font-display text-2xl font-bold text-coffee-900">
@@ -94,10 +155,10 @@ const QueuePage: React.FC = () => {
                             Please log in and place an order to see your queue status.
                         </p>
                         <div className="mt-8 flex justify-center gap-4">
-                            <Link to="/auth/login" className="rounded-full bg-primary-600 px-8 py-3 font-semibold text-white transition-transform hover:scale-105">
+                            <Link to="/auth/login" className="rounded-full bg-primary-600 px-8 py-3 font-semibold text-white transition-transform hover:scale-105 shadow-lg">
                                 Login
                             </Link>
-                            <Link to="/menu" className="rounded-full border-2 border-primary-600 px-8 py-3 font-semibold text-primary-600 transition-transform hover:scale-105 hover:bg-primary-50">
+                            <Link to="/menu" className="rounded-full border-2 border-primary-600 px-8 py-3 font-semibold text-primary-600 transition-transform hover:scale-105 hover:bg-primary-50 shadow-sm">
                                 View Menu
                             </Link>
                         </div>
@@ -108,75 +169,215 @@ const QueuePage: React.FC = () => {
         );
     }
 
-    // Logged-in user with no active order
-    if (!activeOrder) {
+    // Logged-in user with no displayable order (Empty Queue)
+    if (!displayOrder) {
         return (
-            <div className="flex min-h-screen flex-col bg-gray-50">
+            <div className="flex min-h-screen flex-col bg-gradient-to-br from-coffee-50 via-gray-50 to-primary-50 relative">
+                {/* Background Pattern */}
+                <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute top-10 left-10 h-32 w-32 rounded-full bg-coffee-600 blur-3xl opacity-5"></div>
+                    <div className="absolute bottom-20 right-10 h-40 w-40 rounded-full bg-primary-600 blur-3xl opacity-5"></div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-coffee-400 blur-3xl opacity-5"></div>
+                </div>
+
                 <Header />
-                <main className="flex flex-1 items-center justify-center px-6 py-20 text-center">
-                    <div>
+                <main className="flex-1 w-full max-w-3xl mx-auto px-4 py-12 relative z-10">
+                    {/* Main Empty State - Centered */}
+                    <div className="text-center mb-16">
                         <RushCoffeeLogo className="mx-auto h-24 w-24 text-gray-300 opacity-50" />
-                        <h1 className="mt-4 font-display text-2xl font-bold text-coffee-900">
+                        <h1 className="mt-6 font-display text-3xl font-bold text-coffee-900">
                             Your queue is empty
                         </h1>
-                        <p className="mt-2 text-gray-600">
-                            Ready for your next coffee fix?
+                        <p className="mt-3 text-gray-600 max-w-sm mx-auto">
+                            Ready for your next coffee fix? Start a new order and skip the line!
                         </p>
                         <button
                             onClick={() => navigate('/menu')}
-                            className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-8 py-3 font-semibold text-white shadow-lg transition-transform hover:scale-105"
+                            className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-primary-600 to-primary-700 px-8 py-3.5 font-semibold text-white shadow-lg transition-all hover:scale-105 hover:shadow-xl"
                         >
                             Start a New Order
                             <ArrowRight className="h-5 w-5" />
                         </button>
                     </div>
+
+                    {/* Quick Stats - Grid */}
+                    {currentUser && (
+                        <div className="mb-12">
+                            <h2 className="text-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-6">Your Coffee Journey</h2>
+                            <div className="grid grid-cols-3 gap-4 sm:gap-6">
+                                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow text-center">
+                                    <div className="flex flex-col items-center">
+                                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center mb-3">
+                                            <Clock className="h-6 w-6 text-blue-600" />
+                                        </div>
+                                        <p className="text-3xl font-bold text-coffee-900">{currentUser.totalOrders || 0}</p>
+                                        <p className="text-sm text-gray-600 mt-1 font-medium">Orders</p>
+                                    </div>
+                                </div>
+                                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow text-center">
+                                    <div className="flex flex-col items-center">
+                                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center mb-3">
+                                            <Award className="h-6 w-6 text-amber-600" />
+                                        </div>
+                                        <p className="text-3xl font-bold text-coffee-900">{currentUser.currentPoints || 0}</p>
+                                        <p className="text-sm text-gray-600 mt-1 font-medium">Points</p>
+                                    </div>
+                                </div>
+                                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow text-center">
+                                    <div className="flex flex-col items-center">
+                                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center mb-3">
+                                            <TrendingUp className="h-6 w-6 text-green-600" />
+                                        </div>
+                                        <p className="text-2xl font-bold text-coffee-900 capitalize">{currentUser.tier || 'Bronze'}</p>
+                                        <p className="text-sm text-gray-600 mt-1 font-medium">Tier</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Recent Orders - List */}
+                    {recentOrders.length > 0 && (
+                        <div className="w-full">
+                            <h2 className="text-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-6">Recent Orders</h2>
+                            <div className="space-y-4">
+                                {recentOrders.map((order) => {
+                                    const firstItem = order.orderItems[0];
+                                    const productImage = firstItem ? getProductImage(firstItem.productId) : null;
+
+                                    return (
+                                        <div key={order.id} className="bg-white/90 backdrop-blur-sm rounded-2xl p-5 shadow-md border border-gray-100 hover:shadow-lg transition-all">
+                                            <div className="flex items-start gap-4">
+                                                {/* Product Image or Coffee Icon */}
+                                                <div className="flex-shrink-0 h-16 w-16 rounded-xl overflow-hidden bg-gradient-to-br from-coffee-100 to-coffee-200 shadow-inner">
+                                                    {productImage ? (
+                                                        <img
+                                                            src={productImage}
+                                                            alt={firstItem.productName}
+                                                            className="h-full w-full object-cover"
+                                                        />
+                                                    ) : (
+                                                        <div className="h-full w-full flex items-center justify-center">
+                                                            <Coffee className="h-8 w-8 text-coffee-600" />
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Order Details */}
+                                                <div className="flex-1 min-w-0 text-left">
+                                                    {/* Top Row: Product Name and Date */}
+                                                    <div className="flex items-start justify-between mb-1">
+                                                        <h3 className="font-bold text-coffee-900 text-base truncate pr-4">
+                                                            {firstItem?.productName || 'Coffee Order'}
+                                                        </h3>
+                                                        <span className="text-xs text-gray-500 flex-shrink-0 font-medium bg-gray-100 px-2 py-1 rounded-full">
+                                                            {new Date(order.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Order Number - Left aligned */}
+                                                    <p className="text-xs text-gray-500 mb-2 font-mono">
+                                                        {order.orderNumber}
+                                                    </p>
+
+                                                    {/* Additional Items */}
+                                                    {order.orderItems.length > 1 && (
+                                                        <p className="text-xs text-gray-600 mb-3 italic">
+                                                            +{order.orderItems.length - 1} more item{order.orderItems.length > 2 ? 's' : ''}
+                                                        </p>
+                                                    )}
+
+                                                    {/* Bottom Row: Status and Price */}
+                                                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
+                                                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
+                                                            Completed
+                                                        </span>
+                                                        <p className="text-base font-bold text-primary-600">₱{order.totalAmount.toFixed(2)}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Empty state for no orders */}
+                    {recentOrders.length === 0 && currentUser && (
+                        <div className="w-full max-w-md mx-auto">
+                            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 border-2 border-dashed border-gray-200 text-center">
+                                <Coffee className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                                <p className="text-sm text-gray-500">
+                                    No orders yet. Your coffee journey starts here! ☕
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </main>
                 <Footer />
             </div>
         );
     }
 
-    // Main view for user with an active order
+    // Main view for user with a displayable order
     return (
-        <div className="flex min-h-screen flex-col bg-gray-50">
+        <div className="flex min-h-screen flex-col bg-gradient-to-br from-coffee-50 via-gray-50 to-primary-50 relative">
+            {/* Background Pattern */}
+            <div className="fixed inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute top-10 left-10 h-32 w-32 rounded-full bg-coffee-600 blur-3xl opacity-5"></div>
+                <div className="absolute bottom-20 right-10 h-40 w-40 rounded-full bg-primary-600 blur-3xl opacity-5"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-coffee-400 blur-3xl opacity-5"></div>
+            </div>
+
             <Header />
-            <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+            <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8 relative z-10">
                 <div className="flex w-full max-w-md flex-col items-center gap-6">
-                    {location.state?.fromCheckout && (
-                        <div className="w-full rounded-lg bg-green-100 p-4 text-center text-green-800 animate-fade-in-up">
-                            <h2 className="font-bold">Order Placed Successfully!</h2>
-                            <p className="text-sm">You are now in the queue. We'll start preparing your order shortly.</p>
+                    {showSuccessMessage && (
+                        <div className="w-full rounded-2xl bg-gradient-to-r from-green-50 to-emerald-50 p-4 text-center border border-green-200 shadow-sm animate-fade-in-up">
+                            <div className="flex items-center justify-center gap-2 mb-1">
+                                <div className="h-6 w-6 rounded-full bg-green-500 flex items-center justify-center">
+                                    <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </div>
+                                <h2 className="font-bold text-green-900">Order Placed Successfully!</h2>
+                            </div>
+                            <p className="text-sm text-green-700">You are now in the queue. We'll start preparing your order shortly.</p>
                         </div>
                     )}
 
-                    {showPermissionBanner && notificationPermission === 'default' && activeOrder.status !== 'completed' && (
-                        <div className="relative w-full animate-fade-in-up rounded-lg border border-primary-200 bg-white p-4 shadow-sm">
+                    {showPermissionBanner && notificationPermission === 'default' && displayOrder.status !== 'completed' && (
+                        <div className="relative w-full animate-fade-in-up rounded-2xl border border-primary-200 bg-white/95 backdrop-blur-sm p-4 shadow-md">
                             <button
                                 onClick={() => setShowPermissionBanner(false)}
-                                className="absolute top-2 right-2 rounded-full p-1 text-gray-400 transition-colors hover:text-gray-600"
+                                className="absolute top-2 right-2 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                                 aria-label="Dismiss"
                             >
                                 <X className="h-4 w-4" />
                             </button>
                             <div className="flex items-center gap-4">
-                                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary-100">
+                                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-primary-200">
                                     <Bell className="h-6 w-6 text-primary-600" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-gray-800">Get Order Updates</h3>
+                                    <h3 className="font-bold text-gray-900">Get Order Updates</h3>
                                     <p className="text-sm text-gray-600">Know the moment your coffee is ready!</p>
                                 </div>
                             </div>
                             <button
                                 onClick={handleRequestPermission}
-                                className="mt-3 w-full rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700"
+                                className="mt-4 w-full rounded-full bg-gradient-to-r from-primary-600 to-primary-700 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-lg"
                             >
                                 Enable Notifications
                             </button>
                         </div>
                     )}
 
-                    <ModernQueueCard order={activeOrder} />
+                    <ModernQueueCard
+                        order={displayOrder}
+                        onDismiss={handleDismiss}
+                    />
                 </div>
             </main>
             <Footer />

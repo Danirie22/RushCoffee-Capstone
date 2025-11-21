@@ -1,0 +1,4 @@
+src/components/queue/ModernQueueCard.tsx(251,6): error TS17008: JSX element 'div' has no corresponding closing tag.
+src/components/queue/ModernQueueCard.tsx(444,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/components/queue/ModernQueueCard.tsx(447,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/components/queue/ModernQueueCard.tsx(449,38): error TS1005: '</' expected.

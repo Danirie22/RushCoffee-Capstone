@@ -80,6 +80,7 @@ const OrderCard: React.FC<{ order: QueueItem }> = ({ order }) => {
         product,
         selectedSize,
         quantity: orderItem.quantity,
+        customizations: orderItem.customizations,
       });
     }
 

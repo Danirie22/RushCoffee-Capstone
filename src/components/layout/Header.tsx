@@ -230,7 +230,7 @@ const Header: React.FC = () => {
             </header>
 
             {/* Mobile Menu */}
-            <div className={`fixed inset-0 z-40 md:hidden ${isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
+            <div className={`fixed inset-0 z-[60] md:hidden ${isMobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'}`}>
                 {/* Backdrop */}
                 <div
                     className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}

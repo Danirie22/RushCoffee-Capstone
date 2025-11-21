@@ -19,6 +19,10 @@ export interface IngredientData {
     stock: number;
     unit: 'g' | 'ml' | 'pcs';
     lowStockThreshold: number;
+    // Enhanced fields for customization system
+    isTopping?: boolean;  // Flag to identify if this can be used as a topping
+    toppingPrice?: number;  // Price when used as topping (only for toppings)
+    portionSize?: number;  // Standard portion size per serving
 }
 
 export const mockIngredients: IngredientData[] = [
@@ -35,16 +39,51 @@ export const mockIngredients: IngredientData[] = [
     // Sauces & Syrups
     { id: 'chocolate-sauce', name: 'Chocolate Sauce', category: 'Sauces', stock: 3000, unit: 'ml', lowStockThreshold: 300 },
     { id: 'caramel-sauce', name: 'Caramel Sauce', category: 'Sauces', stock: 3000, unit: 'ml', lowStockThreshold: 300 },
-    { id: 'brown-sugar-syrup', name: 'Brown Sugar Syrup', category: 'Syrups', stock: 2500, unit: 'ml', lowStockThreshold: 250 },
+    { id: 'brown-sugar-syrup', name: 'Brown Sugar Syrup', category: 'Syrups', stock: 2500, unit: 'ml', lowStockThreshold: 250, portionSize: 20 },
     { id: 'vanilla-syrup', name: 'Vanilla Syrup', category: 'Syrups', stock: 2000, unit: 'ml', lowStockThreshold: 200 },
     { id: 'orange-syrup', name: 'Orange Syrup', category: 'Syrups', stock: 1500, unit: 'ml', lowStockThreshold: 150 },
 
-    // Specialty Ingredients
+    // Specialty Ingredients & Toppings
     { id: 'biscoff-spread', name: 'Biscoff Spread', category: 'Specialty', stock: 2000, unit: 'g', lowStockThreshold: 200 },
     { id: 'peanut-butter', name: 'Peanut Butter', category: 'Specialty', stock: 2000, unit: 'g', lowStockThreshold: 200 },
     { id: 'oreo-crumbs', name: 'Oreo Cookie Crumbs', category: 'Specialty', stock: 3000, unit: 'g', lowStockThreshold: 300 },
     { id: 'coffee-jelly', name: 'Coffee Jelly', category: 'Specialty', stock: 2500, unit: 'g', lowStockThreshold: 250 },
     { id: 'red-velvet-powder', name: 'Red Velvet Powder', category: 'Specialty', stock: 2000, unit: 'g', lowStockThreshold: 200 },
+
+    // Toppings (Enhanced with topping-specific fields)
+    {
+        id: 'pearls',
+        name: 'Pearls',
+        category: 'Specialty',
+        stock: 3000,
+        unit: 'g',
+        lowStockThreshold: 300,
+        isTopping: true,
+        toppingPrice: 10,
+        portionSize: 30  // 30g per serving
+    },
+    {
+        id: 'pudding',
+        name: 'Pudding',
+        category: 'Specialty',
+        stock: 2000,
+        unit: 'g',
+        lowStockThreshold: 200,
+        isTopping: true,
+        toppingPrice: 15,
+        portionSize: 40  // 40g per serving
+    },
+    {
+        id: 'grass-jelly',
+        name: 'Grass Jelly',
+        category: 'Specialty',
+        stock: 2500,
+        unit: 'g',
+        lowStockThreshold: 250,
+        isTopping: true,
+        toppingPrice: 15,
+        portionSize: 35  // 35g per serving
+    },
 
     // Matcha & Tea
     { id: 'matcha-powder', name: 'Matcha Powder', category: 'Matcha & Tea', stock: 2000, unit: 'g', lowStockThreshold: 200 },
@@ -61,8 +100,16 @@ export const mockIngredients: IngredientData[] = [
     // Soda & Carbonation
     { id: 'soda-water', name: 'Soda Water', category: 'Beverages', stock: 10000, unit: 'ml', lowStockThreshold: 1000 },
 
-    // Ice & Water
-    { id: 'ice-cubes', name: 'Ice Cubes', category: 'Frozen', stock: 50000, unit: 'g', lowStockThreshold: 5000 },
+    // Ice & Water (Enhanced with portion sizes)
+    {
+        id: 'ice-cubes',
+        name: 'Ice Cubes',
+        category: 'Frozen',
+        stock: 50000,
+        unit: 'g',
+        lowStockThreshold: 5000,
+        portionSize: 100  // 100g for normal ice level
+    },
     { id: 'hot-water', name: 'Hot Water', category: 'Beverages', stock: 99999, unit: 'ml', lowStockThreshold: 10000 },
 
     // Meal Ingredients

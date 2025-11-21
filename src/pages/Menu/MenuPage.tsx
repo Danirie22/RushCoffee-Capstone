@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { Search, ArrowUpDown, Check, AlertCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -10,6 +9,9 @@ import ProductCardSkeleton from '../../components/menu/ProductCardSkeleton';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useProduct } from '../../context/ProductContext';
+import ProductCustomizeModal from '../../components/menu/ProductCustomizeModal';
+import { Product, ProductSize } from '../../data/mockProducts';
+import { Customizations } from '../../context/CartContext';
 
 const sortOptionsList = [
     { value: 'default', label: 'Default' },
@@ -48,6 +50,28 @@ const MenuPage: React.FC = () => {
 
     const { addToCart } = useCart();
     const { currentUser } = useAuth();
+
+    const [isCustomizeModalOpen, setIsCustomizeModalOpen] = React.useState(false);
+    const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
+    const [selectedSize, setSelectedSize] = React.useState<ProductSize | null>(null);
+
+    const handleAddToCart = (product: Product, size: ProductSize) => {
+        // Check if product is a drink (customizable)
+        const customizableCategories = ['Coffee Based', 'Non Coffee', 'Refreshments', 'Matcha Series'];
+        if (customizableCategories.includes(product.category)) {
+            setSelectedProduct(product);
+            setSelectedSize(size);
+            setIsCustomizeModalOpen(true);
+        } else {
+            addToCart(product, size);
+        }
+    };
+
+    const handleConfirmCustomization = (customizations: Customizations, quantity: number) => {
+        if (selectedProduct && selectedSize) {
+            addToCart(selectedProduct, selectedSize, customizations, quantity);
+        }
+    };
 
     const categories = React.useMemo(() => {
         if (products.length === 0) return ['All'];
@@ -217,7 +241,7 @@ const MenuPage: React.FC = () => {
                                     <motion.div key={product.id} variants={itemVariants} layout className="flex">
                                         <ProductCard
                                             product={product}
-                                            onAddToCart={addToCart}
+                                            onAddToCart={handleAddToCart}
                                             isLoggedIn={!!currentUser}
                                         />
                                     </motion.div>
@@ -235,6 +259,15 @@ const MenuPage: React.FC = () => {
             </main>
 
             <Footer />
+            {selectedProduct && selectedSize && (
+                <ProductCustomizeModal
+                    product={selectedProduct}
+                    selectedSize={selectedSize}
+                    isOpen={isCustomizeModalOpen}
+                    onClose={() => setIsCustomizeModalOpen(false)}
+                    onConfirm={handleConfirmCustomization}
+                />
+            )}
         </div>
     );
 };

@@ -10,6 +10,7 @@ import { Loader2, Coffee } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { tierThresholds } from '../../data/mockRewards';
 import { UserProfile } from '../../context/AuthContext';
+import { mockCustomizationOptions } from '../../data/mockCustomizationOptions';
 
 type OrderStatus = 'waiting' | 'preparing' | 'ready' | 'completed';
 
@@ -67,7 +68,7 @@ const AdminQueuePage: React.FC = () => {
                 const ingredientDocsToRead = new Map<string, firebase.firestore.DocumentReference>();
                 const ingredientDeductions = new Map<string, number>();
 
-                // 2. If preparing order, read product recipes to determine which ingredients to read.
+                // 2. If preparing order, read product recipes AND customizations to determine which ingredients to read.
                 if (currentStatus === 'waiting' && newStatus === 'preparing') {
                     const productRefs = orderData.orderItems.map(item => db.collection("products").doc(item.productId));
                     const productDocs = await Promise.all(productRefs.map(ref => transaction.get(ref)));
@@ -76,6 +77,7 @@ const AdminQueuePage: React.FC = () => {
                         const item = orderData.orderItems[i];
                         const productDoc = productDocs[i];
 
+                        // Deduct base recipe ingredients
                         if (productDoc.exists && productDoc.data()!.recipe) {
                             for (const recipeItem of productDoc.data()!.recipe) {
                                 const ingredientRef = db.collection("ingredients").doc(recipeItem.ingredientId);
@@ -83,6 +85,59 @@ const AdminQueuePage: React.FC = () => {
 
                                 ingredientDocsToRead.set(ingredientRef.path, ingredientRef);
                                 ingredientDeductions.set(ingredientRef.path, (ingredientDeductions.get(ingredientRef.path) || 0) + amountToDeduct);
+                            }
+                        }
+
+                        // ✅ NEW: Deduct customization ingredients (sugar, ice, toppings)
+                        if (item.customizations) {
+                            // Deduct sugar syrup
+                            if (item.customizations.sugarLevel) {
+                                const sugarLevelData = mockCustomizationOptions.sugarLevels.find(
+                                    level => level.value === item.customizations!.sugarLevel
+                                );
+                                if (sugarLevelData && sugarLevelData.sugarAmount > 0) {
+                                    const sugarRef = db.collection("ingredients").doc(sugarLevelData.sugarIngredientId);
+                                    const sugarAmount = sugarLevelData.sugarAmount * item.quantity;
+
+                                    ingredientDocsToRead.set(sugarRef.path, sugarRef);
+                                    ingredientDeductions.set(sugarRef.path, (ingredientDeductions.get(sugarRef.path) || 0) + sugarAmount);
+                                }
+                            }
+
+                            // Deduct ice
+                            if (item.customizations.iceLevel) {
+                                const iceLevelData = mockCustomizationOptions.iceLevels.find(
+                                    level => level.value === item.customizations!.iceLevel
+                                );
+                                if (iceLevelData && iceLevelData.iceAmount > 0) {
+                                    const iceRef = db.collection("ingredients").doc(iceLevelData.iceIngredientId);
+                                    const iceAmount = iceLevelData.iceAmount * item.quantity;
+
+                                    ingredientDocsToRead.set(iceRef.path, iceRef);
+                                    ingredientDeductions.set(iceRef.path, (ingredientDeductions.get(iceRef.path) || 0) + iceAmount);
+                                }
+                            }
+
+                            // Deduct toppings
+                            if (item.customizations.toppings && item.customizations.toppings.length > 0) {
+                                for (const toppingName of item.customizations.toppings) {
+                                    // Query to find topping by name
+                                    const toppingSnapshot = await db.collection("ingredients")
+                                        .where('name', '==', toppingName)
+                                        .where('isTopping', '==', true)
+                                        .limit(1)
+                                        .get();
+
+                                    if (!toppingSnapshot.empty) {
+                                        const toppingDoc = toppingSnapshot.docs[0];
+                                        const toppingData = toppingDoc.data();
+                                        const portionSize = toppingData.portionSize || 30;
+                                        const toppingAmount = portionSize * item.quantity;
+
+                                        ingredientDocsToRead.set(toppingDoc.ref.path, toppingDoc.ref);
+                                        ingredientDeductions.set(toppingDoc.ref.path, (ingredientDeductions.get(toppingDoc.ref.path) || 0) + toppingAmount);
+                                    }
+                                }
                             }
                         }
                     }
@@ -221,7 +276,7 @@ const AdminQueuePage: React.FC = () => {
                     <p className="mt-1 text-gray-500">New orders will appear here in real-time.</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-2 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     <QueueColumn
                         title="Waiting"
                         orders={waitingOrders}

@@ -1,0 +1,79 @@
+export interface SugarLevel {
+    value: string;
+    label: string;
+    sugarAmount: number;  // Amount of syrup in ml
+    sugarIngredientId: string;  // Which ingredient to deduct from inventory
+}
+
+export interface IceLevel {
+    value: string;
+    label: string;
+    iceAmount: number;  // Amount of ice in grams
+    iceIngredientId: string;  // Which ingredient to deduct from inventory
+}
+
+export interface CustomizationOptions {
+    sugarLevels: SugarLevel[];
+    iceLevels: IceLevel[];
+}
+
+export const mockCustomizationOptions: CustomizationOptions = {
+    sugarLevels: [
+        {
+            value: '0%',
+            label: 'No Sugar',
+            sugarAmount: 0,
+            sugarIngredientId: 'brown-sugar-syrup'
+        },
+        {
+            value: '25%',
+            label: '25% Sweet',
+            sugarAmount: 5,
+            sugarIngredientId: 'brown-sugar-syrup'
+        },
+        {
+            value: '50%',
+            label: '50% Sweet',
+            sugarAmount: 10,
+            sugarIngredientId: 'brown-sugar-syrup'
+        },
+        {
+            value: '75%',
+            label: '75% Sweet',
+            sugarAmount: 15,
+            sugarIngredientId: 'brown-sugar-syrup'
+        },
+        {
+            value: '100%',
+            label: 'Regular (100%)',
+            sugarAmount: 20,
+            sugarIngredientId: 'brown-sugar-syrup'
+        },
+    ],
+    iceLevels: [
+        {
+            value: 'None',
+            label: 'No Ice',
+            iceAmount: 0,
+            iceIngredientId: 'ice-cubes'
+        },
+        {
+            value: 'Less',
+            label: 'Less Ice',
+            iceAmount: 50,
+            iceIngredientId: 'ice-cubes'
+        },
+        {
+            value: 'Normal',
+            label: 'Normal Ice',
+            iceAmount: 100,
+            iceIngredientId: 'ice-cubes'
+        },
+        {
+            value: 'Extra',
+            label: 'Extra Ice',
+            iceAmount: 150,
+            iceIngredientId: 'ice-cubes'
+        },
+    ]
+};

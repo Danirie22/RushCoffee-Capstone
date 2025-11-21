@@ -7,6 +7,7 @@ import UpdateStockModal from '../../components/admin/UpdateStockModal';
 import AddIngredientModal from '../../components/admin/AddIngredientModal';
 import { mockIngredients, IngredientData, IngredientCategory } from '../../data/mockIngredients';
 import { useCart } from '../../context/CartContext';
+import { seedCustomizationOptions } from '../../utils/seedCustomizationOptions';
 
 export interface Ingredient {
     id: string;
@@ -15,6 +16,10 @@ export interface Ingredient {
     stock: number;
     unit: string;
     lowStockThreshold: number;
+    // Enhanced fields for customization system
+    isTopping?: boolean;
+    toppingPrice?: number;
+    portionSize?: number;
 }
 
 const AdminInventoryPage: React.FC = () => {
@@ -118,15 +123,31 @@ const AdminInventoryPage: React.FC = () => {
             const ingredientsCollectionRef = db.collection("ingredients");
             const initialSnapshot = await ingredientsCollectionRef.get();
 
-            if (initialSnapshot.empty) {
-                console.log("Seeding ingredients with specific IDs...");
-                const batch = db.batch();
-                mockIngredients.forEach(ingredient => {
+            // Check for missing ingredients and seed them
+            const existingIds = new Set(initialSnapshot.docs.map(doc => doc.id));
+            const batch = db.batch();
+            let hasUpdates = false;
+
+            mockIngredients.forEach(ingredient => {
+                if (!existingIds.has(ingredient.id)) {
+                    console.log(`Seeding missing ingredient: ${ingredient.name}`);
                     const { id, ...data } = ingredient; // Destructure to separate id from data
                     const docRef = ingredientsCollectionRef.doc(id); // Use the specified id
                     batch.set(docRef, data);
-                });
+                    hasUpdates = true;
+                }
+            });
+
+            if (hasUpdates) {
                 await batch.commit();
+                console.log("New ingredients seeded successfully.");
+            }
+
+            // Seed customization options (sugar/ice levels)
+            try {
+                await seedCustomizationOptions();
+            } catch (error) {
+                console.error("Error seeding customization options:", error);
             }
 
             const q = db.collection("ingredients").orderBy("name", "asc");
@@ -230,51 +251,51 @@ const AdminInventoryPage: React.FC = () => {
                 <h1 className="font-display text-2xl font-bold text-gray-800 sm:text-3xl">Inventory Management</h1>
                 <button
                     onClick={handleOpenAddModal}
-                    className="flex items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto">
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto">
                     <Plus className="h-4 w-4" />
                     <span>Add Ingredient</span>
                 </button>
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 gap-4 mb-6 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-3">
                 <button
                     onClick={() => handleStatCardClick('all')}
-                    className={`bg-white rounded-lg border p-4 shadow-sm transition-all hover:shadow-md cursor-pointer text-left ${activeFilter === 'all' ? 'ring-2 ring-primary-600' : ''
+                    className={`flex items-center justify-between p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md cursor-pointer text-left group ${activeFilter === 'all' ? 'ring-2 ring-primary-600 ring-offset-1' : ''
                         }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-600">Total Ingredients</p>
-                            <p className="text-2xl font-bold text-gray-900 mt-1">{ingredients.length}</p>
-                        </div>
-                        <Package className="h-10 w-10 text-primary-600 opacity-75" />
+                    <div>
+                        <p className="text-sm font-medium text-gray-500 group-hover:text-primary-600 transition-colors">Total Ingredients</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1">{ingredients.length}</p>
+                    </div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gray-100 text-gray-600 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                        <Package className="h-6 w-6" />
                     </div>
                 </button>
                 <button
                     onClick={() => handleStatCardClick('lowStock')}
-                    className={`bg-white rounded-lg border p-4 shadow-sm transition-all hover:shadow-md cursor-pointer text-left ${activeFilter === 'lowStock' ? 'ring-2 ring-yellow-600' : ''
+                    className={`flex items-center justify-between p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md cursor-pointer text-left group ${activeFilter === 'lowStock' ? 'ring-2 ring-yellow-500 ring-offset-1' : ''
                         }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-600">Low Stock Items</p>
-                            <p className="text-2xl font-bold text-yellow-600 mt-1">{getLowStockCount('All')}</p>
-                        </div>
-                        <AlertTriangle className="h-10 w-10 text-yellow-600 opacity-75" />
+                    <div>
+                        <p className="text-sm font-medium text-gray-500 group-hover:text-yellow-600 transition-colors">Low Stock Items</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1">{getLowStockCount('All')}</p>
+                    </div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-yellow-50 text-yellow-600 group-hover:bg-yellow-100 transition-colors">
+                        <AlertTriangle className="h-6 w-6" />
                     </div>
                 </button>
                 <button
                     onClick={() => handleStatCardClick('outOfStock')}
-                    className={`bg-white rounded-lg border p-4 shadow-sm transition-all hover:shadow-md cursor-pointer text-left col-span-2 sm:col-span-1 w-[calc(50%-0.5rem)] mx-auto sm:w-full ${activeFilter === 'outOfStock' ? 'ring-2 ring-red-600' : ''
+                    className={`flex items-center justify-between p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md cursor-pointer text-left group ${activeFilter === 'outOfStock' ? 'ring-2 ring-red-500 ring-offset-1' : ''
                         }`}
                 >
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-medium text-gray-600">Out of Stock</p>
-                            <p className="text-2xl font-bold text-red-600 mt-1">{ingredients.filter(i => i.stock === 0).length}</p>
-                        </div>
-                        <XCircle className="h-10 w-10 text-red-600 opacity-75" />
+                    <div>
+                        <p className="text-sm font-medium text-gray-500 group-hover:text-red-600 transition-colors">Out of Stock</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1">{ingredients.filter(i => i.stock === 0).length}</p>
+                    </div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 group-hover:bg-red-100 transition-colors">
+                        <XCircle className="h-6 w-6" />
                     </div>
                 </button>
             </div>
@@ -334,7 +355,47 @@ const AdminInventoryPage: React.FC = () => {
                 </div>
             </div>
 
-            <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
+            {/* Mobile List View */}
+            <div className="grid grid-cols-1 gap-3 md:hidden">
+                {filteredIngredients.map((item) => {
+                    const status = getStockStatus(item);
+                    return (
+                        <div key={item.id} className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-3">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                                    <p className="text-xs text-gray-500">{item.category}</p>
+                                </div>
+                                <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${status.color === 'text-red-600' ? 'bg-red-50 text-red-700' : status.color === 'text-yellow-600' ? 'bg-yellow-50 text-yellow-700' : 'bg-green-50 text-green-700'}`}>
+                                    <status.Icon className="h-3 w-3" />
+                                    {status.text}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-gray-50">
+                                <div>
+                                    <p className="text-xs text-gray-500">Current Stock</p>
+                                    <p className="font-medium text-gray-900">
+                                        {item.stock.toLocaleString()} <span className="text-gray-400 text-xs">{item.unit}</span>
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => handleOpenUpdateModal(item)}
+                                    className="px-3 py-1.5 bg-primary-50 text-primary-700 text-xs font-semibold rounded-lg hover:bg-primary-100 transition-colors"
+                                >
+                                    Update
+                                </button>
+                            </div>
+                        </div>
+                    );
+                })}
+                {filteredIngredients.length === 0 && (
+                    <div className="text-center py-8 text-gray-500">No ingredients found.</div>
+                )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto rounded-lg border bg-white shadow-sm">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>

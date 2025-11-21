@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Coffee, Zap, Users, Lightbulb, MapPin, Phone, Clock, ArrowRight, Star, Watch } from 'lucide-react';
+import rushCoffeeStorefront from '../../assets/images/rush-coffee-storefront.jpg';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -133,7 +134,7 @@ const AboutPage: React.FC = () => {
             </div>
             <div className="animate-fade-in-up" style={{ animationDelay: '200ms', opacity: 0 }}>
               <img
-                src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?q=80&w=2047&auto=format&fit=crop"
+                src={rushCoffeeStorefront}
                 alt="Inside Rush Coffee shop"
                 className="h-80 w-full rounded-lg object-cover shadow-xl"
               />
@@ -159,18 +160,6 @@ const AboutPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Stats Section */}
-        <section className="bg-white px-6 py-20">
-          <div className="container mx-auto max-w-7xl">
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              <StatCard icon={Users} value={10000} label="Happy Customers" suffix="+" />
-              <StatCard icon={Coffee} value={50000} label="Coffees Served" suffix="+" />
-              <StatCard icon={Star} value={4.9} label="Average Rating" />
-              <StatCard icon={Watch} value={5} label="Minutes Average Wait" />
-            </div>
-          </div>
-        </section>
-
         {/* Location Section */}
         <section className="bg-gray-50 px-6 py-20">
           <div className="container mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2">
@@ -178,13 +167,24 @@ const AboutPage: React.FC = () => {
               <h2 className="font-display text-3xl font-bold text-coffee-900 md:text-4xl">Visit Us</h2>
               <p className="mt-4 text-gray-600">Experience the Rush Coffee difference in person. We're ready to serve you.</p>
               <ul className="mt-6 space-y-4">
-                <li className="flex items-start gap-4"><MapPin className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-coffee-900">Address</h4><p className="text-gray-600">123 Coffee Street, Malate, Manila, 1004 Metro Manila</p></div></li>
-                <li className="flex items-start gap-4"><Clock className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-coffee-900">Operating Hours</h4><p className="text-gray-600">Monday - Friday: 7:00 AM - 8:00 PM</p><p className="text-gray-600">Saturday - Sunday: 8:00 AM - 6:00 PM</p></div></li>
-                <li className="flex items-start gap-4"><Phone className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-coffee-900">Contact</h4><a href="tel:+639171234567" className="text-primary-600 transition hover:text-primary-700">+63 917 123 4567</a></div></li>
+                <li className="flex items-start gap-4"><MapPin className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-coffee-900">Address</h4><p className="text-gray-600">11 Visayan Ave. St. Galas, Quezon City, Philippines</p></div></li>
+                <li className="flex items-start gap-4"><Clock className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-coffee-900">Operating Hours</h4><p className="text-gray-600">Monday - Sunday 12pm - 10pm</p></div></li>
+                <li className="flex items-start gap-4"><Phone className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-coffee-900">Contact</h4><a href="tel:09304641022" className="text-primary-600 transition hover:text-primary-700">0930 464 1022</a></div></li>
               </ul>
               <Button size="lg" className="mt-8">Get Directions</Button>
             </div>
-            <div className="h-96 overflow-hidden rounded-lg shadow-xl"><div className="flex h-full w-full items-center justify-center bg-gray-300 bg-cover bg-center" style={{ backgroundImage: "url('/Coffee Based/coffee-jelly.jpg')" }}><span className="rounded bg-white/80 px-4 py-2 font-semibold text-gray-700 backdrop-blur-sm">[Google Maps Placeholder]</span></div></div>
+            <div className="h-96 overflow-hidden rounded-lg shadow-xl">
+              <iframe
+                src="https://maps.google.com/maps?q=11%20Visayan%20Ave%20St.%20Galas%20Quezon%20City&t=&z=15&ie=UTF8&iwloc=&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Rush Coffee Location"
+              ></iframe>
+            </div>
           </div>
         </section>
 

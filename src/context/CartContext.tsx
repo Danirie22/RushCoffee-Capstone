@@ -5,17 +5,25 @@ import { Product, ProductSize } from '../data/mockProducts';
 import { useAuth } from './AuthContext';
 import { useProduct } from './ProductContext';
 
+export interface Customizations {
+  sugarLevel?: string;
+  iceLevel?: string;
+  toppings?: string[];
+}
+
 export interface CartItem {
-  id: string; // Composite ID: `${product.id}-${selectedSize.name}`
+  id: string; // Composite ID: `${product.id}-${selectedSize.name}-${customizationString}`
   product: Product;
   selectedSize: ProductSize;
   quantity: number;
+  customizations?: Customizations;
 }
 
 export interface ReorderItem {
   product: Product;
   selectedSize: ProductSize;
   quantity: number;
+  customizations?: Customizations;
 }
 
 // Simplified structure for Firestore
@@ -23,6 +31,7 @@ interface FirestoreCartItem {
   productId: string;
   sizeName: string;
   quantity: number;
+  customizations?: Customizations;
 }
 
 interface CartContextType {
@@ -31,7 +40,8 @@ interface CartContextType {
   toastMessage: string | null;
   totalCartItems: number;
   isCartLoading: boolean;
-  addToCart: (product: Product, selectedSize: ProductSize) => void;
+  selectedItemIds: string[];
+  addToCart: (product: Product, selectedSize: ProductSize, customizations?: Customizations, quantity?: number) => void;
   addMultipleToCart: (items: ReorderItem[]) => void;
   updateQuantity: (cartItemId: string, newQuantity: number) => void;
   removeFromCart: (cartItemId: string) => void;
@@ -39,6 +49,9 @@ interface CartContextType {
   closeCart: () => void;
   showToast: (message: string) => void;
   clearCart: () => void;
+  toggleItemSelection: (cartItemId: string) => void;
+  selectAllItems: () => void;
+  deselectAllItems: () => void;
 }
 
 const CartContext = React.createContext<CartContextType | undefined>(undefined);
@@ -60,6 +73,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [isCartOpen, setIsCartOpen] = React.useState(false);
   const [toastMessage, setToastMessage] = React.useState<string | null>(null);
   const [isCartLoading, setIsCartLoading] = React.useState(true);
+  const [selectedItemIds, setSelectedItemIds] = React.useState<string[]>([]);
 
   const { currentUser } = useAuth();
   const { products, isLoading: productsLoading } = useProduct();
@@ -87,21 +101,26 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         const userDoc = await userDocRef.get();
         if (userDoc.exists) {
           const firestoreCart = userDoc.data()?.cart as FirestoreCartItem[] || [];
-          
+
           const hydratedCart = firestoreCart.map(item => {
             const product = products.find(p => p.id === item.productId);
             if (!product) return null;
             const selectedSize = product.sizes.find(s => s.name === item.sizeName);
             if (!selectedSize) return null;
-            
+
+            // Generate ID consistent with addToCart logic
+            const customizationString = item.customizations ? JSON.stringify(item.customizations) : '';
+            const id = `${product.id}-${selectedSize.name}-${customizationString}`;
+
             return {
-              id: `${product.id}-${selectedSize.name}`,
+              id,
               product,
               selectedSize,
-              quantity: item.quantity
+              quantity: item.quantity,
+              customizations: item.customizations
             };
-          }).filter((item): item is CartItem => item !== null);
-          
+          }).filter((item) => item !== null) as CartItem[];
+
           setCartItems(hydratedCart);
         }
       } catch (error) {
@@ -111,27 +130,44 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
         setIsCartLoading(false);
       }
     };
-    
+
     if (currentUser) {
-        fetchAndHydrateCart();
+      fetchAndHydrateCart();
     } else {
-        // Clear cart on logout
-        setCartItems([]);
-        setIsCartLoading(false);
+      // Clear cart on logout
+      setCartItems([]);
+      setIsCartLoading(false);
     }
-}, [currentUser, products, productsLoading, showToast]);
+  }, [currentUser, products, productsLoading, showToast]);
 
 
   const updateFirestoreCart = React.useCallback(async (newCart: CartItem[]) => {
     if (!currentUser) return;
     try {
       const userDocRef = db.collection('users').doc(currentUser.uid);
-      const firestoreCart: FirestoreCartItem[] = newCart.map(item => ({
-        productId: item.product.id,
-        sizeName: item.selectedSize.name,
-        quantity: item.quantity,
-      }));
-      await userDocRef.update({ cart: firestoreCart });
+      const firestoreCart: FirestoreCartItem[] = newCart.map(item => {
+        // Clean customizations to remove undefined values (Firestore doesn't accept them)
+        const cleanCustomizations: Partial<Customizations> = {};
+        if (item.customizations) {
+          if (item.customizations.sugarLevel !== undefined) {
+            cleanCustomizations.sugarLevel = item.customizations.sugarLevel;
+          }
+          if (item.customizations.iceLevel !== undefined) {
+            cleanCustomizations.iceLevel = item.customizations.iceLevel;
+          }
+          if (item.customizations.toppings !== undefined) {
+            cleanCustomizations.toppings = item.customizations.toppings;
+          }
+        }
+
+        return {
+          productId: item.product.id,
+          sizeName: item.selectedSize.name,
+          quantity: item.quantity,
+          ...(Object.keys(cleanCustomizations).length > 0 && { customizations: cleanCustomizations as Customizations })
+        };
+      });
+      await userDocRef.set({ cart: firestoreCart }, { merge: true });
     } catch (error) {
       console.error("Error updating Firestore cart:", error);
       showToast("Error saving your cart.");
@@ -141,23 +177,25 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const totalCartItems = React.useMemo(() => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);
   }, [cartItems]);
-  
+
   const openCart = () => setIsCartOpen(true);
   const closeCart = () => setIsCartOpen(false);
 
-  const addToCart = (product: Product, selectedSize: ProductSize) => {
-    const cartItemId = `${product.id}-${selectedSize.name}`;
+  const addToCart = (product: Product, selectedSize: ProductSize, customizations?: Customizations, quantity: number = 1) => {
+    const customizationString = customizations ? JSON.stringify(customizations) : '';
+    const cartItemId = `${product.id}-${selectedSize.name}-${customizationString}`;
+
     let newCart;
     const existingItem = cartItems.find(item => item.id === cartItemId);
-    
+
     if (existingItem) {
       newCart = cartItems.map(item =>
-        item.id === cartItemId ? { ...item, quantity: Math.min(item.quantity + 1, product.stock) } : item
+        item.id === cartItemId ? { ...item, quantity: Math.min(item.quantity + quantity, product.stock) } : item
       );
     } else {
-      newCart = [...cartItems, { id: cartItemId, product, selectedSize, quantity: 1 }];
+      newCart = [...cartItems, { id: cartItemId, product, selectedSize, quantity: Math.min(quantity, product.stock), customizations }];
     }
-    
+
     setCartItems(newCart);
     updateFirestoreCart(newCart);
     showToast(`${product.name} (${selectedSize.name}) added to cart!`);
@@ -169,27 +207,29 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
     let newCart = [...cartItems];
     let itemsAddedCount = 0;
-    
-    itemsToAdd.forEach(item => {
-        const cartItemId = `${item.product.id}-${item.selectedSize.name}`;
-        const existingItemIndex = newCart.findIndex(cartItem => cartItem.id === cartItemId);
 
-        if (existingItemIndex > -1) {
-            const existingItem = newCart[existingItemIndex];
-            const newQuantity = existingItem.quantity + item.quantity;
-            newCart[existingItemIndex] = {
-                ...existingItem,
-                quantity: Math.min(newQuantity, item.product.stock),
-            };
-        } else {
-            newCart.push({
-                id: cartItemId,
-                product: item.product,
-                selectedSize: item.selectedSize,
-                quantity: Math.min(item.quantity, item.product.stock),
-            });
-        }
-        itemsAddedCount += item.quantity;
+    itemsToAdd.forEach(item => {
+      const customizationString = item.customizations ? JSON.stringify(item.customizations) : '';
+      const cartItemId = `${item.product.id}-${item.selectedSize.name}-${customizationString}`;
+      const existingItemIndex = newCart.findIndex(cartItem => cartItem.id === cartItemId);
+
+      if (existingItemIndex > -1) {
+        const existingItem = newCart[existingItemIndex];
+        const newQuantity = existingItem.quantity + item.quantity;
+        newCart[existingItemIndex] = {
+          ...existingItem,
+          quantity: Math.min(newQuantity, item.product.stock),
+        };
+      } else {
+        newCart.push({
+          id: cartItemId,
+          product: item.product,
+          selectedSize: item.selectedSize,
+          quantity: Math.min(item.quantity, item.product.stock),
+          customizations: item.customizations
+        });
+      }
+      itemsAddedCount += item.quantity;
     });
 
     setCartItems(newCart);
@@ -199,13 +239,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   };
 
   const updateQuantity = (cartItemId: string, newQuantity: number) => {
-     let newCart;
+    let newCart;
     if (newQuantity < 1) {
       newCart = cartItems.filter(item => item.id !== cartItemId);
     } else {
       newCart = cartItems.map(item => {
         if (item.id === cartItemId) {
-           return { ...item, quantity: Math.min(newQuantity, item.product.stock) };
+          return { ...item, quantity: Math.min(newQuantity, item.product.stock) };
         }
         return item;
       });
@@ -226,8 +266,36 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const clearCart = () => {
     setCartItems([]);
+    setSelectedItemIds([]);
     updateFirestoreCart([]);
   };
+
+  const toggleItemSelection = (cartItemId: string) => {
+    setSelectedItemIds(prev =>
+      prev.includes(cartItemId)
+        ? prev.filter(id => id !== cartItemId)
+        : [...prev, cartItemId]
+    );
+  };
+
+  const selectAllItems = () => {
+    setSelectedItemIds(cartItems.map(item => item.id));
+  };
+
+  const deselectAllItems = () => {
+    setSelectedItemIds([]);
+  };
+
+  // Auto-select newly added items
+  React.useEffect(() => {
+    const newItemIds = cartItems.map(item => item.id);
+    setSelectedItemIds(prev => {
+      // Keep only IDs that still exist in cart, and add new ones
+      const validIds = prev.filter(id => newItemIds.includes(id));
+      const addedIds = newItemIds.filter(id => !prev.includes(id));
+      return [...validIds, ...addedIds];
+    });
+  }, [cartItems]);
 
   const value = {
     cartItems,
@@ -235,6 +303,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     toastMessage,
     totalCartItems,
     isCartLoading,
+    selectedItemIds,
     addToCart,
     addMultipleToCart,
     updateQuantity,
@@ -242,6 +311,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     openCart,
     closeCart,
     showToast,
+    toggleItemSelection,
+    selectAllItems,
+    deselectAllItems,
     clearCart,
   };
 
