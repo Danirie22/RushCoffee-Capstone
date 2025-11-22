@@ -1,7 +1,7 @@
 
 import * as React from 'react';
 import { HashRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import HomePage from './pages/HomePage';
+import HomePage from './src/pages/HomePage';
 import Header from './src/components/layout/Header';
 import Footer from './src/components/layout/Footer';
 import LoginPage from './src/pages/Auth/LoginPage';
@@ -13,7 +13,7 @@ import QueuePage from './src/pages/Queue/QueuePage';
 import RewardsPage from './src/pages/Rewards/RewardsPage';
 import ProfilePage from './src/pages/Profile/ProfilePage';
 import AboutPage from './src/pages/Home/AboutPage';
-import ContactPage from './pages/ContactPage';
+import ContactPage from './src/pages/ContactPage';
 import FAQPage from './src/pages/Home/FAQPage';
 import { AuthProvider } from './src/context/AuthContext';
 import { CartProvider, useCart } from './src/context/CartContext';
@@ -81,7 +81,18 @@ const NotFound: React.FC = () => {
 
 // Wrapper component to use hooks from contexts
 const AppContent: React.FC = () => {
-  const { isCartOpen, closeCart, cartItems, updateQuantity, removeFromCart, toastMessage } = useCart();
+  const {
+    isCartOpen,
+    closeCart,
+    cartItems,
+    updateQuantity,
+    removeFromCart,
+    toastMessage,
+    selectedItemIds,
+    toggleItemSelection,
+    selectAllItems,
+    deselectAllItems
+  } = useCart();
   const navigate = useNavigate();
 
   const handleCheckout = () => {
@@ -131,6 +142,10 @@ const AppContent: React.FC = () => {
         onUpdateQuantity={updateQuantity}
         onRemoveItem={removeFromCart}
         onCheckout={handleCheckout}
+        selectedItemIds={selectedItemIds}
+        onToggleItemSelection={toggleItemSelection}
+        onSelectAll={selectAllItems}
+        onDeselectAll={deselectAllItems}
       />
       {toastMessage && (
         <div className="fixed bottom-4 right-4 z-[100] animate-fade-in-up rounded-lg bg-gray-900 px-4 py-3 text-white shadow-lg">

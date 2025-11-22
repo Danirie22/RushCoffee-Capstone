@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // FIX: Use compat import for v8 syntax.
 import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
-import { Loader2, Package, AlertTriangle, CheckCircle, XCircle, Plus, Search, Coffee, Milk, Droplet, Sparkles, Cookie, Leaf, Apple, Beer, Snowflake, Drumstick, Box } from 'lucide-react';
+import { Loader2, Package, AlertTriangle, CheckCircle, XCircle, Plus, Search, Coffee, Milk, Droplet, Sparkles, Cookie, Leaf, Apple, Beer, Snowflake, Drumstick, Box, Calendar } from 'lucide-react';
 import UpdateStockModal from '../../components/admin/UpdateStockModal';
 import AddIngredientModal from '../../components/admin/AddIngredientModal';
 import { mockIngredients, IngredientData, IngredientCategory } from '../../data/mockIngredients';
@@ -20,6 +20,7 @@ export interface Ingredient {
     isTopping?: boolean;
     toppingPrice?: number;
     portionSize?: number;
+    expirationDate?: string;
 }
 
 const AdminInventoryPage: React.FC = () => {
@@ -118,6 +119,22 @@ const AdminInventoryPage: React.FC = () => {
         }
     };
 
+    // Check for expiring ingredients (within 7 days)
+    const expiringIngredients = ingredients.filter(ing => {
+        if (!ing.expirationDate) return false;
+        const today = new Date();
+        const expDate = new Date(ing.expirationDate);
+        const diffTime = expDate.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays <= 7; // Include expired items (negative days)
+    });
+
+    // Check for low stock ingredients
+    const lowStockIngredients = ingredients.filter(ing => ing.stock > 0 && ing.stock <= ing.lowStockThreshold);
+
+    // Check for out of stock ingredients
+    const outOfStockIngredients = ingredients.filter(ing => ing.stock === 0);
+
     useEffect(() => {
         const seedAndFetch = async () => {
             const ingredientsCollectionRef = db.collection("ingredients");
@@ -128,6 +145,7 @@ const AdminInventoryPage: React.FC = () => {
             const batch = db.batch();
             let hasUpdates = false;
 
+            // Seed missing ingredients
             mockIngredients.forEach(ingredient => {
                 if (!existingIds.has(ingredient.id)) {
                     console.log(`Seeding missing ingredient: ${ingredient.name}`);
@@ -138,9 +156,23 @@ const AdminInventoryPage: React.FC = () => {
                 }
             });
 
+            // Backfill expiration dates for existing ingredients if missing
+            initialSnapshot.docs.forEach(doc => {
+                const data = doc.data();
+                if (!data.expirationDate) {
+                    // Set default expiration to 30 days from now
+                    const defaultExpiration = new Date();
+                    defaultExpiration.setDate(defaultExpiration.getDate() + 30);
+                    const expirationString = defaultExpiration.toISOString().split('T')[0];
+
+                    batch.update(doc.ref, { expirationDate: expirationString });
+                    hasUpdates = true;
+                }
+            });
+
             if (hasUpdates) {
                 await batch.commit();
-                console.log("New ingredients seeded successfully.");
+                console.log("Ingredients seeded/updated successfully.");
             }
 
             // Seed customization options (sugar/ice levels)
@@ -225,14 +257,22 @@ const AdminInventoryPage: React.FC = () => {
         }
     };
 
-    const handleUpdateStock = async (ingredientId: string, amount: number, type: 'add' | 'set') => {
+    const handleUpdateStock = async (ingredientId: string, amount: number, type: 'add' | 'set', expirationDate?: string) => {
         const ingredientRef = db.collection("ingredients").doc(ingredientId);
         try {
+            const updateData: any = {};
+
             if (type === 'add') {
-                await ingredientRef.update({ stock: firebase.firestore.FieldValue.increment(amount) });
+                updateData.stock = firebase.firestore.FieldValue.increment(amount);
             } else {
-                await ingredientRef.update({ stock: amount });
+                updateData.stock = amount;
             }
+
+            if (expirationDate) {
+                updateData.expirationDate = expirationDate;
+            }
+
+            await ingredientRef.update(updateData);
             handleCloseUpdateModal();
         } catch (error) {
             console.error("Error updating stock: ", error);
@@ -255,6 +295,75 @@ const AdminInventoryPage: React.FC = () => {
                     <Plus className="h-4 w-4" />
                     <span>Add Ingredient</span>
                 </button>
+            </div>
+
+            {/* Alerts Section */}
+            <div className="space-y-4 mb-6">
+                {/* Out of Stock Alert */}
+                {outOfStockIngredients.length > 0 && (
+                    <div className="rounded-xl border border-red-200 bg-red-50 p-4">
+                        <div className="flex items-start gap-3">
+                            <div className="rounded-full bg-red-100 p-2 text-red-600">
+                                <XCircle className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-red-900">Critical: {outOfStockIngredients.length} Items Out of Stock</h3>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    {outOfStockIngredients.map(ing => (
+                                        <span key={ing.id} className="inline-flex items-center rounded-md bg-white px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/20">
+                                            {ing.name}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Low Stock Alert */}
+                {lowStockIngredients.length > 0 && (
+                    <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-4">
+                        <div className="flex items-start gap-3">
+                            <div className="rounded-full bg-yellow-100 p-2 text-yellow-600">
+                                <AlertTriangle className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-yellow-900">Warning: {lowStockIngredients.length} Items Low on Stock</h3>
+                                <div className="mt-2 flex flex-wrap gap-2">
+                                    {lowStockIngredients.map(ing => (
+                                        <span key={ing.id} className="inline-flex items-center rounded-md bg-white px-2 py-1 text-xs font-medium text-yellow-700 ring-1 ring-inset ring-yellow-600/20">
+                                            {ing.name} ({ing.stock} {ing.unit})
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Expiration Alert */}
+                {expiringIngredients.length > 0 && (
+                    <div className="rounded-xl border border-orange-200 bg-orange-50 p-4">
+                        <div className="flex items-start gap-3">
+                            <div className="rounded-full bg-orange-100 p-2 text-orange-600">
+                                <Calendar className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-semibold text-orange-900">Attention Needed: {expiringIngredients.length} Items Expiring Soon</h3>
+                                <p className="mt-1 text-sm text-orange-700">
+                                    The following items are expiring within 7 days or have already expired:
+                                </p>
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {expiringIngredients.map(ing => (
+                                        <span key={ing.id} className="inline-flex items-center rounded-md bg-white px-2 py-1 text-xs font-medium text-orange-700 ring-1 ring-inset ring-orange-600/20">
+                                            {ing.name} ({new Date(ing.expirationDate!).toLocaleDateString()})
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Stats Cards */}
@@ -379,6 +488,14 @@ const AdminInventoryPage: React.FC = () => {
                                         {item.stock.toLocaleString()} <span className="text-gray-400 text-xs">{item.unit}</span>
                                     </p>
                                 </div>
+                                {item.expirationDate && (
+                                    <div>
+                                        <p className="text-xs text-gray-500">Expires</p>
+                                        <p className={`font-medium ${new Date(item.expirationDate) < new Date() ? 'text-red-600' : 'text-gray-900'}`}>
+                                            {new Date(item.expirationDate).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                )}
                                 <button
                                     onClick={() => handleOpenUpdateModal(item)}
                                     className="px-3 py-1.5 bg-primary-50 text-primary-700 text-xs font-semibold rounded-lg hover:bg-primary-100 transition-colors"
@@ -401,6 +518,7 @@ const AdminInventoryPage: React.FC = () => {
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Ingredient</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Current Stock</th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Expiration</th>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
                             <th scope="col" className="relative px-6 py-3"><span className="sr-only">Edit</span></th>
                         </tr>
@@ -415,6 +533,11 @@ const AdminInventoryPage: React.FC = () => {
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4">
                                         <div className="text-sm text-gray-900">{item.stock.toLocaleString()} <span className="text-gray-500">{item.unit}</span></div>
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4">
+                                        <div className={`text-sm ${item.expirationDate && new Date(item.expirationDate) < new Date() ? 'text-red-600 font-medium' : 'text-gray-900'}`}>
+                                            {item.expirationDate ? new Date(item.expirationDate).toLocaleDateString() : '-'}
+                                        </div>
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4">
                                         <div className={`inline-flex items-center gap-1 text-sm font-semibold ${status.color}`}>

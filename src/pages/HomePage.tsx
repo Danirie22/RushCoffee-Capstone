@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Clock, Gift, Wallet, Users, Bell, ArrowRight, Quote, ChevronsDown } from 'lucide-react';
+import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebaseConfig';
+
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Header from '../components/layout/Header';
@@ -62,7 +65,7 @@ const steps = [
     },
 ];
 
-const testimonials = [
+const defaultTestimonials = [
     {
         quote: "Rush Coffee changed my morning routine! No more waiting in long lines. I order on my way and pick up when it's ready. Absolutely love it!",
         name: "Sarah M.",
@@ -93,6 +96,77 @@ const testimonials = [
 const HomePage: React.FC = () => {
     const { currentUser } = useAuth();
     const orderNowPath = currentUser ? '/menu' : '/auth/register';
+    const [testimonials, setTestimonials] = React.useState(defaultTestimonials);
+
+    React.useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                // Fetch reviews that are marked as 'reviewed' (approved)
+                // Simplified query to avoid needing a custom Firestore index
+                const q = query(
+                    collection(db, 'feedback'),
+                    where('status', '==', 'reviewed')
+                );
+
+                const snapshot = await getDocs(q);
+
+                if (!snapshot.empty) {
+                    // Filter and sort client-side to avoid index issues
+                    const allReviews = snapshot.docs.map(doc => doc.data());
+                    const topReviews = allReviews
+                        .filter((data: any) => data.rating >= 4)
+                        .sort((a: any, b: any) => b.rating - a.rating)
+                        .slice(0, 3);
+
+                    if (topReviews.length > 0) {
+                        const reviewsData = await Promise.all(topReviews.map(async (data: any) => {
+                            let name = "Rush Customer";
+                            let initial = "R";
+
+                            if (data.userId) {
+                                try {
+                                    const userDoc = await getDoc(doc(db, 'users', data.userId));
+                                    if (userDoc.exists()) {
+                                        const userData = userDoc.data();
+                                        name = `${userData.firstName} ${userData.lastName.charAt(0)}.`;
+                                        initial = userData.firstName.charAt(0);
+                                    }
+                                } catch (e) {
+                                    console.error("Error fetching user for review", e);
+                                }
+                            }
+
+                            const colors = [
+                                { bg: "bg-primary-100", text: "text-primary-600" },
+                                { bg: "bg-blue-100", text: "text-blue-600" },
+                                { bg: "bg-green-100", text: "text-green-600" },
+                                { bg: "bg-yellow-100", text: "text-yellow-600" },
+                                { bg: "bg-purple-100", text: "text-purple-600" },
+                            ];
+                            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+                            return {
+                                quote: data.comment,
+                                name: name,
+                                title: "Verified Customer",
+                                initial: initial,
+                                avatarBg: randomColor.bg,
+                                avatarText: randomColor.text,
+                                rating: data.rating
+                            };
+                        }));
+
+                        setTestimonials(reviewsData);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching reviews:", error);
+                // Fallback to default testimonials is already set in initial state
+            }
+        };
+
+        fetchReviews();
+    }, []);
 
     return (
         <div className="bg-white">
@@ -254,7 +328,7 @@ const HomePage: React.FC = () => {
                                 >
                                     <Quote className="h-6 w-6 text-primary-200 md:h-8 md:w-8" />
                                     <div className="my-3 text-sm text-yellow-400 md:my-4 md:text-base">
-                                        {'⭐⭐⭐⭐⭐'}
+                                        {'⭐'.repeat(Math.round(testimonial.rating || 5))}
                                     </div>
                                     <p className="flex-grow font-sans italic text-sm text-gray-700 md:text-base">
                                         "{testimonial.quote}"

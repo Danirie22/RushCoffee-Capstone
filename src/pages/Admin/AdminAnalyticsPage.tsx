@@ -7,6 +7,8 @@ import StatCard from '../../components/admin/StatCard';
 import Card from '../../components/ui/Card';
 import { QueueItem } from '../../context/OrderContext';
 import Badge from '../../components/ui/Badge';
+import CustomerSatisfaction from '../../components/admin/CustomerSatisfaction';
+import { Feedback } from '../../data/mockFeedback';
 
 type DateRange = '7d' | '30d' | 'all';
 
@@ -69,6 +71,7 @@ const AdminAnalyticsPage: React.FC = () => {
     }>({ totalRevenue: null, totalOrders: null, avgOrderValue: null, newCustomers: null });
     const [chartData, setChartData] = useState<ChartData[]>([]);
     const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+    const [feedbackData, setFeedbackData] = useState<Feedback[]>([]);
     const [dateRange, setDateRange] = useState<DateRange>('7d');
     const [isLoading, setIsLoading] = useState(true);
 
@@ -116,11 +119,12 @@ const AdminAnalyticsPage: React.FC = () => {
                 .where('createdAt', '>=', previousStartDate)
                 .where('createdAt', '<', previousEndDate);
 
-            const [orderSnapshot, usersSnapshot, prevOrderSnapshot, prevUsersSnapshot] = await Promise.all([
+            const [orderSnapshot, usersSnapshot, prevOrderSnapshot, prevUsersSnapshot, feedbackSnapshot] = await Promise.all([
                 ordersQuery.get(),
                 usersQuery.get(),
                 prevOrdersQuery.get(),
-                prevUsersQuery.get()
+                prevUsersQuery.get(),
+                db.collection('feedback').orderBy('createdAt', 'desc').get()
             ]);
 
             // --- Process Current Data ---
@@ -197,6 +201,22 @@ const AdminAnalyticsPage: React.FC = () => {
                 .sort((a, b) => b.quantity - a.quantity)
                 .slice(0, 5);
             setTopProducts(sortedProducts);
+
+            // --- Process Feedback Data ---
+            const allFeedback = feedbackSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+                createdAt: doc.data().createdAt?.toDate(),
+                updatedAt: doc.data().updatedAt?.toDate(),
+            })) as Feedback[];
+
+            // Filter feedback by date range if needed, or just show all for satisfaction trends
+            // For now, let's filter by the selected start date to match the dashboard view
+            const filteredFeedback = dateRange === 'all'
+                ? allFeedback
+                : allFeedback.filter(f => f.createdAt >= startDate);
+
+            setFeedbackData(filteredFeedback);
 
             setIsLoading(false);
         };
@@ -293,6 +313,9 @@ const AdminAnalyticsPage: React.FC = () => {
                     </div>
                 </Card>
             </div>
+
+            {/* Customer Satisfaction Section */}
+            <CustomerSatisfaction feedbackData={feedbackData} isLoading={isLoading} />
         </div>
     );
 };

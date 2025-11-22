@@ -38,142 +38,142 @@ import CookiePolicyPage from './pages/Home/CookiePolicyPage';
 
 // Placeholder for pages that are not yet created
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-primary-50 to-coffee-50">
-        <div className="p-4 text-center">
-          <RushCoffeeLogo className="mx-auto mb-4 h-16 w-16 text-gray-400 opacity-50" />
-          <h1 className="mb-4 font-display text-4xl font-bold text-gray-900">
-            {title}
-          </h1>
-          <p className="mb-8 text-gray-600">We're brewing something special. Check back soon!</p>
-          <Link to="/" className="font-medium text-primary-600 transition-colors hover:text-primary-700">
-            ← Back to Home
-          </Link>
+    return (
+        <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-primary-50 to-coffee-50">
+                <div className="p-4 text-center">
+                    <RushCoffeeLogo className="mx-auto mb-4 h-16 w-16 text-gray-400 opacity-50" />
+                    <h1 className="mb-4 font-display text-4xl font-bold text-gray-900">
+                        {title}
+                    </h1>
+                    <p className="mb-8 text-gray-600">We're brewing something special. Check back soon!</p>
+                    <Link to="/" className="font-medium text-primary-600 transition-colors hover:text-primary-700">
+                        ← Back to Home
+                    </Link>
+                </div>
+            </main>
+            <Footer />
         </div>
-      </main>
-      <Footer />
-    </div>
-  );
+    );
 };
 
 // 404 Not Found page
 const NotFound: React.FC = () => {
-  return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-primary-50 to-coffee-50">
-        <div className="p-4 text-center">
-          <RushCoffeeLogo className="mx-auto mb-4 h-16 w-16 text-gray-400 opacity-50" />
-          <h1 className="mb-4 font-display text-4xl font-bold text-gray-900">
-            404 - Page Not Found
-          </h1>
-          <p className="mb-8 text-gray-600">This coffee blend doesn't exist on our menu. Maybe it got lost in the daily grind?</p>
-          <Link to="/" className="font-medium text-primary-600 transition-colors hover:text-primary-700">
-            ← Back to Home
-          </Link>
+    return (
+        <div className="flex min-h-screen flex-col">
+            <Header />
+            <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-primary-50 to-coffee-50">
+                <div className="p-4 text-center">
+                    <RushCoffeeLogo className="mx-auto mb-4 h-16 w-16 text-gray-400 opacity-50" />
+                    <h1 className="mb-4 font-display text-4xl font-bold text-gray-900">
+                        404 - Page Not Found
+                    </h1>
+                    <p className="mb-8 text-gray-600">This coffee blend doesn't exist on our menu. Maybe it got lost in the daily grind?</p>
+                    <Link to="/" className="font-medium text-primary-600 transition-colors hover:text-primary-700">
+                        ← Back to Home
+                    </Link>
+                </div>
+            </main>
+            <Footer />
         </div>
-      </main>
-      <Footer />
-    </div>
-  );
+    );
 };
 
 // Wrapper component to use hooks from contexts
 const AppContent: React.FC = () => {
-  const {
-    isCartOpen,
-    closeCart,
-    cartItems,
-    updateQuantity,
-    removeFromCart,
-    toastMessage,
-    selectedItemIds,
-    toggleItemSelection,
-    selectAllItems,
-    deselectAllItems
-  } = useCart();
-  const navigate = useNavigate();
+    const {
+        isCartOpen,
+        closeCart,
+        cartItems,
+        updateQuantity,
+        removeFromCart,
+        toastMessage,
+        selectedItemIds,
+        toggleItemSelection,
+        selectAllItems,
+        deselectAllItems
+    } = useCart();
+    const navigate = useNavigate();
 
-  const handleCheckout = () => {
-    closeCart();
-    navigate('/checkout');
-  };
+    const handleCheckout = () => {
+        closeCart();
+        navigate('/checkout');
+    };
 
-  return (
-    <>
-      <ScrollToTop />
-      <OrderNotification />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/menu" element={<MenuPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/auth/login" element={<LoginPage />} />
-        <Route path="/auth/register" element={<RegisterPage />} />
-        <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
-        <Route path="/queue" element={<QueuePage />} />
-        <Route path="/rewards" element={<RewardsPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/faq" element={<FAQPage />} />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/privacy" element={<PrivacyPolicyPage />} />
-        <Route path="/cookies" element={<CookiePolicyPage />} />
+    return (
+        <>
+            <ScrollToTop />
+            <OrderNotification />
+            <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/menu" element={<MenuPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/auth/login" element={<LoginPage />} />
+                <Route path="/auth/register" element={<RegisterPage />} />
+                <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/queue" element={<QueuePage />} />
+                <Route path="/rewards" element={<RewardsPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/faq" element={<FAQPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                <Route path="/cookies" element={<CookiePolicyPage />} />
 
-        {/* Admin Routes */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboardPage />} />
-            <Route path="queue" element={<AdminQueuePage />} />
-            <Route path="inventory" element={<AdminInventoryPage />} />
-            <Route path="products" element={<AdminProductsPage />} />
-            <Route path="analytics" element={<AdminAnalyticsPage />} />
-            <Route path="feedback" element={<AdminFeedbackPage />} />
-            <Route path="settings" element={<AdminSettingsPage />} />
-          </Route>
-        </Route>
+                {/* Admin Routes */}
+                <Route element={<ProtectedRoute />}>
+                    <Route path="/admin" element={<AdminLayout />}>
+                        <Route index element={<AdminDashboardPage />} />
+                        <Route path="queue" element={<AdminQueuePage />} />
+                        <Route path="inventory" element={<AdminInventoryPage />} />
+                        <Route path="products" element={<AdminProductsPage />} />
+                        <Route path="analytics" element={<AdminAnalyticsPage />} />
+                        <Route path="feedback" element={<AdminFeedbackPage />} />
+                        <Route path="settings" element={<AdminSettingsPage />} />
+                    </Route>
+                </Route>
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <CartSidebar
-        isOpen={isCartOpen}
-        onClose={closeCart}
-        cartItems={cartItems}
-        onUpdateQuantity={updateQuantity}
-        onRemoveItem={removeFromCart}
-        onCheckout={handleCheckout}
-        selectedItemIds={selectedItemIds}
-        onToggleItemSelection={toggleItemSelection}
-        onSelectAll={selectAllItems}
-        onDeselectAll={deselectAllItems}
-      />
-      {toastMessage && (
-        <div className="fixed bottom-4 right-4 z-[100] animate-fade-in-up rounded-lg bg-gray-900 px-4 py-3 text-white shadow-lg">
-          {toastMessage}
-        </div>
-      )}
-    </>
-  );
+                <Route path="*" element={<NotFound />} />
+            </Routes>
+            <CartSidebar
+                isOpen={isCartOpen}
+                onClose={closeCart}
+                cartItems={cartItems}
+                onUpdateQuantity={updateQuantity}
+                onRemoveItem={removeFromCart}
+                onCheckout={handleCheckout}
+                selectedItemIds={selectedItemIds}
+                onToggleItemSelection={toggleItemSelection}
+                onSelectAll={selectAllItems}
+                onDeselectAll={deselectAllItems}
+            />
+            {toastMessage && (
+                <div className="fixed bottom-4 right-4 z-[100] animate-fade-in-up rounded-lg bg-gray-900 px-4 py-3 text-white shadow-lg">
+                    {toastMessage}
+                </div>
+            )}
+        </>
+    );
 };
 
 const App: React.FC = () => {
-  return (
-    <AuthProvider>
-      <NotificationProvider>
-        <ProductProvider>
-          <OrderProvider>
-            <CartProvider>
-              <HashRouter>
-                <AppContent />
-              </HashRouter>
-            </CartProvider>
-          </OrderProvider>
-        </ProductProvider>
-      </NotificationProvider>
-    </AuthProvider>
-  );
+    return (
+        <AuthProvider>
+            <NotificationProvider>
+                <ProductProvider>
+                    <OrderProvider>
+                        <CartProvider>
+                            <HashRouter>
+                                <AppContent />
+                            </HashRouter>
+                        </CartProvider>
+                    </OrderProvider>
+                </ProductProvider>
+            </NotificationProvider>
+        </AuthProvider>
+    );
 };
 
 export default App;

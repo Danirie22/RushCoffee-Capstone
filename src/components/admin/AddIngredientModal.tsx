@@ -125,6 +125,17 @@ const AddIngredientModal: React.FC<AddIngredientModalProps> = ({ isOpen, onClose
                         min="0"
                     />
                 </div>
+                <div>
+                    <label htmlFor="expirationDate" className="block text-sm font-medium text-gray-700">Expiration Date</label>
+                    <input
+                        type="date"
+                        id="expirationDate"
+                        name="expirationDate"
+                        value={formData.expirationDate || ''}
+                        onChange={handleChange}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                    />
+                </div>
                 <div className="flex justify-end gap-3 pt-4 border-t">
                     <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
                     <Button type="submit" disabled={isSubmitting}>

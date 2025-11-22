@@ -1,1 +1,52 @@
-��^��ޮȨ�
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users: Allow public read so homepage can fetch names for testimonials
+    // Allow authenticated users to write (as per your previous rule)
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Products: Public read
+    match /products/{productId} {
+      allow read: if true; 
+      allow write: if request.auth != null; 
+    }
+    
+    // Ingredients: Public read
+    match /ingredients/{ingredientId} {
+      allow read: if true; 
+      allow write: if request.auth != null; 
+    }
+
+    // Categories: Public read
+    match /categories/{categoryId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Orders: Authenticated users only
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Rewards: Public read
+    match /rewards/{rewardId} {
+      allow read: if true; 
+      allow write: if request.auth != null;
+    }
+    
+    // Feedback: Public read so homepage can show testimonials
+    match /feedback/{feedbackId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+    
+    // Settings: Authenticated only
+    match /settings/{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

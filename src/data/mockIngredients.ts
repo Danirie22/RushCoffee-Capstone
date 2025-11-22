@@ -23,6 +23,7 @@ export interface IngredientData {
     isTopping?: boolean;  // Flag to identify if this can be used as a topping
     toppingPrice?: number;  // Price when used as topping (only for toppings)
     portionSize?: number;  // Standard portion size per serving
+    expirationDate?: string; // ISO date string for expiration tracking
 }
 
 export const mockIngredients: IngredientData[] = [
@@ -119,5 +120,5 @@ export const mockIngredients: IngredientData[] = [
     { id: 'bread-crumbs', name: 'Bread Crumbs', category: 'Dry Goods', stock: 3000, unit: 'g', lowStockThreshold: 300 },
     { id: 'french-fries', name: 'French Fries', category: 'Frozen', stock: 300, unit: 'pcs', lowStockThreshold: 30 },
     { id: 'white-sauce', name: 'White Sauce', category: 'Sauces', stock: 2000, unit: 'ml', lowStockThreshold: 200 },
-    { id: 'cooking-oil', name: 'Cooking Oil', category: 'Dry Goods', stock: 5000, unit: 'ml', lowStockThreshold: 500 },
+    { id: 'cooking-oil', name: 'Cooking Oil', category: 'Dry Goods', stock: 5000, unit: 'ml', lowStockThreshold: 500, expirationDate: '2025-12-31' },
 ];
