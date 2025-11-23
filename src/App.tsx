@@ -32,9 +32,16 @@ import AdminProductsPage from './pages/Admin/AdminProductsPage';
 import AdminAnalyticsPage from './pages/Admin/AdminAnalyticsPage';
 import AdminFeedbackPage from './pages/Admin/AdminFeedbackPage';
 import AdminSettingsPage from './pages/Admin/AdminSettingsPage';
+import AdminOrdersHistoryPage from './pages/Admin/AdminOrdersHistoryPage';
+import AdminUsersPage from './pages/Admin/AdminUsersPage';
 import TermsPage from './pages/Home/TermsPage';
 import PrivacyPolicyPage from './pages/Home/PrivacyPolicyPage';
 import CookiePolicyPage from './pages/Home/CookiePolicyPage';
+import EmployeeLayout from './components/employee/EmployeeLayout';
+import EmployeeOrdersPage from './pages/Employee/EmployeeOrdersPage';
+import EmployeeDashboardPage from './pages/Employee/EmployeeDashboardPage';
+import EmployeeCustomersPage from './pages/Employee/EmployeeCustomersPage';
+import EmployeeOrdersHistoryPage from './pages/Employee/EmployeeOrdersHistoryPage';
 
 // Placeholder for pages that are not yet created
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
@@ -122,8 +129,21 @@ const AppContent: React.FC = () => {
                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
                 <Route path="/cookies" element={<CookiePolicyPage />} />
 
-                {/* Admin Routes */}
-                <Route element={<ProtectedRoute />}>
+                {/* Employee Routes - Accessible by employee and admin roles */}
+                <Route element={<ProtectedRoute allowedRoles={['employee', 'admin']} />}>
+                    <Route path="/employee" element={<EmployeeLayout />}>
+                        <Route index element={<EmployeeDashboardPage />} />
+                        <Route path="orders" element={<EmployeeOrdersPage />} />
+                        <Route path="queue" element={<AdminQueuePage />} />
+                        <Route path="inventory" element={<AdminInventoryPage />} />
+                        <Route path="customers" element={<EmployeeCustomersPage />} />
+                        <Route path="menu" element={<AdminProductsPage />} />
+                        <Route path="history" element={<EmployeeOrdersHistoryPage />} />
+                    </Route>
+                </Route>
+
+                {/* Admin Routes - Only accessible by admin role */}
+                <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
                     <Route path="/admin" element={<AdminLayout />}>
                         <Route index element={<AdminDashboardPage />} />
                         <Route path="queue" element={<AdminQueuePage />} />
@@ -132,6 +152,8 @@ const AppContent: React.FC = () => {
                         <Route path="analytics" element={<AdminAnalyticsPage />} />
                         <Route path="feedback" element={<AdminFeedbackPage />} />
                         <Route path="settings" element={<AdminSettingsPage />} />
+                        <Route path="history" element={<AdminOrdersHistoryPage />} />
+                        <Route path="users" element={<AdminUsersPage />} />
                     </Route>
                 </Route>
 

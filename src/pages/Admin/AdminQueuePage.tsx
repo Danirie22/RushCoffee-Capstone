@@ -48,6 +48,26 @@ const AdminQueuePage: React.FC = () => {
         return () => unsubscribe();
     }, []);
 
+    const handleCancelOrder = async (orderId: string) => {
+        const reason = prompt('Please enter a reason for cancellation:', 'Out of Stock');
+
+        if (!reason) {
+            return; // User cancelled the prompt
+        }
+
+        try {
+            await db.collection('orders').doc(orderId).update({
+                status: 'cancelled',
+                cancellationReason: reason,
+                updatedAt: new Date(),
+            });
+            showToast(`Order cancelled: ${reason}`);
+        } catch (error) {
+            console.error('Error cancelling order:', error);
+            showToast('Failed to cancel order');
+        }
+    };
+
     const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
         let pointsData: { userId: string; pointsEarned: number; newTier: 'bronze' | 'silver' | 'gold'; totalAmount: number; orderNumber: string } | null = null;
 
@@ -281,18 +301,21 @@ const AdminQueuePage: React.FC = () => {
                         title="Waiting"
                         orders={waitingOrders}
                         onUpdateStatus={handleUpdateStatus}
+                        onCancelOrder={handleCancelOrder}
                         color="yellow"
                     />
                     <QueueColumn
                         title="Preparing"
                         orders={preparingOrders}
                         onUpdateStatus={handleUpdateStatus}
+                        onCancelOrder={handleCancelOrder}
                         color="blue"
                     />
                     <QueueColumn
                         title="Ready for Pickup"
                         orders={readyOrders}
                         onUpdateStatus={handleUpdateStatus}
+                        onCancelOrder={handleCancelOrder}
                         color="green"
                     />
                 </div>

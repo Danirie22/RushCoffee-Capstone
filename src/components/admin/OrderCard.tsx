@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { ArrowRight, User, Clock, Check } from 'lucide-react';
+import { ArrowRight, User, Clock, Check, XCircle } from 'lucide-react';
 
 import { QueueItem } from '../../context/OrderContext';
 
@@ -9,6 +9,7 @@ type OrderStatus = 'waiting' | 'preparing' | 'ready' | 'completed';
 interface OrderCardProps {
     order: QueueItem;
     onUpdateStatus: (orderId: string, newStatus: OrderStatus) => void;
+    onCancelOrder: (orderId: string) => void;
 }
 
 const statusActions = {
@@ -29,7 +30,7 @@ const statusActions = {
     },
 };
 
-const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdateStatus }) => {
+const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdateStatus, onCancelOrder }) => {
     const action = statusActions[order.status as keyof typeof statusActions];
     const timeSinceOrder = formatDistanceToNow(order.timestamp, { addSuffix: true });
 
@@ -58,15 +59,25 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onUpdateStatus }) => {
                     ))}
                 </ul>
             </div>
-            {action && (
+            <div className="mt-4 flex gap-2">
+                {action && (
+                    <button
+                        onClick={() => onUpdateStatus(order.id, action.nextStatus)}
+                        className={`flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors ${action.color}`}
+                    >
+                        <span>{action.text}</span>
+                        {action.nextStatus === 'completed' ? <Check className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+                    </button>
+                )}
                 <button
-                    onClick={() => onUpdateStatus(order.id, action.nextStatus)}
-                    className={`mt-4 flex w-full items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors ${action.color}`}
+                    onClick={() => onCancelOrder(order.id)}
+                    className="flex items-center justify-center gap-2 rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-red-600"
+                    title="Cancel Order"
                 >
-                    <span>{action.text}</span>
-                    {action.nextStatus === 'completed' ? <Check className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+                    <XCircle className="h-4 w-4" />
+                    <span>Cancel</span>
                 </button>
-            )}
+            </div>
         </div>
     );
 };

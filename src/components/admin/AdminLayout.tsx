@@ -1,8 +1,6 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Coffee, Settings, BarChart3, ClipboardList, Package, MessageSquare, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Users, Coffee, Settings, BarChart3, ClipboardList, Package, MessageSquare, LogOut, Menu, X, History } from 'lucide-react';
 
 import RushCoffeeLogo from '../layout/RushCoffeeLogo';
 import { useAuth } from '../../context/AuthContext';
@@ -10,10 +8,12 @@ import ConfirmLogoutModal from './ConfirmLogoutModal';
 
 const sidebarNavLinks = [
     { to: '/admin', text: 'Dashboard', icon: LayoutDashboard },
+    { to: '/admin/users', text: 'User Management', icon: Users },
     { to: '/admin/queue', text: 'Queue Management', icon: ClipboardList },
     { to: '/admin/inventory', text: 'Inventory', icon: Package },
     { to: '/admin/products', text: 'Products', icon: Coffee },
     { to: '/admin/feedback', text: 'Feedback', icon: MessageSquare },
+    { to: '/admin/history', text: 'Order History', icon: History },
     { to: '/admin/analytics', text: 'Analytics', icon: BarChart3 },
     { to: '/admin/settings', text: 'Settings', icon: Settings },
 ];
