@@ -1,7 +1,7 @@
 // Queue Page - Fully Polished v11 (All Refinements)
 import * as React from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
-import { ArrowRight, Bell, X, Clock, TrendingUp, Award, Coffee, Star, Plus, Sparkles } from 'lucide-react';
+import { ArrowRight, Bell, X, Clock, TrendingUp, Award, Coffee, Star, Plus, Sparkles, Check, XCircle } from 'lucide-react';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import ModernQueueCard from '../../components/queue/ModernQueueCard';
@@ -71,15 +71,15 @@ const QueuePage: React.FC = () => {
         localStorage.setItem('dismissedOrderIds', JSON.stringify(dismissedOrderIds));
     }, [dismissedOrderIds]);
 
-    // Determine which order to display (Active OR Undismissed Completed)
+    // Determine which order to display (Active OR Undismissed Completed/Cancelled)
     const displayOrder = React.useMemo(() => {
         if (activeOrder) return activeOrder;
 
         // If no active order, check the most recent order
         if (orderHistory.length > 0) {
             const mostRecent = orderHistory[0];
-            // If it's completed and NOT dismissed, show it
-            if (mostRecent.status === 'completed' && !dismissedOrderIds.includes(mostRecent.id)) {
+            // If it's completed OR cancelled and NOT dismissed, show it
+            if ((mostRecent.status === 'completed' || mostRecent.status === 'cancelled') && !dismissedOrderIds.includes(mostRecent.id)) {
                 return mostRecent;
             }
         }
@@ -179,21 +179,18 @@ const QueuePage: React.FC = () => {
         if (selectedProduct) {
             const defaultSize = selectedProduct.sizes[0];
 
-            addToCart({
-                product: selectedProduct,
-                size: defaultSize,
-                quantity,
-                customizations,
-            });
+            // Corrected addToCart usage: passing arguments individually
+            addToCart(selectedProduct, defaultSize, customizations, quantity);
+
             showToast(`Added ${quantity} ${selectedProduct.name} to cart`);
             setIsCustomizeModalOpen(false);
         }
     };
 
-    // Get recent completed orders (LIMIT TO 2 for better visual balance)
+    // Get recent completed/cancelled orders (LIMIT TO 2 for better visual balance)
     const recentOrders = React.useMemo(() => {
         return orderHistory
-            .filter(order => order.status === 'completed')
+            .filter(order => order.status === 'completed' || order.status === 'cancelled')
             .slice(0, 2); // Changed from 3 to 2
     }, [orderHistory]);
 
@@ -287,259 +284,190 @@ const QueuePage: React.FC = () => {
                         >
                             <X className="h-4 w-4" />
                         </button>
-                        <div className="flex items-center gap-4">
-                            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary-100 to-primary-200">
+                        <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 rounded-full bg-primary-100 p-2">
                                 <Bell className="h-6 w-6 text-primary-600" />
                             </div>
-                            <div>
-                                <h3 className="font-bold text-gray-900">Get Order Updates</h3>
-                                <p className="text-sm text-gray-600">Know the moment your coffee is ready!</p>
+                            <div className="flex-1">
+                                <h3 className="font-semibold text-gray-900">Enable Notifications?</h3>
+                                <p className="mt-1 text-sm text-gray-600">
+                                    Get notified when your coffee is ready for pickup!
+                                </p>
+                                <button
+                                    onClick={handleRequestPermission}
+                                    className="mt-3 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-primary-700 shadow-sm"
+                                >
+                                    Allow Notifications
+                                </button>
                             </div>
                         </div>
-                        <button
-                            onClick={handleRequestPermission}
-                            className="mt-4 w-full rounded-full bg-gradient-to-r from-primary-600 to-primary-700 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:shadow-lg"
-                        >
-                            Enable Notifications
-                        </button>
                     </div>
                 )}
 
-                {/* Dashboard Content */}
-                <div className="text-center mb-8 sm:mb-12">
-                    <h1 className="font-display text-2xl sm:text-3xl font-bold text-coffee-900">
-                        Your Queue
-                    </h1>
-                    <p className="mt-2 text-sm sm:text-base text-gray-600">
-                        Track your orders and rewards
-                    </p>
-                </div>
-
-                {/* Quick Stats - Grid with Loading State */}
-                {currentUser && (
-                    <div className="mb-8 sm:mb-12">
-                        <h2 className="text-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-6">Your Coffee Journey</h2>
-                        <div className="grid grid-cols-3 gap-3 sm:gap-6">
-                            {!currentUser ? (
-                                <>
-                                    <StatCardSkeleton />
-                                    <StatCardSkeleton />
-                                    <StatCardSkeleton />
-                                </>
-                            ) : (
-                                <>
-                                    <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow text-center">
-                                        <div className="flex flex-col items-center">
-                                            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center mb-2 sm:mb-3">
-                                                <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
-                                            </div>
-                                            <p className="text-2xl sm:text-3xl font-bold text-coffee-900">{currentUser.totalOrders || 0}</p>
-                                            <p className="text-xs sm:text-sm text-gray-600 mt-1 font-medium">Orders</p>
-                                        </div>
+                {/* Dashboard Grid */}
+                <div className="grid gap-6 md:grid-cols-2">
+                    {/* Left Column: Stats */}
+                    <div className="space-y-6">
+                        {/* Loyalty Points Card */}
+                        <div className="rounded-3xl bg-white p-6 shadow-xl shadow-coffee-900/5 border border-white/50 backdrop-blur-sm relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <Award className="h-24 w-24 text-primary-600 rotate-12" />
+                            </div>
+                            <div className="relative z-10">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="p-2 bg-primary-100 rounded-xl">
+                                        <Award className="h-5 w-5 text-primary-600" />
                                     </div>
-                                    <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow text-center">
-                                        <div className="flex flex-col items-center">
-                                            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center mb-2 sm:mb-3">
-                                                <Award className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
-                                            </div>
-                                            <p className="text-2xl sm:text-3xl font-bold text-coffee-900">{currentUser.currentPoints || 0}</p>
-                                            <p className="text-xs sm:text-sm text-gray-600 mt-1 font-medium">Points</p>
-                                        </div>
-                                    </div>
-                                    <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 sm:p-6 shadow-md border border-gray-100 hover:shadow-lg transition-shadow text-center">
-                                        <div className="flex flex-col items-center">
-                                            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center mb-2 sm:mb-3">
-                                                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
-                                            </div>
-                                            <p className="text-xl sm:text-2xl font-bold text-coffee-900 capitalize">{currentUser.tier || 'Bronze'}</p>
-                                            <p className="text-xs sm:text-sm text-gray-600 mt-1 font-medium">Tier</p>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Recent Orders - List with Loading State */}
-                {recentOrders.length > 0 && (
-                    <div className="w-full mb-8">
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-center flex-1 text-xs font-bold text-gray-500 uppercase tracking-wider">Recent Orders</h2>
-                            {orderHistory.filter(o => o.status === 'completed').length > 2 && (
-                                <Link
-                                    to="/profile"
-                                    className="text-xs font-semibold text-primary-600 hover:text-primary-700 transition-colors"
-                                >
-                                    View All
-                                </Link>
-                            )}
-                        </div>
-                        <div className="space-y-4">
-                            {recentOrders.map((order) => {
-                                const firstItem = order.orderItems[0];
-                                const productImage = firstItem ? getProductImage(firstItem.productId) : null;
-
-                                return (
+                                    <h2 className="font-bold text-gray-900">Loyalty Points</h2>
+                                </div>
+                                <div className="mt-4">
+                                    <span className="font-display text-5xl font-bold text-primary-600 tracking-tight">
+                                        {currentUser.loyaltyPoints || 0}
+                                    </span>
+                                    <span className="ml-2 text-sm font-medium text-gray-500 uppercase tracking-wide">Points</span>
+                                </div>
+                                <p className="mt-2 text-sm text-gray-600">
+                                    Earn 4-5 points per item based on size!
+                                </p>
+                                <div className="mt-4 h-2 w-full rounded-full bg-gray-100 overflow-hidden">
                                     <div
-                                        key={order.id}
-                                        className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 sm:p-5 shadow-md border border-gray-100 hover:shadow-xl hover:scale-[1.01] transition-all duration-200 cursor-pointer group"
-                                    >
-                                        <div className="flex items-start gap-3 sm:gap-4">
-                                            {/* Product Image or Coffee Icon */}
-                                            <div className="flex-shrink-0 h-14 w-14 sm:h-16 sm:w-16 rounded-xl overflow-hidden bg-gradient-to-br from-coffee-100 to-coffee-200 shadow-inner group-hover:shadow-lg transition-shadow">
-                                                {productImage ? (
-                                                    <img
-                                                        src={productImage}
-                                                        alt={firstItem.productName}
-                                                        className="h-full w-full object-cover"
-                                                    />
+                                        className="h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-600"
+                                        style={{ width: `${Math.min((currentUser.loyaltyPoints || 0) % 100, 100)}%` }}
+                                    ></div>
+                                </div>
+                                <p className="mt-2 text-xs text-gray-400 text-right">
+                                    {100 - ((currentUser.loyaltyPoints || 0) % 100)} points to next reward
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Quick Order Card */}
+                        <div className="rounded-3xl bg-gradient-to-br from-coffee-800 to-coffee-900 p-6 shadow-xl text-white relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
+                            <div className="absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-white/10 blur-2xl group-hover:bg-white/20 transition-colors"></div>
+                            <div className="relative z-10">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div className="flex items-center gap-2">
+                                        <div className="p-2 bg-white/10 rounded-xl backdrop-blur-sm">
+                                            <Sparkles className="h-5 w-5 text-primary-300" />
+                                        </div>
+                                        <h2 className="font-bold text-white">Quick Order</h2>
+                                    </div>
+                                    <Link to="/menu" className="text-xs font-bold text-primary-300 hover:text-white transition-colors flex items-center gap-1">
+                                        Full Menu <ArrowRight className="h-3 w-3" />
+                                    </Link>
+                                </div>
+
+                                {featuredProduct ? (
+                                    <div className="flex items-center gap-4">
+                                        <div className="h-20 w-20 rounded-2xl bg-white/10 backdrop-blur-md overflow-hidden border border-white/10 flex-shrink-0">
+                                            <img
+                                                src={featuredProduct.imageUrl}
+                                                alt={featuredProduct.name}
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="font-bold text-lg truncate">{featuredProduct.name}</h3>
+                                            <p className="text-white/60 text-sm truncate">{featuredProduct.description}</p>
+                                            <div className="mt-3 flex items-center justify-between">
+                                                <span className="font-bold text-primary-300">₱{featuredProduct.basePrice}</span>
+                                                <button
+                                                    onClick={() => handleQuickAddClick(featuredProduct)}
+                                                    className="p-2 bg-primary-600 hover:bg-primary-500 rounded-xl transition-colors shadow-lg shadow-primary-900/50"
+                                                >
+                                                    <Plus className="h-4 w-4 text-white" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-4 text-white/50 text-sm">
+                                        Loading recommendations...
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Recent History */}
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl font-bold text-gray-900">Recent Orders</h2>
+                            <Link to="/profile" className="text-sm font-semibold text-primary-600 hover:text-primary-700">
+                                View All
+                            </Link>
+                        </div>
+
+                        <div className="space-y-4">
+                            {recentOrders.length > 0 ? (
+                                recentOrders.map((order) => (
+                                    <div key={order.id} className="group relative overflow-hidden rounded-2xl bg-white p-4 shadow-sm border border-gray-100 transition-all hover:shadow-md hover:border-primary-100">
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-start gap-4">
+                                                <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${order.status === 'cancelled' ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}>
+                                                    {order.status === 'cancelled' ? <XCircle className="h-6 w-6" /> : <Check className="h-6 w-6" />}
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-gray-900">Order #{order.orderNumber}</h3>
+                                                    <p className="text-sm text-gray-500">
+                                                        {order.timestamp?.toLocaleDateString()} • {order.orderItems.length} items
+                                                    </p>
+                                                    <div className="mt-2 flex flex-wrap gap-2">
+                                                        {order.orderItems.slice(0, 2).map((item, idx) => (
+                                                            <span key={idx} className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                                                {item.quantity}x {item.productName}
+                                                            </span>
+                                                        ))}
+                                                        {order.orderItems.length > 2 && (
+                                                            <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                                                                +{order.orderItems.length - 2} more
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-bold text-gray-900">₱{order.totalAmount.toFixed(2)}</p>
+                                                {order.status === 'cancelled' ? (
+                                                    <div className="mt-1 flex justify-end">
+                                                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-800">
+                                                            Cancelled
+                                                        </span>
+                                                    </div>
                                                 ) : (
-                                                    <div className="h-full w-full flex items-center justify-center">
-                                                        <Coffee className="h-7 w-7 sm:h-8 sm:w-8 text-coffee-600" />
+                                                    <div className="mt-1 flex justify-end">
+                                                        {[1, 2, 3, 4, 5].map((star) => (
+                                                            <Star key={star} className="h-3 w-3 text-amber-400 fill-amber-400" />
+                                                        ))}
                                                     </div>
                                                 )}
                                             </div>
-
-                                            {/* Order Details */}
-                                            <div className="flex-1 min-w-0 text-left">
-                                                {/* Top Row: Product Name and Date */}
-                                                <div className="flex items-start justify-between mb-1">
-                                                    <h3 className="font-bold text-coffee-900 text-sm sm:text-base truncate pr-2 sm:pr-4">
-                                                        {firstItem?.productName || 'Coffee Order'}
-                                                    </h3>
-                                                    <span className="text-xs text-gray-500 flex-shrink-0 font-medium bg-gray-100 px-2 py-1 rounded-full">
-                                                        {new Date(order.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                                                    </span>
-                                                </div>
-
-                                                {/* Order Number - Left aligned */}
-                                                <p className="text-xs text-gray-500 mb-2 font-mono">
-                                                    {order.orderNumber}
-                                                </p>
-
-                                                {/* Additional Items */}
-                                                {order.orderItems.length > 1 && (
-                                                    <p className="text-xs text-gray-600 mb-2 sm:mb-3 italic">
-                                                        +{order.orderItems.length - 1} more item{order.orderItems.length > 2 ? 's' : ''}
-                                                    </p>
-                                                )}
-
-                                                {/* Bottom Row: Status and Price */}
-                                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-100">
-                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700">
-                                                        Completed
-                                                    </span>
-                                                    <p className="text-sm sm:text-base font-bold text-primary-600">₱{order.totalAmount.toFixed(2)}</p>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
-
-                {/* Recommended / Upsell Section with improved spacing */}
-                <div className="w-full max-w-md mx-auto mt-6">
-                    {productsLoading ? (
-                        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-gray-100 text-center animate-pulse">
-                            <div className="mb-4 relative mx-auto w-32 h-32 bg-gray-200 rounded-full"></div>
-                            <div className="h-6 bg-gray-200 rounded w-3/4 mx-auto mb-2"></div>
-                            <div className="h-4 bg-gray-200 rounded w-full mb-4"></div>
-                            <div className="h-12 bg-gray-200 rounded"></div>
-                        </div>
-                    ) : featuredProduct ? (
-                        <>
-                            {recentOrders.length > 0 ? (
-                                <h2 className="text-center text-xs font-bold text-gray-500 uppercase tracking-wider mb-6">Recommended for You</h2>
+                                ))
                             ) : (
-                                <div className="text-center mb-6 animate-fade-in-up">
-                                    <div className="inline-flex items-center justify-center gap-2 mb-2">
-                                        <Sparkles className="h-5 w-5 text-amber-500" />
-                                        <h2 className="text-lg font-bold text-coffee-900">Welcome to Rush Coffee!</h2>
-                                        <Sparkles className="h-5 w-5 text-amber-500" />
+                                <div className="rounded-2xl bg-white p-8 text-center border border-dashed border-gray-200">
+                                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-50">
+                                        <Coffee className="h-6 w-6 text-gray-400" />
                                     </div>
-                                    <p className="text-sm text-gray-600">Start your journey with our most popular drink:</p>
+                                    <h3 className="mt-2 text-sm font-semibold text-gray-900">No recent orders</h3>
+                                    <p className="mt-1 text-sm text-gray-500">Your order history will appear here.</p>
                                 </div>
                             )}
-                            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-5 sm:p-6 shadow-xl border border-gray-100 text-center relative overflow-hidden group hover:shadow-2xl transition-all duration-300">
-                                {/* Badge */}
-                                <div className="absolute top-4 right-4 bg-amber-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md z-10 animate-pulse">
-                                    Recommended
-                                </div>
-
-                                {/* Background Gradient */}
-                                <div className="absolute inset-0 bg-gradient-to-b from-primary-50/50 to-transparent pointer-events-none" />
-
-                                <div className="relative z-10">
-                                    <div className="mb-4 relative mx-auto w-28 h-28 sm:w-32 sm:h-32">
-                                        <div className="absolute inset-0 bg-primary-200 rounded-full blur-2xl opacity-20 group-hover:opacity-40 transition-opacity duration-500" />
-                                        <img
-                                            src={featuredProduct.imageUrl}
-                                            alt={featuredProduct.name}
-                                            className="w-full h-full object-cover rounded-full shadow-lg group-hover:scale-110 transition-transform duration-500"
-                                        />
-                                    </div>
-
-                                    <h3 className="text-lg sm:text-xl font-display font-bold text-gray-900 mb-1">
-                                        {featuredProduct.name}
-                                    </h3>
-                                    <p className="text-xs sm:text-sm text-gray-500 mb-4 line-clamp-2 px-2 sm:px-4">
-                                        {featuredProduct.description}
-                                    </p>
-
-                                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                                        <button
-                                            onClick={() => handleQuickAddClick(featuredProduct)}
-                                            className="w-full sm:flex-1 bg-primary-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:shadow-primary-600/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <Plus className="w-5 h-5" />
-                                            Add to Cart
-                                        </button>
-                                        <button
-                                            onClick={() => navigate('/menu')}
-                                            className="w-full sm:w-auto bg-white text-gray-700 font-bold py-3 px-4 rounded-xl border border-gray-200 hover:bg-gray-50 hover:border-gray-300 hover:shadow-md transition-all"
-                                        >
-                                            View Menu
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </>
-                    ) : (
-                        // Fallback if no products loaded (and no recent orders)
-                        recentOrders.length === 0 && (
-                            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-8 border-2 border-dashed border-gray-200 text-center">
-                                <Coffee className="h-12 w-12 text-gray-300 mx-auto mb-3" />
-                                <p className="text-sm text-gray-500">
-                                    No orders yet. Your coffee journey starts here! ☕
-                                </p>
-                                <button
-                                    onClick={() => navigate('/menu')}
-                                    className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-primary-600 px-6 py-2.5 font-semibold text-white shadow-md transition-all hover:bg-primary-700"
-                                >
-                                    Start a New Order
-                                </button>
-                            </div>
-                        )
-                    )}
+                        </div>
+                    </div>
                 </div>
             </main>
-
-            {/* Quick Add Modal */}
-            {selectedProduct && (
-                <ProductCustomizeModal
-                    product={selectedProduct}
-                    selectedSize={selectedProduct.sizes[0]} // Default to first size
-                    isOpen={isCustomizeModalOpen}
-                    onClose={() => setIsCustomizeModalOpen(false)}
-                    onConfirm={handleConfirmCustomization}
-                />
-            )}
-
             <Footer />
+
+            {/* Product Customize Modal */}
+            <ProductCustomizeModal
+                isOpen={isCustomizeModalOpen}
+                onClose={() => setIsCustomizeModalOpen(false)}
+                product={selectedProduct}
+                selectedSize={selectedProduct?.sizes[0]}
+                onConfirm={handleConfirmCustomization}
+            />
         </div>
     );
 };

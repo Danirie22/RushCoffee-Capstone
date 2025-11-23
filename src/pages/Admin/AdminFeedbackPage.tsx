@@ -8,7 +8,7 @@ import FeedbackCard from '../../components/admin/FeedbackCard';
 import RespondFeedbackModal from '../../components/admin/RespondFeedbackModal';
 import { Loader2, MessageSquare, Star, AlertCircle, Filter } from 'lucide-react';
 
-type FilterStatus = 'all' | 'pending' | 'reviewed' | 'resolved';
+type FilterStatus = 'all' | 'pending' | 'published' | 'resolved';
 type ViewMode = 'all' | 'reviews' | 'reports';
 
 export interface FeedbackWithUser extends Feedback {
@@ -142,13 +142,13 @@ const AdminFeedbackPage: React.FC = () => {
                     <Filter className="h-4 w-4" />
                     <span>Filter Status:</span>
                 </div>
-                {(['pending', 'reviewed', 'resolved', 'all'] as FilterStatus[]).map(f => (
+                {(['pending', 'published', 'resolved', 'all'] as FilterStatus[]).map(f => (
                     <button
                         key={f}
                         onClick={() => setStatusFilter(f)}
                         className={`rounded-full px-4 py-1.5 text-sm font-semibold capitalize transition-all border ${statusFilter === f
-                                ? 'bg-gray-800 text-white border-gray-800'
-                                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                            ? 'bg-gray-800 text-white border-gray-800'
+                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                             }`}
                     >
                         {f}

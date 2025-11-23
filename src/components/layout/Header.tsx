@@ -1,13 +1,10 @@
-
-
-
-
 import * as React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import RushCoffeeLogo from './RushCoffeeLogo';
+import AuthModal from '../auth/AuthModal';
 
 const loggedOutNavLinks = [
     { href: '/', label: 'Home' },
@@ -32,6 +29,8 @@ const userDropdownLinks = [
 const Header: React.FC = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
     const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
+    const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
+    const [authModalMode, setAuthModalMode] = React.useState<'login' | 'register'>('login');
     const userMenuRef = React.useRef<HTMLDivElement>(null);
 
     const { currentUser, logout } = useAuth();
@@ -148,18 +147,24 @@ const Header: React.FC = () => {
 
         return (
             <div className={`flex items-center ${isMobile ? 'flex-col space-y-3' : 'gap-4'}`}>
-                <NavLink
-                    to="/auth/login"
-                    onClick={clickHandler}
+                <button
+                    onClick={() => {
+                        setAuthModalMode('login');
+                        setIsAuthModalOpen(true);
+                        if (clickHandler) clickHandler();
+                    }}
                     className={`${baseButtonClass} border border-primary-600 text-primary-600 hover:bg-primary-50 ${isMobile ? mobileButtonClass : desktopButtonClass}`}>
-                    Login
-                </NavLink>
-                <NavLink
-                    to="/auth/register"
-                    onClick={clickHandler}
+                    Log In
+                </button>
+                <button
+                    onClick={() => {
+                        setAuthModalMode('register');
+                        setIsAuthModalOpen(true);
+                        if (clickHandler) clickHandler();
+                    }}
                     className={`${baseButtonClass} bg-primary-600 text-white shadow-sm hover:bg-primary-700 ${isMobile ? mobileButtonClass : desktopButtonClass}`}>
                     Sign Up
-                </NavLink>
+                </button>
             </div>
         );
     }
@@ -333,6 +338,12 @@ const Header: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                initialMode={authModalMode}
+            />
         </>
     );
 };

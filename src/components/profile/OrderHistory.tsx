@@ -117,6 +117,11 @@ const OrderCard: React.FC<{ order: QueueItem }> = ({ order }) => {
             {format(order.timestamp, 'MMM dd, yyyy • hh:mm a')}
           </p>
           <p className="mt-2 text-sm text-gray-700">{itemsSummary()}</p>
+          {order.status === 'cancelled' && order.cancellationReason && (
+            <div className="mt-2 rounded-md bg-red-50 p-2 text-sm text-red-700 border border-red-100">
+              <span className="font-semibold">Reason:</span> {order.cancellationReason}
+            </div>
+          )}
         </div>
         <div className="flex-shrink-0 text-right sm:ml-4">
           <p className="font-display text-2xl font-bold text-coffee-900">₱{order.totalAmount.toFixed(2)}</p>

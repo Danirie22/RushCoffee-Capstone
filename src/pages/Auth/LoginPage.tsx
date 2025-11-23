@@ -1,5 +1,4 @@
-
-
+```typescript
 import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
@@ -8,8 +7,8 @@ import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
-import Badge from '../../components/ui/Badge';
 import RushCoffeeLogo from '../../components/layout/RushCoffeeLogo';
+import VerificationCodeForm from '../../components/auth/VerificationCodeForm';
 
 // A simple SVG for the Google icon
 const GoogleIcon = () => (
@@ -30,6 +29,11 @@ const LoginPage: React.FC = () => {
     const [apiError, setApiError] = React.useState<React.ReactNode | null>(null);
     const [isLoading, setIsLoading] = React.useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+    
+    // 2FA State
+    const [showVerification, setShowVerification] = React.useState(false);
+    const [pendingRole, setPendingRole] = React.useState<string | null>(null);
+
     const navigate = useNavigate();
     const { login, signInWithGoogle } = useAuth();
 
@@ -59,11 +63,9 @@ const LoginPage: React.FC = () => {
 
         try {
             const userProfile = await login(email, password, rememberMe);
-            if (userProfile.role === 'admin') {
-                navigate('/admin');
-            } else {
-                navigate('/');
-            }
+            // Store role and show verification instead of navigating immediately
+            setPendingRole(userProfile.role);
+            setShowVerification(true);
         } catch (error: any) {
             let errorMessage = 'An unexpected error occurred. Please try again.';
             switch (error.code) {
@@ -87,6 +89,9 @@ const LoginPage: React.FC = () => {
         setIsGoogleLoading(true);
         try {
             const userProfile = await signInWithGoogle();
+            // For Google Sign In, we might skip 2FA or enforce it too. 
+            // For now, let's enforce it for consistency if desired, or skip it.
+            // Usually Google Auth is considered secure enough, but let's skip 2FA for Google for better UX.
             if (userProfile.role === 'admin') {
                 navigate('/admin');
             } else {
@@ -100,6 +105,27 @@ const LoginPage: React.FC = () => {
         }
     };
 
+    const handleVerify = () => {
+        // Verification successful, proceed to navigation
+        if (pendingRole === 'admin') {
+            navigate('/admin');
+        } else if (pendingRole === 'employee') {
+            navigate('/employee');
+        } else {
+            navigate('/');
+        }
+    };
+
+    const handleResendCode = async () => {
+        // Mock resend logic
+        return new Promise<void>((resolve) => {
+            setTimeout(() => {
+                console.log('Resent code to', email);
+                resolve();
+            }, 1000);
+        });
+    };
+
     return (
         <div className="flex min-h-screen flex-col bg-gradient-to-br from-primary-50 via-coffee-50 to-white">
             <Header />
@@ -109,84 +135,116 @@ const LoginPage: React.FC = () => {
                         <div className="mb-6 text-center">
                             <RushCoffeeLogo className="mx-auto h-12 w-12 text-primary-600" />
                             <h2 className="mt-4 font-display text-3xl font-bold text-coffee-900">
-                                Rush Coffee
+                                {showVerification ? 'Verify Identity' : 'Rush Coffee'}
                             </h2>
-                            <p className="mt-2 text-gray-600">Welcome back! ☕</p>
+                            <p className="mt-2 text-gray-600">
+                                {showVerification ? 'Enter the code sent to your email' : 'Welcome back! ☕'}
+                            </p>
                         </div>
 
-                        {apiError && (
+                        {apiError && !showVerification && (
                             <div className="mb-4 flex items-start gap-3 rounded-lg bg-red-50 p-4 text-sm text-red-700" role="alert">
                                 <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
                                 <div>{apiError}</div>
                             </div>
                         )}
 
-                        <form onSubmit={handleSubmit} noValidate className="space-y-6">
-                            <Input
-                                id="email"
-                                name="email"
-                                type="email"
-                                label="Email address"
-                                autoComplete="email"
-                                required
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="name@company.com"
-                                error={errors.email}
-                                startIcon={<Mail className="h-5 w-5" />}
+                        {showVerification ? (
+                            <VerificationCodeForm 
+                                email={email}
+                                onVerify={handleVerify}
+                                onBack={() => setShowVerification(false)}
+                                onResend={handleResendCode}
                             />
+                        ) : (
+                            <form onSubmit={handleSubmit} noValidate className="space-y-6">
+                                <Input
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    label="Email address"
+                                    autoComplete="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="name@company.com"
+                                    error={errors.email}
+                                    startIcon={<Mail className="h-5 w-5" />}
+                                />
 
-                            <Input
-                                id="password"
-                                name="password"
-                                type={showPassword ? 'text' : 'password'}
-                                label="Password"
-                                autoComplete="current-password"
-                                required
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="••••••••"
-                                error={errors.password}
-                                startIcon={<Lock className="h-5 w-5" />}
-                                endIcon={
+                                <Input
+                                    id="password"
+                                    name="password"
+                                    type={showPassword ? 'text' : 'password'}
+                                    label="Password"
+                                    autoComplete="current-password"
+                                    required
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="••••••••"
+                                    error={errors.password}
+                                    startIcon={<Lock className="h-5 w-5" />}
+                                    endIcon={
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="focus:outline-none hover:text-gray-600 transition-colors"
+                                            aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                        >
+                                            {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        </button>
+                                    }
+                                />
+
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center">
+                                        <input id="remember-me" name="remember-me" type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
+                                        <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">Remember me</label>
+                                    </div>
+                                    <div className="text-sm">
+                                        <Link to="/auth/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">Forgot your password?</Link>
+                                    </div>
+                                </div>
+
+                                <div>
                                     <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="focus:outline-none hover:text-gray-600 transition-colors"
-                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                        type="submit"
+                                        disabled={isLoading || isGoogleLoading}
+                                        className="flex w-full justify-center rounded-full bg-primary-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-primary-400"
                                     >
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Login'}
                                     </button>
-                                }
-                            />
-
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                    <input id="remember-me" name="remember-me" type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">Remember me</label>
                                 </div>
-                                <div className="text-sm">
-                                    <Link to="/auth/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">Forgot your password?</Link>
-                                </div>
-                            </div>
 
-                            <div>
+                                <div className="relative my-6">
+                                    <div className="absolute inset-0 flex items-center">
+                                        <div className="w-full border-t border-gray-300"></div>
+                                    </div>
+                                    <div className="relative flex justify-center text-sm">
+                                        <span className="px-2 bg-white text-gray-500">Or continue with</span>
+                                    </div>
+                                </div>
+
                                 <button
-                                    type="submit"
-                                    disabled={isLoading || isGoogleLoading}
-                                    className="flex w-full justify-center rounded-full bg-primary-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-primary-400"
+                                    type="button"
+                                    onClick={handleGoogleSignIn}
+                                    disabled={isGoogleLoading || isLoading}
+                                    className="flex w-full items-center justify-center gap-2 rounded-full border border-gray-300 bg-white px-4 py-3 text-base font-semibold text-gray-700 shadow-sm transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-50"
                                 >
-                                    {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Login'}
+                                    {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleIcon />}
+                                    Google
                                 </button>
-                            </div>
-                        </form>
+                            </form>
+                        )}
 
-                        <p className="mt-8 text-center text-sm text-gray-600">
-                            Don't have an account?{' '}
-                            <Link to="/auth/register" className="font-medium text-primary-600 hover:text-primary-500">
-                                Sign up
-                            </Link>
-                        </p>
+                        {!showVerification && (
+                            <p className="mt-8 text-center text-sm text-gray-600">
+                                Don't have an account?{' '}
+                                <Link to="/auth/register" className="font-medium text-primary-600 hover:text-primary-500">
+                                    Sign up
+                                </Link>
+                            </p>
+                        )}
                     </Card>
                 </div>
             </main>
@@ -196,3 +254,4 @@ const LoginPage: React.FC = () => {
 };
 
 export default LoginPage;
+```
