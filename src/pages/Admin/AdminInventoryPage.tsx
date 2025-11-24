@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // FIX: Use compat import for v8 syntax.
 import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
-import { Loader2, Package, AlertTriangle, CheckCircle, XCircle, Plus, Search, Coffee, Milk, Droplet, Sparkles, Cookie, Leaf, Apple, Beer, Snowflake, Drumstick, Box, Calendar } from 'lucide-react';
+import { Loader2, Package, AlertTriangle, CheckCircle, XCircle, Plus, Search, Coffee, Milk, Droplet, Sparkles, Cookie, Leaf, Apple, Beer, Snowflake, Drumstick, Box, Calendar, Package2, RefreshCw } from 'lucide-react';
 import UpdateStockModal from '../../components/admin/UpdateStockModal';
 import AddIngredientModal from '../../components/admin/AddIngredientModal';
 import { mockIngredients, IngredientData, IngredientCategory } from '../../data/mockIngredients';
@@ -22,6 +22,7 @@ export interface Ingredient {
     toppingPrice?: number;
     portionSize?: number;
     expirationDate?: string;
+    createdAt?: string;
 }
 
 const AdminInventoryPage: React.FC = () => {
@@ -32,7 +33,7 @@ const AdminInventoryPage: React.FC = () => {
     const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<IngredientCategory | 'All'>('All');
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeFilter, setActiveFilter] = useState<'all' | 'lowStock' | 'outOfStock'>('all');
+    const [activeFilter, setActiveFilter] = useState<'all' | 'lowStock' | 'outOfStock' | 'newAdded'>('all');
     const { showToast } = useCart();
     const { currentUser } = useAuth();
     const isAdmin = currentUser?.role === 'admin';
@@ -51,6 +52,7 @@ const AdminInventoryPage: React.FC = () => {
         'Frozen': { icon: Snowflake, color: 'text-blue-600', bgColor: 'bg-blue-50' },
         'Proteins': { icon: Drumstick, color: 'text-orange-700', bgColor: 'bg-orange-50' },
         'Dry Goods': { icon: Box, color: 'text-stone-700', bgColor: 'bg-stone-50' },
+        'Supplies & Packaging': { icon: Package2, color: 'text-indigo-700', bgColor: 'bg-indigo-50' },
     };
 
     // Filter ingredients by category and search
@@ -67,6 +69,10 @@ const AdminInventoryPage: React.FC = () => {
             filtered = filtered.filter(ing => ing.stock > 0 && ing.stock <= ing.lowStockThreshold);
         } else if (activeFilter === 'outOfStock') {
             filtered = filtered.filter(ing => ing.stock === 0);
+        } else if (activeFilter === 'newAdded') {
+            const sevenDaysAgo = new Date();
+            sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+            filtered = filtered.filter(ing => ing.createdAt && new Date(ing.createdAt) >= sevenDaysAgo);
         }
 
         // Filter by search query
@@ -93,6 +99,7 @@ const AdminInventoryPage: React.FC = () => {
         'Frozen',
         'Proteins',
         'Dry Goods',
+        'Supplies & Packaging',
     ];
 
     const getCategoryCount = (category: IngredientCategory | 'All') => {
@@ -107,7 +114,7 @@ const AdminInventoryPage: React.FC = () => {
         return categoryItems.filter(ing => ing.stock > 0 && ing.stock <= ing.lowStockThreshold).length;
     };
 
-    const handleStatCardClick = (filter: 'all' | 'lowStock' | 'outOfStock') => {
+    const handleStatCardClick = (filter: 'all' | 'lowStock' | 'outOfStock' | 'newAdded') => {
         setActiveFilter(filter);
         setSelectedCategory('All'); // Reset category when clicking stat cards
     };
@@ -138,6 +145,15 @@ const AdminInventoryPage: React.FC = () => {
     // Check for out of stock ingredients
     const outOfStockIngredients = ingredients.filter(ing => ing.stock === 0);
 
+    // Check for new ingredients (added in last 7 days)
+    const newIngredients = ingredients.filter(ing => {
+        if (!ing.createdAt) return false;
+        const date = new Date(ing.createdAt);
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        return date >= sevenDaysAgo;
+    });
+
     useEffect(() => {
         const seedAndFetch = async () => {
             const ingredientsCollectionRef = db.collection("ingredients");
@@ -159,16 +175,25 @@ const AdminInventoryPage: React.FC = () => {
                 }
             });
 
-            // Backfill expiration dates for existing ingredients if missing
+            // Backfill expiration dates and createdAt for existing ingredients if missing
             initialSnapshot.docs.forEach(doc => {
                 const data = doc.data();
+                const updates: any = {};
+
                 if (!data.expirationDate) {
                     // Set default expiration to 30 days from now
                     const defaultExpiration = new Date();
                     defaultExpiration.setDate(defaultExpiration.getDate() + 30);
-                    const expirationString = defaultExpiration.toISOString().split('T')[0];
+                    updates.expirationDate = defaultExpiration.toISOString().split('T')[0];
+                }
 
-                    batch.update(doc.ref, { expirationDate: expirationString });
+                if (!data.createdAt) {
+                    // Backfill createdAt to today for existing items
+                    updates.createdAt = new Date().toISOString();
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    batch.update(doc.ref, updates);
                     hasUpdates = true;
                 }
             });
@@ -250,7 +275,11 @@ const AdminInventoryPage: React.FC = () => {
             const { id, ...data } = ingredientData;
 
             // Add with specific ID (not random)
-            await db.collection("ingredients").doc(generatedId).set(data);
+            const ingredientWithDate = {
+                ...data,
+                createdAt: new Date().toISOString()
+            };
+            await db.collection("ingredients").doc(generatedId).set(ingredientWithDate);
             showToast(`Ingredient "${ingredientData.name}" added successfully with ID: ${generatedId}`);
             handleCloseAddModal();
         } catch (error) {
@@ -282,6 +311,48 @@ const AdminInventoryPage: React.FC = () => {
         }
     };
 
+    const handleReseedIngredients = async () => {
+        try {
+            setIsLoading(true);
+            const batch = db.batch();
+            const ingredientsCollectionRef = db.collection("ingredients");
+
+            // Get all existing documents to preserve expiration dates and createdAt
+            const snapshot = await ingredientsCollectionRef.get();
+            const existingData = new Map();
+            snapshot.docs.forEach(doc => {
+                existingData.set(doc.id, doc.data());
+            });
+
+            // Update all ingredients with mock data while preserving expiration dates and createdAt
+            mockIngredients.forEach(ingredient => {
+                const { id, ...data } = ingredient;
+                const docRef = ingredientsCollectionRef.doc(id);
+                const existing = existingData.get(id);
+
+                // Merge new data with preserved fields
+                const mergedData = {
+                    ...data,
+                    // Preserve expiration date if it exists
+                    expirationDate: existing?.expirationDate || data.expirationDate,
+                    // Preserve createdAt if it exists, otherwise use current time
+                    createdAt: existing?.createdAt || new Date().toISOString()
+                };
+
+                batch.set(docRef, mergedData);
+            });
+
+            await batch.commit();
+            showToast("Ingredients re-seeded successfully!");
+            console.log("Ingredients re-seeded from mockIngredients.ts");
+        } catch (error) {
+            console.error("Error re-seeding ingredients: ", error);
+            showToast("Failed to re-seed ingredients.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
 
     if (isLoading) {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary-600" /></div>;
@@ -293,12 +364,20 @@ const AdminInventoryPage: React.FC = () => {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                 <h1 className="font-display text-2xl font-bold text-gray-800 sm:text-3xl">Inventory Management</h1>
                 {isAdmin && (
-                    <button
-                        onClick={handleOpenAddModal}
-                        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto">
-                        <Plus className="h-4 w-4" />
-                        <span>Add Ingredient</span>
-                    </button>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                        <button
+                            onClick={handleReseedIngredients}
+                            className="flex w-full items-center justify-center gap-2 rounded-full bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-700 sm:w-auto">
+                            <RefreshCw className="h-4 w-4" />
+                            <span>Re-seed Ingredients</span>
+                        </button>
+                        <button
+                            onClick={handleOpenAddModal}
+                            className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto">
+                            <Plus className="h-4 w-4" />
+                            <span>Add Ingredient</span>
+                        </button>
+                    </div>
                 )}
             </div>
 
@@ -372,7 +451,7 @@ const AdminInventoryPage: React.FC = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 mb-6 sm:grid-cols-2 lg:grid-cols-4">
                 <button
                     onClick={() => handleStatCardClick('all')}
                     className={`flex items-center justify-between p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md cursor-pointer text-left group ${activeFilter === 'all' ? 'ring-2 ring-primary-600 ring-offset-1' : ''
@@ -410,6 +489,19 @@ const AdminInventoryPage: React.FC = () => {
                     </div>
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-50 text-red-600 group-hover:bg-red-100 transition-colors">
                         <XCircle className="h-6 w-6" />
+                    </div>
+                </button>
+                <button
+                    onClick={() => handleStatCardClick('newAdded')}
+                    className={`flex items-center justify-between p-5 bg-white rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md cursor-pointer text-left group ${activeFilter === 'newAdded' ? 'ring-2 ring-blue-500 ring-offset-1' : ''
+                        }`}
+                >
+                    <div>
+                        <p className="text-sm font-medium text-gray-500 group-hover:text-blue-600 transition-colors">New Ingredients</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-1">{newIngredients.length}</p>
+                    </div>
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 group-hover:bg-blue-100 transition-colors">
+                        <Sparkles className="h-6 w-6" />
                     </div>
                 </button>
             </div>
@@ -578,3 +670,4 @@ const AdminInventoryPage: React.FC = () => {
 };
 
 export default AdminInventoryPage;
+

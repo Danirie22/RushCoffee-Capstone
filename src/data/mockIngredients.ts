@@ -10,14 +10,15 @@ export type IngredientCategory =
     | 'Beverages'
     | 'Frozen'
     | 'Proteins'
-    | 'Dry Goods';
+    | 'Dry Goods'
+    | 'Supplies & Packaging';
 
 export interface IngredientData {
     id: string;
     name: string;
     category: IngredientCategory;
     stock: number;
-    unit: 'g' | 'ml' | 'pcs';
+    unit: 'g' | 'ml' | 'pcs' | 'kg';
     lowStockThreshold: number;
     // Enhanced fields for customization system
     isTopping?: boolean;  // Flag to identify if this can be used as a topping
@@ -114,11 +115,20 @@ export const mockIngredients: IngredientData[] = [
     { id: 'hot-water', name: 'Hot Water', category: 'Beverages', stock: 99999, unit: 'ml', lowStockThreshold: 10000 },
 
     // Meal Ingredients
-    { id: 'bacon-strips', name: 'Bacon Strips', category: 'Proteins', stock: 200, unit: 'pcs', lowStockThreshold: 20 },
-    { id: 'porkchop', name: 'Porkchop', category: 'Proteins', stock: 150, unit: 'pcs', lowStockThreshold: 15 },
-    { id: 'chicken-fillet', name: 'Chicken Fillet', category: 'Proteins', stock: 200, unit: 'pcs', lowStockThreshold: 20 },
+    { id: 'bacon-strips', name: 'Bacon Strips', category: 'Proteins', stock: 5, unit: 'kg', lowStockThreshold: 1, portionSize: 0.1 },
+    { id: 'porkchop', name: 'Porkchop', category: 'Proteins', stock: 4, unit: 'kg', lowStockThreshold: 1, portionSize: 0.2 },
+    { id: 'chicken-fillet', name: 'Chicken Fillet', category: 'Proteins', stock: 5, unit: 'kg', lowStockThreshold: 1, portionSize: 0.15 },
     { id: 'bread-crumbs', name: 'Bread Crumbs', category: 'Dry Goods', stock: 3000, unit: 'g', lowStockThreshold: 300 },
-    { id: 'french-fries', name: 'French Fries', category: 'Frozen', stock: 300, unit: 'pcs', lowStockThreshold: 30 },
+    { id: 'french-fries', name: 'French Fries', category: 'Frozen', stock: 6, unit: 'kg', lowStockThreshold: 1, portionSize: 0.15 },
     { id: 'white-sauce', name: 'White Sauce', category: 'Sauces', stock: 2000, unit: 'ml', lowStockThreshold: 200 },
     { id: 'cooking-oil', name: 'Cooking Oil', category: 'Dry Goods', stock: 5000, unit: 'ml', lowStockThreshold: 500, expirationDate: '2025-12-31' },
+
+    // Supplies & Packaging
+    { id: 'cup-grande', name: 'Cup - Grande (16oz)', category: 'Supplies & Packaging', stock: 500, unit: 'pcs', lowStockThreshold: 50, portionSize: 1 },
+    { id: 'cup-venti', name: 'Cup - Venti (20oz)', category: 'Supplies & Packaging', stock: 500, unit: 'pcs', lowStockThreshold: 50, portionSize: 1 },
+    { id: 'lid-grande', name: 'Lid - Grande', category: 'Supplies & Packaging', stock: 500, unit: 'pcs', lowStockThreshold: 50, portionSize: 1 },
+    { id: 'lid-venti', name: 'Lid - Venti', category: 'Supplies & Packaging', stock: 500, unit: 'pcs', lowStockThreshold: 50, portionSize: 1 },
+    { id: 'straw', name: 'Straws', category: 'Supplies & Packaging', stock: 1000, unit: 'pcs', lowStockThreshold: 100, portionSize: 1 },
+    { id: 'napkins', name: 'Napkins', category: 'Supplies & Packaging', stock: 2000, unit: 'pcs', lowStockThreshold: 200, portionSize: 2 },
+    { id: 'takeout-pack', name: 'Takeout Pack (Meal Box)', category: 'Supplies & Packaging', stock: 300, unit: 'pcs', lowStockThreshold: 30, portionSize: 1 },
 ];

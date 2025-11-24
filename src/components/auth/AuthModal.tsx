@@ -1,5 +1,4 @@
 import React from 'react';
-import { X } from 'lucide-react';
 import Modal from '../ui/Modal';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
@@ -19,30 +18,28 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialView = 'l
     }, [isOpen, initialView]);
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
-            <div className="p-6">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-bold">{view === 'login' ? 'Login' : 'Sign Up'}</h2>
-                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {view === 'login' ? (
-                    <LoginForm
-                        onForgotPassword={() => { }}
-                        onRegister={() => setView('register')}
-                        onSuccess={onClose}
-                        onVerificationNeeded={(email, userId) => onVerificationNeeded?.(email, userId)}
-                    />
-                ) : (
-                    <RegisterForm
-                        onLogin={() => setView('login')}
-                        onSuccess={onClose}
-                        onVerificationNeeded={(email) => onVerificationNeeded?.(email, 'new-user-id')}
-                    />
-                )}
-            </div>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            hideHeader={true} // We hide the default header to use our custom logo header
+            size={view === 'register' ? 'xl' : 'md'} // Dynamic sizing: wider for register form
+        >
+            {view === 'login' ? (
+                <LoginForm
+                    key="login"
+                    onForgotPassword={() => { }}
+                    onRegister={() => setView('register')}
+                    onSuccess={onClose}
+                    onVerificationNeeded={(email, userId) => onVerificationNeeded?.(email, userId)}
+                />
+            ) : (
+                <RegisterForm
+                    key="register"
+                    onLogin={() => setView('login')}
+                    onSuccess={onClose}
+                    onVerificationNeeded={(email) => onVerificationNeeded?.(email, 'new-user-id')}
+                />
+            )}
         </Modal>
     );
 };

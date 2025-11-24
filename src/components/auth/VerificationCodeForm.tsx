@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Loader2, ArrowLeft, RefreshCw } from 'lucide-react';
+import { Loader2, ArrowLeft, RefreshCw, Mail, ShieldCheck } from 'lucide-react';
+import RushCoffeeLogo from '../layout/RushCoffeeLogo';
 
 interface VerificationCodeFormProps {
     email: string;
@@ -79,15 +80,21 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({ email, onVe
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-8">
             <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">
+                {/* Logo and Header */}
+                <RushCoffeeLogo className="mx-auto h-16 w-16 text-coffee-600 mb-4" />
+                <h2 className="font-display text-3xl font-bold text-gray-900 mb-2">
+                    Verify Your Email
+                </h2>
+
+                <p className="text-gray-600 mb-2">
                     We've sent a verification code to
                 </p>
-                <p className="font-medium text-gray-900">{email}</p>
+                <p className="text-lg font-bold text-coffee-700">{email}</p>
             </div>
 
-            <div className="flex justify-center gap-2">
+            <div className="flex justify-center gap-3">
                 {code.map((digit, index) => (
                     <input
                         key={index}
@@ -98,19 +105,23 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({ email, onVe
                         onChange={(e) => handleChange(index, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(index, e)}
                         onPaste={handlePaste}
-                        className="w-12 h-12 text-center text-xl font-bold border border-gray-300 rounded-lg focus:ring-2 focus:ring-coffee-500 focus:border-transparent outline-none transition-all"
+                        className="w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold bg-coffee-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 transition-all placeholder:text-gray-300"
+                        placeholder="•"
                     />
                 ))}
             </div>
 
             {error && (
-                <p className="text-center text-sm text-red-600">{error}</p>
+                <div className="flex items-center justify-center gap-2 text-sm text-red-600 bg-red-50 p-3 rounded-lg border border-red-100">
+                    <ShieldCheck className="h-4 w-4" />
+                    <span>{error}</span>
+                </div>
             )}
 
             <button
                 type="submit"
                 disabled={isLoading || code.join('').length !== 6}
-                className="w-full bg-coffee-600 hover:bg-coffee-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-coffee-600 hover:bg-coffee-700 text-white font-semibold py-4 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
             >
                 {isLoading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -122,21 +133,23 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({ email, onVe
                 )}
             </button>
 
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between text-sm pt-2">
                 <button
                     type="button"
                     onClick={onBack}
-                    className="flex items-center gap-1 text-gray-600 hover:text-gray-900"
+                    className="flex items-center gap-2 text-gray-500 hover:text-gray-900 font-medium transition-colors group"
                 >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back
+                    <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                    Back to Login
                 </button>
 
                 <button
                     type="button"
                     onClick={handleResend}
                     disabled={timeLeft > 0}
-                    className={`flex items-center gap-1 ${timeLeft > 0 ? 'text-gray-400 cursor-not-allowed' : 'text-coffee-600 hover:text-coffee-700'
+                    className={`flex items-center gap-2 font-medium transition-colors ${timeLeft > 0
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-coffee-600 hover:text-coffee-700'
                         }`}
                 >
                     <RefreshCw className={`h-4 w-4 ${timeLeft > 0 ? 'animate-spin' : ''}`} />

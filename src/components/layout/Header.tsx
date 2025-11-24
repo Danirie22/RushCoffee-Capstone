@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -45,6 +45,7 @@ const Header: React.FC = () => {
     const { totalCartItems, openCart } = useCart();
     const navigate = useNavigate();
     const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
 
     // If we are on the verification page OR if 2FA is pending, pretend we are logged out
     const isVerifying = location.pathname === '/auth/verify-email';
@@ -61,7 +62,20 @@ const Header: React.FC = () => {
         closeMobileMenu();
     };
 
+    // Handle URL-based modal opening
+    React.useEffect(() => {
+        const authParam = searchParams.get('auth');
+        if (authParam === 'login') {
+            setAuthModalView('login');
+            setIsAuthModalOpen(true);
+        } else if (authParam === 'register') {
+            setAuthModalView('register');
+            setIsAuthModalOpen(true);
+        }
+    }, [searchParams]);
+
     const handleVerificationNeeded = (email: string, userId: string) => {
+        setIsAuthModalOpen(false); // Close the login/register modal first
         setVerifyEmail(email);
         setVerifyUserId(userId);
         setIsVerifyModalOpen(true);

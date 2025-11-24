@@ -48,16 +48,13 @@ const VerificationModal: React.FC<VerificationModalProps> = ({
     };
 
     return (
-        <Modal isOpen={isOpen} onClose={onClose}>
-            <div className="p-6">
-                <h2 className="text-xl font-bold mb-4 text-center">Verify Your Email</h2>
-                <VerificationCodeForm
-                    email={email}
-                    onVerify={handleVerify}
-                    onBack={onBackToLogin || onClose}
-                    onResend={handleResend}
-                />
-            </div>
+        <Modal isOpen={isOpen} onClose={onClose} hideHeader={true} size="md">
+            <VerificationCodeForm
+                email={email}
+                onVerify={handleVerify}
+                onBack={onBackToLogin || onClose}
+                onResend={handleResend}
+            />
         </Modal>
     );
 };
