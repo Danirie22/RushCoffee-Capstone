@@ -1,21 +1,65 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useProduct } from '../../context/ProductContext';
-import { Loader2, Plus, Edit, Trash2, AlertCircle, Search, Coffee, Snowflake, Leaf, Apple, UtensilsCrossed, Package, AlertTriangle, XCircle, Star } from 'lucide-react';
+import { Loader2, Plus, Edit, Trash2, AlertCircle, Search, Coffee, Snowflake, Leaf, Apple, UtensilsCrossed, Package, AlertTriangle, XCircle, Star, Eye, Info } from 'lucide-react';
 import ProductFormModal from '../../components/admin/ProductFormModal';
 import { Product } from '../../data/mockProducts';
 import { useCart } from '../../context/CartContext';
-import { div } from 'framer-motion/client';
+import { useAuth } from '../../context/AuthContext';
+import { db } from '../../firebaseConfig';
+import { Ingredient } from './AdminInventoryPage';
 
 type ProductCategory = 'All' | 'Coffee Based' | 'Non-Coffee Based' | 'Matcha Series' | 'Refreshments' | 'Meals';
 
 const AdminProductsPage: React.FC = () => {
     const { products, isLoading, error, deleteProduct } = useProduct();
+    const [ingredients, setIngredients] = useState<Ingredient[]>([]);
+    const [isIngredientsLoading, setIsIngredientsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [productToEdit, setProductToEdit] = useState<Product | null>(null);
     const [selectedCategory, setSelectedCategory] = useState<ProductCategory>('All');
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState<'all' | 'lowStock' | 'outOfStock' | 'popular'>('all');
     const { showToast } = useCart();
+    const { currentUser } = useAuth();
+    const isAdmin = currentUser?.role === 'admin';
+
+    // Fetch ingredients for smart availability check
+    useEffect(() => {
+        const unsubscribe = db.collection("ingredients").onSnapshot((snapshot) => {
+            const ingredientsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Ingredient));
+            setIngredients(ingredientsList);
+            setIsIngredientsLoading(false);
+        }, (err) => {
+            console.error("Error fetching ingredients:", err);
+            setIsIngredientsLoading(false);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // Helper to check if a product is available based on recipe and stock
+    const checkAvailability = (product: Product) => {
+        if (!product.available) return { available: false, reason: 'Manually set to unavailable' };
+
+        if (!product.recipe || product.recipe.length === 0) return { available: true };
+
+        const missingIngredients: string[] = [];
+
+        for (const item of product.recipe) {
+            const ingredient = ingredients.find(ing => ing.id === item.ingredientId);
+            // Check if ingredient exists and has enough stock (assuming quantity 1 for simplicity if not specified, 
+            // but ideally we check item.quantity vs ingredient.stock)
+            // Note: item.quantity in recipe might be in different units, but for now we check if stock > 0
+            if (!ingredient || ingredient.stock <= 0) {
+                missingIngredients.push(ingredient ? ingredient.name : 'Unknown Ingredient');
+            }
+        }
+
+        if (missingIngredients.length > 0) {
+            return { available: false, reason: `Missing: ${missingIngredients.join(', ')}` };
+        }
+
+        return { available: true };
+    };
 
     // Category metadata
     const categoryMetadata: Record<ProductCategory, { icon: any; color: string; bgColor: string }> = {
@@ -40,7 +84,11 @@ const AdminProductsPage: React.FC = () => {
         if (activeFilter === 'lowStock') {
             filtered = filtered.filter(p => p.stock > 0 && p.stock <= 20);
         } else if (activeFilter === 'outOfStock') {
-            filtered = filtered.filter(p => p.stock === 0);
+            // Include products that are manually out of stock OR missing ingredients
+            filtered = filtered.filter(p => {
+                const status = checkAvailability(p);
+                return p.stock === 0 || !status.available;
+            });
         } else if (activeFilter === 'popular') {
             filtered = filtered.filter(p => p.popular);
         }
@@ -53,7 +101,7 @@ const AdminProductsPage: React.FC = () => {
         }
 
         return filtered;
-    }, [products, selectedCategory, searchQuery, activeFilter]);
+    }, [products, selectedCategory, searchQuery, activeFilter, ingredients]); // Add ingredients to dependency
 
     const categories: ProductCategory[] = ['All', 'Coffee Based', 'Non-Coffee Based', 'Matcha Series', 'Refreshments', 'Meals'];
 
@@ -93,7 +141,7 @@ const AdminProductsPage: React.FC = () => {
         }
     };
 
-    if (isLoading) {
+    if (isLoading || isIngredientsLoading) {
         return <div className="flex h-full items-center justify-center"><Loader2 className="h-12 w-12 animate-spin text-primary-600" /></div>;
     }
 
@@ -111,14 +159,18 @@ const AdminProductsPage: React.FC = () => {
         <div>
             {/* Header */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-                <h1 className="font-display text-2xl font-bold text-gray-800 sm:text-3xl">Product Management</h1>
-                <button
-                    onClick={() => handleOpenModal()}
-                    className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto"
-                >
-                    <Plus className="h-4 w-4" />
-                    <span>Add New Product</span>
-                </button>
+                <h1 className="font-display text-2xl font-bold text-gray-800 sm:text-3xl">
+                    {isAdmin ? 'Product Management' : 'Menu & Recipes'}
+                </h1>
+                {isAdmin && (
+                    <button
+                        onClick={() => handleOpenModal()}
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto"
+                    >
+                        <Plus className="h-4 w-4" />
+                        <span>Add New Product</span>
+                    </button>
+                )}
             </div>
 
             {/* Stats Cards */}
@@ -156,8 +208,10 @@ const AdminProductsPage: React.FC = () => {
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm font-medium text-gray-600">Out of Stock</p>
-                            <p className="text-2xl font-bold text-red-600 mt-1">{products.filter(p => p.stock === 0).length}</p>
+                            <p className="text-sm font-medium text-gray-600">Unavailable</p>
+                            <p className="text-2xl font-bold text-red-600 mt-1">
+                                {products.filter(p => !checkAvailability(p).available || p.stock === 0).length}
+                            </p>
                         </div>
                         <XCircle className="h-10 w-10 text-red-600 opacity-75" />
                     </div>
@@ -246,44 +300,65 @@ const AdminProductsPage: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 bg-white">
-                        {filteredProducts.map((product) => (
-                            <tr key={product.id} className="hover:bg-gray-50">
-                                <td className="whitespace-nowrap px-6 py-4">
-                                    <div className="flex items-center">
-                                        <div className="h-10 w-10 flex-shrink-0">
-                                            <img className="h-10 w-10 rounded-full object-cover" src={product.imageUrl} alt={product.name} />
-                                        </div>
-                                        <div className="ml-4">
-                                            <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
-                                                {product.name}
-                                                {product.popular && <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />}
-                                                {product.new && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">NEW</span>}
+                        {filteredProducts.map((product) => {
+                            const availability = checkAvailability(product);
+                            const isAvailable = product.available && availability.available;
+
+                            return (
+                                <tr key={product.id} className="hover:bg-gray-50">
+                                    <td className="whitespace-nowrap px-6 py-4">
+                                        <div className="flex items-center">
+                                            <div className="h-10 w-10 flex-shrink-0">
+                                                <img className="h-10 w-10 rounded-full object-cover" src={product.imageUrl} alt={product.name} />
+                                            </div>
+                                            <div className="ml-4">
+                                                <div className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                                                    {product.name}
+                                                    {product.popular && <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />}
+                                                    {product.new && <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">NEW</span>}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </td>
-                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{product.category}</td>
-                                <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
-                                    ₱{product.sizes[0].price.toFixed(2)} / ₱{product.sizes[1].price.toFixed(2)}
-                                </td>
-                                <td className="whitespace-nowrap px-6 py-4 text-sm">
-                                    <span className={`font-semibold ${product.stock === 0 ? 'text-red-600' : product.stock <= 20 ? 'text-yellow-600' : 'text-gray-900'}`}>
-                                        {product.stock}
-                                    </span>
-                                </td>
-                                <td className="whitespace-nowrap px-6 py-4">
-                                    {product.available ? (
-                                        <span className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">Available</span>
-                                    ) : (
-                                        <span className="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800">Unavailable</span>
-                                    )}
-                                </td>
-                                <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                                    <button onClick={() => handleOpenModal(product)} className="p-1 text-primary-600 hover:text-primary-800"><Edit className="h-4 w-4" /></button>
-                                    <button onClick={() => handleDelete(product.id, product.name)} className="ml-2 p-1 text-red-600 hover:text-red-800"><Trash2 className="h-4 w-4" /></button>
-                                </td>
-                            </tr>
-                        ))}
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{product.category}</td>
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                                        ₱{product.sizes[0].price.toFixed(2)} / ₱{product.sizes[1].price.toFixed(2)}
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4 text-sm">
+                                        <span className={`font-semibold ${product.stock === 0 ? 'text-red-600' : product.stock <= 20 ? 'text-yellow-600' : 'text-gray-900'}`}>
+                                            {product.stock}
+                                        </span>
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4">
+                                        {isAvailable ? (
+                                            <span className="inline-flex rounded-full bg-green-100 px-2 text-xs font-semibold leading-5 text-green-800">Available</span>
+                                        ) : (
+                                            <div className="flex flex-col items-start gap-1">
+                                                <span className="inline-flex rounded-full bg-red-100 px-2 text-xs font-semibold leading-5 text-red-800">Unavailable</span>
+                                                {!availability.available && (
+                                                    <span className="text-xs text-red-500 flex items-center gap-1" title={availability.reason}>
+                                                        <AlertCircle className="h-3 w-3" />
+                                                        {availability.reason.length > 20 ? availability.reason.substring(0, 20) + '...' : availability.reason}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                                        <button
+                                            onClick={() => handleOpenModal(product)}
+                                            className="p-1 text-primary-600 hover:text-primary-800"
+                                            title={isAdmin ? "Edit" : "View Details"}
+                                        >
+                                            {isAdmin ? <Edit className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
+                                        {isAdmin && (
+                                            <button onClick={() => handleDelete(product.id, product.name)} className="ml-2 p-1 text-red-600 hover:text-red-800"><Trash2 className="h-4 w-4" /></button>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>

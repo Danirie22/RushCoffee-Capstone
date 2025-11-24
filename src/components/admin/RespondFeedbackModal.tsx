@@ -1,5 +1,4 @@
 
-
 import React, { useState, FormEvent, useEffect } from 'react';
 // FIX: Use compat import for v8 syntax.
 import firebase from 'firebase/compat/app';
@@ -22,10 +21,10 @@ const RespondFeedbackModal: React.FC<RespondFeedbackModalProps> = ({ isOpen, onC
     const [isSaving, setIsSaving] = useState(false);
 
     useEffect(() => {
-      if (isOpen) {
-        setResponse(feedback.response || '');
-        setStatus(feedback.status);
-      }
+        if (isOpen) {
+            setResponse(feedback.response || '');
+            setStatus(feedback.status);
+        }
     }, [isOpen, feedback]);
 
     const handleSubmit = async (e: FormEvent) => {
@@ -45,7 +44,7 @@ const RespondFeedbackModal: React.FC<RespondFeedbackModalProps> = ({ isOpen, onC
             setIsSaving(false);
         }
     };
-    
+
     const userName = feedback.user ? `${feedback.user.firstName} ${feedback.user.lastName}` : `User ID: ${feedback.userId}`;
 
     return (
@@ -55,7 +54,7 @@ const RespondFeedbackModal: React.FC<RespondFeedbackModalProps> = ({ isOpen, onC
                     <h4 className="font-semibold text-gray-500">Rating</h4>
                     <StarRating rating={feedback.rating} readonly />
                 </div>
-                 <div>
+                <div>
                     <h4 className="font-semibold text-gray-500">Comment</h4>
                     <p className="mt-1 max-h-40 overflow-y-auto rounded-md bg-gray-50 p-3 text-gray-700 whitespace-pre-wrap">{feedback.comment}</p>
                 </div>
@@ -72,9 +71,9 @@ const RespondFeedbackModal: React.FC<RespondFeedbackModalProps> = ({ isOpen, onC
                         />
                     </div>
                     <div>
-                         <label className="block text-sm font-medium text-gray-700">Update Status</label>
-                         <div className="mt-2 flex gap-2 rounded-full bg-gray-100 p-1">
-                            {(['pending', 'reviewed', 'resolved'] as const).map(s => (
+                        <label className="block text-sm font-medium text-gray-700">Update Status</label>
+                        <div className="mt-2 flex gap-2 rounded-full bg-gray-100 p-1">
+                            {(['pending', 'published', 'resolved'] as const).map(s => (
                                 <button
                                     key={s}
                                     type="button"

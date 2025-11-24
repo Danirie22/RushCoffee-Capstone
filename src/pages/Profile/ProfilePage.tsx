@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { format } from 'date-fns';
 import { User, ShoppingBag, Settings, Edit, Mail, Phone, Calendar, Star, Loader2, Upload, MessageSquare } from 'lucide-react';
@@ -144,58 +143,125 @@ const ProfilePage: React.FC = () => {
       case 'overview':
       default:
         return (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="space-y-6 lg:col-span-2">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <div className="space-y-8 lg:col-span-2">
               {isEditing ? (
                 <EditProfileForm user={user} onSave={handleSaveProfile} onCancel={() => setIsEditing(false)} />
               ) : (
-                <Card>
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-display text-xl font-bold text-coffee-900">Quick Info</h3>
-                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
-                      <Edit className="mr-2 h-4 w-4" /> Edit Profile
+                <Card className="overflow-hidden border-none shadow-md transition-shadow hover:shadow-lg">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-4 mb-4">
+                    <h3 className="font-display text-xl font-bold text-gray-900">Personal Information</h3>
+                    <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)} className="text-primary-600 hover:bg-primary-50">
+                      <Edit className="mr-2 h-4 w-4" /> Edit
                     </Button>
                   </div>
-                  <ul className="mt-4 space-y-3 text-gray-700">
-                    <li className="flex items-center gap-3"><Mail className="h-5 w-5 text-gray-400" /> {user.email}</li>
-                    <li className="flex items-center gap-3"><Phone className="h-5 w-5 text-gray-400" /> {user.phone || 'Not provided'}</li>
-                    <li className="flex items-center gap-3"><Calendar className="h-5 w-5 text-gray-400" /> Member since {format(user.createdAt, 'MMMM dd, yyyy')}</li>
-                  </ul>
-                </Card>
-              )}
-              {isHistoryLoading ? (
-                <Card>
-                  <h3 className="font-display text-xl font-bold text-coffee-900">Recent Orders</h3>
-                  <div className="mt-4 space-y-4">
-                    {Array.from({ length: 3 }).map((_, i) => <OrderHistoryCardSkeleton key={i} />)}
-                  </div>
-                </Card>
-              ) : (
-                <OrderHistory orders={orderHistory} limit={3} showViewAll onViewAll={() => setActiveTab('orders')} />
-              )}
-            </div>
-            <div className="space-y-6 lg:col-span-1">
-              {favoriteProduct && (
-                <Card>
-                  <h3 className="font-display text-xl font-bold text-coffee-900">Your Favorite</h3>
-                  <div className="mt-4 flex items-center gap-4">
-                    <img src={favoriteProduct.imageUrl} alt={favoriteProduct.name} className="h-20 w-20 rounded-lg object-cover" />
-                    <div>
-                      <p className="font-semibold text-gray-800">{favoriteProduct.name}</p>
-                      <p className="text-sm text-gray-500">{favoriteProduct.category}</p>
-                      <Button size="sm" variant="secondary" className="mt-2" onClick={handleOrderAgain}>Order Again</Button>
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                        <Mail className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium uppercase">Email Address</p>
+                        <p className="text-gray-900 font-medium">{user.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100 text-purple-600">
+                        <Phone className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium uppercase">Phone Number</p>
+                        <p className="text-gray-900 font-medium">{user.phone || 'Not provided'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+                        <Calendar className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 font-medium uppercase">Member Since</p>
+                        <p className="text-gray-900 font-medium">{format(user.createdAt, 'MMMM dd, yyyy')}</p>
+                      </div>
                     </div>
                   </div>
                 </Card>
               )}
-              <Card>
-                <h3 className="font-display text-xl font-bold text-coffee-900">Quick Stats</h3>
-                <ul className="mt-4 space-y-3 text-gray-700">
-                  <li className="flex justify-between"><span>Orders this week:</span> <span className="font-bold">5</span></li>
-                  <li className="flex justify-between"><span>Orders this month:</span> <span className="font-bold">12</span></li>
-                  <li className="flex justify-between"><span>Total Savings:</span> <span className="font-bold text-green-600">₱250.00</span></li>
-                </ul>
+              {isHistoryLoading ? (
+                <Card className="border-none shadow-md">
+                  <h3 className="font-display text-xl font-bold text-gray-900 mb-4">Recent Orders</h3>
+                  <div className="space-y-4">
+                    {Array.from({ length: 3 }).map((_, i) => <OrderHistoryCardSkeleton key={i} />)}
+                  </div>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display text-xl font-bold text-gray-900">Recent Orders</h3>
+                    <Button variant="link" onClick={() => setActiveTab('orders')} className="text-primary-600">View All</Button>
+                  </div>
+                  <OrderHistory orders={orderHistory} limit={3} showViewAll={false} />
+                </div>
+              )}
+            </div>
+            <div className="space-y-8 lg:col-span-1">
+              <Card className={`border-none shadow-md text-white overflow-hidden relative ${user.tier === 'gold' ? 'bg-gradient-to-br from-yellow-500 to-yellow-700' :
+                  user.tier === 'silver' ? 'bg-gradient-to-br from-gray-400 to-gray-600' :
+                    'bg-gradient-to-br from-orange-400 to-orange-600'
+                }`}>
+                <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white opacity-10 blur-xl"></div>
+                <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-24 w-24 rounded-full bg-black opacity-10 blur-xl"></div>
+
+                <div className="relative z-10">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <p className="text-white/80 text-sm font-medium uppercase tracking-wider">Current Tier</p>
+                      <h3 className="font-display text-2xl font-bold capitalize">{user.tier} Member</h3>
+                    </div>
+                    <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                      <Star className="h-6 w-6 text-white" fill="currentColor" />
+                    </div>
+                  </div>
+
+                  <div className="mb-2 flex justify-between items-end">
+                    <span className="text-3xl font-bold">{user.currentPoints}</span>
+                    <span className="text-sm text-white/80 mb-1">points earned</span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full bg-black/20 rounded-full h-2 mb-4">
+                    <div
+                      className="bg-white h-2 rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                      style={{ width: `${Math.min((user.currentPoints % 1000) / 10, 100)}%` }}
+                    ></div>
+                  </div>
+
+                  <p className="text-sm text-white/90">
+                    {user.tier === 'gold'
+                      ? 'You are at the highest tier! Enjoy your exclusive benefits.'
+                      : `Earn ${1000 - (user.currentPoints % 1000)} more points to reach ${user.tier === 'bronze' ? 'Silver' : 'Gold'} tier.`}
+                  </p>
+                </div>
               </Card>
+
+              {favoriteProduct && (
+                <Card className="border-none shadow-md transition-shadow hover:shadow-lg overflow-hidden group">
+                  <h3 className="font-display text-xl font-bold text-gray-900 mb-4">Your Favorite</h3>
+                  <div className="relative aspect-square w-full overflow-hidden rounded-xl mb-4">
+                    <img
+                      src={favoriteProduct.imageUrl}
+                      alt={favoriteProduct.name}
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-4">
+                      <p className="font-bold text-white text-lg">{favoriteProduct.name}</p>
+                      <p className="text-white/80 text-sm">{favoriteProduct.category}</p>
+                    </div>
+                  </div>
+                  <Button className="w-full rounded-xl py-3 font-bold shadow-lg shadow-primary-600/20" onClick={handleOrderAgain}>
+                    Order Again <ShoppingBag className="ml-2 h-4 w-4" />
+                  </Button>
+                </Card>
+              )}
             </div>
           </div>
         );
@@ -211,17 +277,17 @@ const ProfilePage: React.FC = () => {
         {/* Tab Navigation */}
         <div className="sticky top-16 z-30 border-b border-gray-200 bg-white/95 backdrop-blur-sm sm:top-20">
           <div className="container mx-auto max-w-7xl px-4 sm:px-6">
-            <nav className="-mb-px flex space-x-4 overflow-x-auto sm:space-x-8 no-scrollbar">
+            <nav className="-mb-px flex space-x-6 overflow-x-auto py-4 no-scrollbar">
               {tabItems.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as Tab)}
-                  className={`group inline-flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium transition-all ${activeTab === tab.id
-                      ? 'border-primary-600 text-primary-600'
-                      : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  className={`group inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${activeTab === tab.id
+                      ? 'bg-primary-600 text-white shadow-md'
+                      : 'bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-900'
                     }`}
                 >
-                  <tab.Icon className={`h-5 w-5 ${activeTab === tab.id ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-500'}`} />
+                  <tab.Icon className={`h-4 w-4 ${activeTab === tab.id ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
                   {tab.label}
                 </button>
               ))}

@@ -12,7 +12,7 @@ export interface QueueItem {
     customerName: string;
     orderNumber: string;
     position: number;
-    status: 'waiting' | 'preparing' | 'ready' | 'completed';
+    status: 'waiting' | 'preparing' | 'ready' | 'completed' | 'cancelled';
     orderItems: Array<{
         productId: string;
         productName: string;
@@ -25,6 +25,7 @@ export interface QueueItem {
     paymentStatus: 'pending' | 'paid';
     timestamp: Date;
     estimatedTime: number; // in minutes
+    cancellationReason?: string;
 }
 
 interface OrderContextType {
@@ -80,8 +81,8 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
 
                 setOrderHistory(history);
 
-                // Check for an incomplete order to set as active
-                const active = history.find(order => order.status !== 'completed') || null;
+                // Check for an incomplete order to set as active (excluding cancelled)
+                const active = history.find(order => order.status !== 'completed' && order.status !== 'cancelled') || null;
                 setActiveOrder(active);
 
                 setIsHistoryLoading(false);

@@ -1,13 +1,11 @@
-
-
-
-
 import * as React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone, Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import RushCoffeeLogo from './RushCoffeeLogo';
+import AuthModal from '../auth/AuthModal';
+import VerificationModal from '../auth/VerificationModal';
 
 const loggedOutNavLinks = [
     { href: '/', label: 'Home' },
@@ -34,13 +32,68 @@ const Header: React.FC = () => {
     const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false);
     const userMenuRef = React.useRef<HTMLDivElement>(null);
 
+    // Auth Modal State
+    const [isAuthModalOpen, setIsAuthModalOpen] = React.useState(false);
+    const [authModalView, setAuthModalView] = React.useState<'login' | 'register'>('login');
+
+    // Verification Modal State
+    const [isVerifyModalOpen, setIsVerifyModalOpen] = React.useState(false);
+    const [verifyEmail, setVerifyEmail] = React.useState('');
+    const [verifyUserId, setVerifyUserId] = React.useState('');
+
     const { currentUser, logout } = useAuth();
     const { totalCartItems, openCart } = useCart();
     const navigate = useNavigate();
+    const location = useLocation();
 
-    const navLinks = currentUser ? loggedInNavLinks : loggedOutNavLinks;
+    // If we are on the verification page OR if 2FA is pending, pretend we are logged out
+    const isVerifying = location.pathname === '/auth/verify-email';
+    const isPending2FA = sessionStorage.getItem('requires2FA') === 'true';
+    const showLoggedInState = currentUser && !isVerifying && !isPending2FA;
+
+    const navLinks = showLoggedInState ? loggedInNavLinks : loggedOutNavLinks;
 
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+    const openAuthModal = (view: 'login' | 'register') => {
+        setAuthModalView(view);
+        setIsAuthModalOpen(true);
+        closeMobileMenu();
+    };
+
+    const handleVerificationNeeded = (email: string, userId: string) => {
+        setVerifyEmail(email);
+        setVerifyUserId(userId);
+        setIsVerifyModalOpen(true);
+    };
+
+    const handleVerificationSuccess = () => {
+        setIsVerifyModalOpen(false);
+        sessionStorage.removeItem('requires2FA');
+
+        // Role-based redirect after login
+        if (currentUser?.role === 'admin') {
+            navigate('/admin');
+        } else if (currentUser?.role === 'employee') {
+            navigate('/employee');
+        } else {
+            navigate('/menu'); // customers
+        }
+    };
+
+    const handleVerificationClose = () => {
+        setIsVerifyModalOpen(false);
+        sessionStorage.removeItem('requires2FA');
+        logout();
+    };
+
+    const handleBackToLogin = () => {
+        setIsVerifyModalOpen(false);
+        sessionStorage.removeItem('requires2FA');
+        logout();
+        setAuthModalView('login');
+        setIsAuthModalOpen(true);
+    };
 
     // Close user dropdown when clicking outside
     React.useEffect(() => {
@@ -87,9 +140,8 @@ const Header: React.FC = () => {
         const baseButtonClass = "rounded-full text-sm font-semibold transition-colors";
         const mobileButtonClass = "block w-full text-center py-3 text-base";
         const desktopButtonClass = "px-6 py-2";
-        const clickHandler = isMobile ? closeMobileMenu : undefined;
 
-        if (currentUser) {
+        if (showLoggedInState) {
             return (
                 <div className={`relative ${isMobile ? 'w-full' : ''}`} ref={userMenuRef}>
                     <button
@@ -102,7 +154,7 @@ const Header: React.FC = () => {
                         <ChevronDown className={`h-4 w-4 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     {isUserMenuOpen && !isMobile && (
-                        <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-fade-in-up">
                             <div className="py-1" role="menu" aria-orientation="vertical">
                                 {userDropdownLinks.map(link => (
                                     <NavLink
@@ -116,19 +168,30 @@ const Header: React.FC = () => {
                                         {link.label}
                                     </NavLink>
                                 ))}
-                                {currentUser.role === 'admin' && (
+                                {(currentUser.role === 'employee' || currentUser.role === 'admin') && (
                                     <>
                                         <hr className="my-1" />
                                         <NavLink
-                                            to="/admin"
+                                            to="/employee"
                                             onClick={() => setIsUserMenuOpen(false)}
-                                            className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-yellow-700 transition-colors hover:bg-yellow-50"
+                                            className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-blue-700 transition-colors hover:bg-blue-50"
                                             role="menuitem"
                                         >
                                             <Shield className="h-4 w-4" />
-                                            Admin Dashboard
+                                            Employee Portal
                                         </NavLink>
                                     </>
+                                )}
+                                {currentUser.role === 'admin' && (
+                                    <NavLink
+                                        to="/admin"
+                                        onClick={() => setIsUserMenuOpen(false)}
+                                        className="flex items-center gap-3 px-4 py-2 text-sm font-semibold text-yellow-700 transition-colors hover:bg-yellow-50"
+                                        role="menuitem"
+                                    >
+                                        <Shield className="h-4 w-4" />
+                                        Admin Dashboard
+                                    </NavLink>
                                 )}
                                 <hr className="my-1" />
                                 <button
@@ -148,18 +211,16 @@ const Header: React.FC = () => {
 
         return (
             <div className={`flex items-center ${isMobile ? 'flex-col space-y-3' : 'gap-4'}`}>
-                <NavLink
-                    to="/auth/login"
-                    onClick={clickHandler}
+                <button
+                    onClick={() => openAuthModal('login')}
                     className={`${baseButtonClass} border border-primary-600 text-primary-600 hover:bg-primary-50 ${isMobile ? mobileButtonClass : desktopButtonClass}`}>
                     Login
-                </NavLink>
-                <NavLink
-                    to="/auth/register"
-                    onClick={clickHandler}
+                </button>
+                <button
+                    onClick={() => openAuthModal('register')}
                     className={`${baseButtonClass} bg-primary-600 text-white shadow-sm hover:bg-primary-700 ${isMobile ? mobileButtonClass : desktopButtonClass}`}>
                     Sign Up
-                </NavLink>
+                </button>
             </div>
         );
     }
@@ -182,9 +243,9 @@ const Header: React.FC = () => {
     return (
         <>
             <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/95 shadow-md backdrop-blur-sm">
-                <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8">
+                <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8 md:grid md:grid-cols-3">
                     {/* Logo - Left side */}
-                    <NavLink to="/" className="flex items-center gap-2 flex-shrink-0">
+                    <NavLink to="/" className="flex items-center gap-2 flex-shrink-0 md:justify-self-start">
                         <RushCoffeeLogo className="h-7 w-7 text-primary-600 sm:h-8 sm:w-8" />
                         <span className="text-lg font-bold text-primary-600 whitespace-nowrap sm:text-2xl">
                             Rush Coffee
@@ -192,7 +253,7 @@ const Header: React.FC = () => {
                     </NavLink>
 
                     {/* Desktop Navigation - Center */}
-                    <nav className="hidden items-center justify-center space-x-8 md:flex">
+                    <nav className="hidden items-center justify-center space-x-8 md:flex md:justify-self-center">
                         {navLinks.map((link) => (
                             <NavLink
                                 key={link.label}
@@ -209,14 +270,14 @@ const Header: React.FC = () => {
                     </nav>
 
                     {/* Desktop Auth Controls - Right side */}
-                    <div className="hidden items-center justify-end gap-2 md:flex">
+                    <div className="hidden items-center justify-end gap-4 md:flex md:justify-self-end">
                         {renderAuthControls()}
-                        {currentUser && <CartButton />}
+                        {showLoggedInState && <CartButton />}
                     </div>
 
                     {/* Mobile Cart & Menu - Right side */}
                     <div className="flex items-center justify-end gap-2 md:hidden">
-                        {currentUser && <CartButton />}
+                        {showLoggedInState && <CartButton />}
                         <button
                             onClick={toggleMobileMenu}
                             className="rounded-md p-2 text-gray-700 transition hover:bg-gray-100"
@@ -278,7 +339,7 @@ const Header: React.FC = () => {
                             </NavLink>
                         ))}
 
-                        {currentUser && (
+                        {showLoggedInState && (
                             <div className="mt-4 border-t pt-4">
                                 <p className="mb-2 px-4 text-xs font-semibold uppercase tracking-wider text-gray-400">
                                     Account
@@ -299,6 +360,21 @@ const Header: React.FC = () => {
                                         {link.label}
                                     </NavLink>
                                 ))}
+                                {(currentUser.role === 'employee' || currentUser.role === 'admin') && (
+                                    <NavLink
+                                        to="/employee"
+                                        onClick={closeMobileMenu}
+                                        className={({ isActive }) =>
+                                            `flex items-center gap-3 rounded-xl px-4 py-3 text-base font-medium transition-all ${isActive
+                                                ? 'bg-blue-50 text-blue-800'
+                                                : 'text-blue-700 hover:bg-blue-50'
+                                            }`
+                                        }
+                                    >
+                                        <Shield className="h-5 w-5" />
+                                        Employee Portal
+                                    </NavLink>
+                                )}
                                 {currentUser.role === 'admin' && (
                                     <NavLink
                                         to="/admin"
@@ -319,7 +395,7 @@ const Header: React.FC = () => {
                     </nav>
 
                     <div className="border-t p-4">
-                        {currentUser ? (
+                        {showLoggedInState ? (
                             <button
                                 onClick={handleLogout}
                                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-50 px-6 py-3 text-base font-semibold text-red-600 transition-colors hover:bg-red-100"
@@ -333,6 +409,24 @@ const Header: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Auth Modal */}
+            <AuthModal
+                isOpen={isAuthModalOpen}
+                onClose={() => setIsAuthModalOpen(false)}
+                initialView={authModalView}
+                onVerificationNeeded={handleVerificationNeeded}
+            />
+
+            {/* Verification Modal */}
+            <VerificationModal
+                isOpen={isVerifyModalOpen}
+                onClose={handleVerificationClose}
+                email={verifyEmail}
+                userId={verifyUserId}
+                onSuccess={handleVerificationSuccess}
+                onBackToLogin={handleBackToLogin}
+            />
         </>
     );
 };

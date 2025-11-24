@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, Coffee, Bell, Check, ChevronDown, ShoppingBag, Star, ArrowLeft, ThumbsUp, Receipt } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import firebase from 'firebase/compat/app';
 
 import Button from '../ui/Button';
 import { QueueItem } from '../../context/OrderContext';
@@ -142,9 +143,52 @@ const ModernQueueCard: React.FC<ModernQueueCardProps> = ({ order, onDismiss }) =
     if (isUpdating) return;
     setIsUpdating(true);
     try {
-      await db.collection('orders').doc(order.id).update({
-        status: 'completed'
+      // Calculate loyalty points based on order sizes
+      let loyaltyPoints = 0;
+      order.orderItems.forEach(item => {
+        // Check if the product name contains size information
+        const productName = item.productName.toLowerCase();
+
+        // Coffee and drinks: Grande = 4 points, Venti = 5 points
+        if (productName.includes('grande')) {
+          loyaltyPoints += 4 * item.quantity;
+        } else if (productName.includes('venti')) {
+          loyaltyPoints += 5 * item.quantity;
+        }
+        // Meals: Ala Carte = 4 points, Combo = 5 points
+        else if (productName.includes('ala carte')) {
+          loyaltyPoints += 4 * item.quantity;
+        } else if (productName.includes('combo')) {
+          loyaltyPoints += 5 * item.quantity;
+        }
       });
+
+      // Update order status
+      await db.collection('orders').doc(order.id).update({
+        status: 'completed',
+        completedAt: new Date(),
+        updatedAt: new Date(),
+      });
+
+      // Update user statistics: increment totalOrders and currentPoints
+      if (order.userId) {
+        const updateData: any = {
+          totalOrders: firebase.firestore.FieldValue.increment(1),
+        };
+
+        if (loyaltyPoints > 0) {
+          updateData.currentPoints = firebase.firestore.FieldValue.increment(loyaltyPoints);
+          updateData.loyaltyPoints = firebase.firestore.FieldValue.increment(loyaltyPoints);
+        }
+
+        await db.collection('users').doc(order.userId).update(updateData);
+
+        if (loyaltyPoints > 0) {
+          showToast(`Order completed! Earned ${loyaltyPoints} loyalty points!`);
+        } else {
+          showToast('Order marked as completed!');
+        }
+      }
     } catch (error) {
       console.error("Error updating order status:", error);
       showToast("Failed to update order status. Please try again.");
@@ -237,7 +281,10 @@ const ModernQueueCard: React.FC<ModernQueueCardProps> = ({ order, onDismiss }) =
                   <Button
                     size="lg"
                     className="w-full rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-primary-600/30 transition-all font-bold py-3.5 text-base"
-                    onClick={onDismiss}
+                    onClick={() => {
+                      navigate('/menu');
+                      if (onDismiss) onDismiss();
+                    }}
                   >
                     Done
                   </Button>

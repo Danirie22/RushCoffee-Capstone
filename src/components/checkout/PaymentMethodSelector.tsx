@@ -34,11 +34,10 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
           aria-checked={gcashSelected}
           tabIndex={0}
           onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && onSelectMethod('gcash')}
-          className={`relative cursor-pointer rounded-xl border-2 p-6 transition-all duration-200 ease-in-out hover:border-primary-300 ${
-            gcashSelected
+          className={`relative cursor-pointer rounded-xl border-2 p-6 transition-all duration-200 ease-in-out hover:border-primary-300 ${gcashSelected
               ? 'border-primary-600 bg-primary-50 shadow-lg'
               : 'border-gray-200 bg-white'
-          }`}
+            }`}
         >
           <div className="flex gap-4">
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-blue-100">
@@ -64,18 +63,17 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
           aria-checked={cashSelected}
           tabIndex={0}
           onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && onSelectMethod('cash')}
-          className={`relative cursor-pointer rounded-xl border-2 p-6 transition-all duration-200 ease-in-out hover:border-primary-300 ${
-            cashSelected
+          className={`relative cursor-pointer rounded-xl border-2 p-6 transition-all duration-200 ease-in-out hover:border-primary-300 ${cashSelected
               ? 'border-primary-600 bg-primary-50 shadow-lg'
               : 'border-gray-200 bg-white'
-          }`}
+            }`}
         >
           <div className="flex gap-4">
             <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-lg bg-green-100">
               <Banknote className="h-7 w-7 text-green-600" />
             </div>
             <div>
-              <h3 className="pr-8 font-display text-lg font-bold text-coffee-900">Cash on Pickup</h3>
+              <h3 className="pr-8 font-display text-lg font-bold text-coffee-900">Over the counter payment</h3>
               <p className="mt-1 text-sm text-gray-600">Pay when you collect your order.</p>
             </div>
           </div>

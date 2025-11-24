@@ -26,7 +26,7 @@ export interface UserProfile {
   email: string;
   phoneNumber?: string;
   photoURL?: string;
-  role?: 'admin' | 'staff';
+  role?: 'customer' | 'employee' | 'admin';
   createdAt: Date;
   stats: UserStats;
   preferences: UserPreferences;

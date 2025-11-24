@@ -8,6 +8,7 @@ import AddIngredientModal from '../../components/admin/AddIngredientModal';
 import { mockIngredients, IngredientData, IngredientCategory } from '../../data/mockIngredients';
 import { useCart } from '../../context/CartContext';
 import { seedCustomizationOptions } from '../../utils/seedCustomizationOptions';
+import { useAuth } from '../../context/AuthContext';
 
 export interface Ingredient {
     id: string;
@@ -33,6 +34,8 @@ const AdminInventoryPage: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [activeFilter, setActiveFilter] = useState<'all' | 'lowStock' | 'outOfStock'>('all');
     const { showToast } = useCart();
+    const { currentUser } = useAuth();
+    const isAdmin = currentUser?.role === 'admin';
 
     // Category metadata with icons and colors
     const categoryMetadata: Record<IngredientCategory | 'All', { icon: any; color: string; bgColor: string }> = {
@@ -289,12 +292,14 @@ const AdminInventoryPage: React.FC = () => {
             {/* Header */}
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                 <h1 className="font-display text-2xl font-bold text-gray-800 sm:text-3xl">Inventory Management</h1>
-                <button
-                    onClick={handleOpenAddModal}
-                    className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto">
-                    <Plus className="h-4 w-4" />
-                    <span>Add Ingredient</span>
-                </button>
+                {isAdmin && (
+                    <button
+                        onClick={handleOpenAddModal}
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto">
+                        <Plus className="h-4 w-4" />
+                        <span>Add Ingredient</span>
+                    </button>
+                )}
             </div>
 
             {/* Alerts Section */}

@@ -38,7 +38,7 @@ const QueueColumn: React.FC<QueueColumnProps> = ({ title, orders, onUpdateStatus
                         </motion.div>
                     ))}
                 </AnimatePresence>
-                 {orders.length === 0 && (
+                {orders.length === 0 && (
                     <div className="flex h-32 items-center justify-center text-sm text-gray-500">
                         No orders in this stage.
                     </div>

@@ -32,6 +32,9 @@ import AdminProductsPage from './pages/Admin/AdminProductsPage';
 import AdminAnalyticsPage from './pages/Admin/AdminAnalyticsPage';
 import AdminFeedbackPage from './pages/Admin/AdminFeedbackPage';
 import AdminSettingsPage from './pages/Admin/AdminSettingsPage';
+import AdminOrdersHistoryPage from './pages/Admin/AdminOrdersHistoryPage';
+import AdminUsersPage from './pages/Admin/AdminUsersPage';
+import EmployeeLayout from './components/employee/EmployeeLayout';
 import TermsPage from './pages/Home/TermsPage';
 import PrivacyPolicyPage from './pages/Home/PrivacyPolicyPage';
 import CookiePolicyPage from './pages/Home/CookiePolicyPage';
@@ -127,11 +130,23 @@ const AppContent: React.FC = () => {
                     <Route path="/admin" element={<AdminLayout />}>
                         <Route index element={<AdminDashboardPage />} />
                         <Route path="queue" element={<AdminQueuePage />} />
+                        <Route path="history" element={<AdminOrdersHistoryPage />} />
+                        <Route path="users" element={<AdminUsersPage />} />
                         <Route path="inventory" element={<AdminInventoryPage />} />
                         <Route path="products" element={<AdminProductsPage />} />
                         <Route path="analytics" element={<AdminAnalyticsPage />} />
                         <Route path="feedback" element={<AdminFeedbackPage />} />
                         <Route path="settings" element={<AdminSettingsPage />} />
+                    </Route>
+                </Route>
+
+                {/* Employee Routes */}
+                <Route element={<ProtectedRoute allowedRoles={['employee', 'admin']} />}>
+                    <Route path="/employee" element={<EmployeeLayout />}>
+                        <Route index element={<AdminDashboardPage />} />
+                        <Route path="queue" element={<AdminQueuePage />} />
+                        <Route path="inventory" element={<AdminInventoryPage />} />
+                        <Route path="history" element={<AdminOrdersHistoryPage />} />
                     </Route>
                 </Route>
 

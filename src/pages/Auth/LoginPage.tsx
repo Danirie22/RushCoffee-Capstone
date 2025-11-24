@@ -4,6 +4,7 @@ import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useReCaptcha } from '../../context/ReCaptchaContext';
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
 import Card from '../../components/ui/Card';
@@ -21,6 +22,10 @@ const GoogleIcon = () => (
     </svg>
 );
 
+import VerificationModal from '../../components/auth/VerificationModal';
+
+// ... (keep existing imports)
+
 const LoginPage: React.FC = () => {
     const [email, setEmail] = React.useState('');
     const [password, setPassword] = React.useState('');
@@ -30,10 +35,53 @@ const LoginPage: React.FC = () => {
     const [apiError, setApiError] = React.useState<React.ReactNode | null>(null);
     const [isLoading, setIsLoading] = React.useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
+
+    // State for Verification Modal
+    const [showVerifyModal, setShowVerifyModal] = React.useState(false);
+    const [verifyEmail, setVerifyEmail] = React.useState('');
+    const [verifyUserId, setVerifyUserId] = React.useState('');
+
     const navigate = useNavigate();
-    const { login, signInWithGoogle } = useAuth();
+    const { login, signInWithGoogle, currentUser, loading, logout } = useAuth();
+    const { executeRecaptcha } = useReCaptcha();
+
+    // Redirect if already logged in
+    React.useEffect(() => {
+        // Wait for login process to finish (to handle 2FA redirect) before auto-redirecting
+        if (!loading && currentUser && !isLoading && !isGoogleLoading) {
+            // Check if 2FA is pending
+            if (sessionStorage.getItem('requires2FA') === 'true') {
+                // If 2FA is pending, show the modal instead of redirecting
+                setVerifyEmail(currentUser.email || '');
+                setVerifyUserId(currentUser.uid);
+                setShowVerifyModal(true);
+            } else if (currentUser.role === 'admin') {
+                navigate('/admin');
+            } else {
+                navigate('/');
+            }
+        }
+    }, [currentUser, loading, navigate, isLoading, isGoogleLoading, logout]);
+
+    const handleVerificationSuccess = () => {
+        setShowVerifyModal(false);
+        // After success, check role and navigate
+        if (currentUser?.role === 'admin') {
+            navigate('/admin');
+        } else {
+            navigate('/');
+        }
+    };
+
+    const handleVerificationClose = () => {
+        // If user closes modal without verifying, sign them out
+        setShowVerifyModal(false);
+        sessionStorage.removeItem('requires2FA');
+        logout();
+    };
 
     const validate = () => {
+        // ... (keep existing validation logic)
         const newErrors: { email?: string; password?: string } = {};
         if (!email) {
             newErrors.email = 'Email is required';
@@ -58,13 +106,32 @@ const LoginPage: React.FC = () => {
         setIsLoading(true);
 
         try {
-            const userProfile = await login(email, password, rememberMe);
-            if (userProfile.role === 'admin') {
-                navigate('/admin');
+            console.log('🔵 Starting login process...');
+
+            // Execute reCAPTCHA (only if available)
+            try {
+                const recaptchaToken = await executeRecaptcha('login');
+                console.log('reCAPTCHA token generated:', recaptchaToken.substring(0, 20) + '...');
+            } catch (recaptchaError) {
+                console.log('reCAPTCHA not available, continuing without it');
+            }
+
+            console.log('🔵 Calling login function with:', { email, rememberMe });
+            const result = await login(email, password, rememberMe);
+
+            console.log('🔵 Login result:', result);
+
+            if (result.needsVerification) {
+                // Show verification modal instead of redirecting
+                console.log('🔵 Opening verification modal...');
+                setVerifyEmail(result.email || email);
+                setVerifyUserId(result.userId || '');
+                setShowVerifyModal(true);
             } else {
-                navigate('/');
+                console.log('🔴 No verification needed - this should not happen!');
             }
         } catch (error: any) {
+            console.error('🔴 Login error:', error);
             let errorMessage = 'An unexpected error occurred. Please try again.';
             switch (error.code) {
                 case 'auth/user-not-found':
@@ -82,28 +149,13 @@ const LoginPage: React.FC = () => {
         }
     };
 
-    const handleGoogleSignIn = async () => {
-        setApiError(null);
-        setIsGoogleLoading(true);
-        try {
-            const userProfile = await signInWithGoogle();
-            if (userProfile.role === 'admin') {
-                navigate('/admin');
-            } else {
-                navigate('/');
-            }
-        } catch (error: any) {
-            console.error("Google Sign-In Error: ", error.code, error.message);
-            setApiError('Failed to sign in with Google. Please try again.');
-        } finally {
-            setIsGoogleLoading(false);
-        }
-    };
+    // ... (keep handleGoogleSignIn and return statement start)
 
     return (
         <div className="flex min-h-screen flex-col bg-gradient-to-br from-primary-50 via-coffee-50 to-white">
             <Header />
             <main className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+                {/* ... (keep existing card content) */}
                 <div className="w-full max-w-md">
                     <Card className="rounded-2xl p-8 shadow-xl">
                         <div className="mb-6 text-center">
@@ -191,6 +243,15 @@ const LoginPage: React.FC = () => {
                 </div>
             </main>
             <Footer />
+
+            {/* Verification Modal */}
+            <VerificationModal
+                isOpen={showVerifyModal}
+                onClose={handleVerificationClose}
+                email={verifyEmail}
+                userId={verifyUserId}
+                onSuccess={handleVerificationSuccess}
+            />
         </div>
     );
 };

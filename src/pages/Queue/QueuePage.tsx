@@ -71,18 +71,21 @@ const QueuePage: React.FC = () => {
         localStorage.setItem('dismissedOrderIds', JSON.stringify(dismissedOrderIds));
     }, [dismissedOrderIds]);
 
-    // Determine which order to display (Active OR Undismissed Completed)
+    // Determine which order to display (Prioritize Undismissed Completed Order -> Then Active Order)
     const displayOrder = React.useMemo(() => {
+        // 1. Check for any completed order that hasn't been dismissed yet
+        // We look for the most recent one first (since history is sorted desc)
+        const undismissedCompleted = orderHistory.find(
+            order => order.status === 'completed' && !dismissedOrderIds.includes(order.id)
+        );
+
+        if (undismissedCompleted) {
+            return undismissedCompleted;
+        }
+
+        // 2. If no completed order needs attention, show active order
         if (activeOrder) return activeOrder;
 
-        // If no active order, check the most recent order
-        if (orderHistory.length > 0) {
-            const mostRecent = orderHistory[0];
-            // If it's completed and NOT dismissed, show it
-            if (mostRecent.status === 'completed' && !dismissedOrderIds.includes(mostRecent.id)) {
-                return mostRecent;
-            }
-        }
         return null;
     }, [activeOrder, orderHistory, dismissedOrderIds]);
 
@@ -165,7 +168,9 @@ const QueuePage: React.FC = () => {
 
     const handleDismiss = () => {
         if (displayOrder) {
-            setDismissedOrderIds(prev => [...prev, displayOrder.id]);
+            const newDismissedIds = [...dismissedOrderIds, displayOrder.id];
+            setDismissedOrderIds(newDismissedIds);
+            localStorage.setItem('dismissedOrderIds', JSON.stringify(newDismissedIds));
         }
     };
 

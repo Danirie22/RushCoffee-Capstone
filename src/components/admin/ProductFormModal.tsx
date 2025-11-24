@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, FormEvent, useRef } from 'react';
 import { db, storage } from '../../firebaseConfig';
 import { X, Plus, Trash2, Loader2, Save, Image as ImageIcon } from 'lucide-react';
@@ -9,6 +8,7 @@ import { Product } from '../../data/mockProducts';
 import { useProduct, ProductFormData } from '../../context/ProductContext';
 import { useCart } from '../../context/CartContext';
 import { Ingredient } from '../../pages/Admin/AdminInventoryPage';
+import { useAuth } from '../../context/AuthContext';
 
 interface ProductFormModalProps {
   isOpen: boolean;
@@ -39,7 +39,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addProduct, updateProduct } = useProduct();
   const { showToast } = useCart();
-  
+  const { currentUser } = useAuth();
+  const isAdmin = currentUser?.role === 'admin';
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -54,7 +56,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
       fetchIngredients();
     }
   }, [isOpen]);
-  
+
   useEffect(() => {
     if (productToEdit) {
       setFormData(productToEdit);
@@ -67,6 +69,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
   }, [productToEdit, isOpen]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!isAdmin) return; // Prevent non-admins from changing image
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.size > 2 * 1024 * 1024) { // 2MB limit
@@ -80,6 +83,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    if (!isAdmin) return;
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
     setFormData(prev => ({
@@ -87,8 +91,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
       [name]: type === 'checkbox' ? checked : value,
     }));
   };
-  
+
   const handleSizeChange = (sizeName: 'Grande' | 'Venti', value: number) => {
+    if (!isAdmin) return;
     setFormData(prev => ({
       ...prev,
       sizes: prev.sizes.map(s => s.name === sizeName ? { ...s, price: value } : s),
@@ -96,17 +101,20 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
   };
 
   const handleRecipeChange = (index: number, field: 'ingredientId' | 'quantity', value: string | number) => {
+    if (!isAdmin) return;
     const newRecipe = [...(formData.recipe || [])];
     (newRecipe[index] as any)[field] = value;
     setFormData(prev => ({ ...prev, recipe: newRecipe }));
   };
 
   const addRecipeItem = () => {
+    if (!isAdmin) return;
     const newRecipe = [...(formData.recipe || []), { ingredientId: '', quantity: 0 }];
     setFormData(prev => ({ ...prev, recipe: newRecipe }));
   };
 
   const removeRecipeItem = (index: number) => {
+    if (!isAdmin) return;
     const newRecipe = [...(formData.recipe || [])];
     newRecipe.splice(index, 1);
     setFormData(prev => ({ ...prev, recipe: newRecipe }));
@@ -114,21 +122,23 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!isAdmin) return;
+
     setIsSubmitting(true);
-    
+
     let finalImageUrl = formData.imageUrl;
 
     if (imageFile) {
-        try {
-            const storageRef = storage.ref(`product_images/${Date.now()}-${imageFile.name}`);
-            const snapshot = await storageRef.put(imageFile);
-            finalImageUrl = await snapshot.ref.getDownloadURL();
-        } catch (uploadError) {
-            console.error("Error uploading image:", uploadError);
-            showToast("Failed to upload image. Please try again.");
-            setIsSubmitting(false);
-            return;
-        }
+      try {
+        const storageRef = storage.ref(`product_images/${Date.now()}-${imageFile.name}`);
+        const snapshot = await storageRef.put(imageFile);
+        finalImageUrl = await snapshot.ref.getDownloadURL();
+      } catch (uploadError) {
+        console.error("Error uploading image:", uploadError);
+        showToast("Failed to upload image. Please try again.");
+        setIsSubmitting(false);
+        return;
+      }
     }
 
     const finalProductData = { ...formData, imageUrl: finalImageUrl };
@@ -151,18 +161,22 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
     }
   };
 
+  const modalTitle = isAdmin
+    ? (productToEdit ? 'Edit Product' : 'Add New Product')
+    : 'Product Recipe & Details';
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={productToEdit ? 'Edit Product' : 'Add New Product'} size="lg">
+    <Modal isOpen={isOpen} onClose={onClose} title={modalTitle} size="lg">
       <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
         {/* Basic Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name</label>
-            <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" required />
+            <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} disabled={!isAdmin} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm disabled:bg-gray-100 disabled:text-gray-500" required />
           </div>
           <div>
             <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-            <select name="category" id="category" value={formData.category} onChange={handleChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+            <select name="category" id="category" value={formData.category} onChange={handleChange} disabled={!isAdmin} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm disabled:bg-gray-100 disabled:text-gray-500">
               <option>Coffee Based</option>
               <option>Non-Coffee Based</option>
               <option>Matcha Series</option>
@@ -171,79 +185,92 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, pr
         </div>
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea name="description" id="description" value={formData.description} onChange={handleChange} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+          <textarea name="description" id="description" value={formData.description} onChange={handleChange} disabled={!isAdmin} rows={3} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm disabled:bg-gray-100 disabled:text-gray-500" />
         </div>
-        
+
         <div>
-            <label className="block text-sm font-medium text-gray-700">Product Image</label>
-            <div
-                className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer hover:border-primary-500 bg-gray-50"
-                onClick={() => fileInputRef.current?.click()}
-            >
-                <input ref={fileInputRef} id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/png, image/jpeg" onChange={handleImageChange} />
-                {imagePreview ? (
-                    <img src={imagePreview} alt="Product preview" className="max-h-40 rounded-lg object-contain" />
-                ) : (
-                    <div className="space-y-1 text-center">
-                        <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                        <p className="text-sm text-gray-600">
-                            <span className="font-medium text-primary-600">Click to upload</span> or drag and drop
-                        </p>
-                        <p className="text-xs text-gray-500">PNG or JPG up to 2MB</p>
-                    </div>
+          <label className="block text-sm font-medium text-gray-700">Product Image</label>
+          <div
+            className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md ${isAdmin ? 'cursor-pointer hover:border-primary-500' : ''} bg-gray-50`}
+            onClick={() => isAdmin && fileInputRef.current?.click()}
+          >
+            <input ref={fileInputRef} id="file-upload" name="file-upload" type="file" className="sr-only" accept="image/png, image/jpeg" onChange={handleImageChange} disabled={!isAdmin} />
+            {imagePreview ? (
+              <img src={imagePreview} alt="Product preview" className="max-h-40 rounded-lg object-contain" />
+            ) : (
+              <div className="space-y-1 text-center">
+                <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
+                {isAdmin && (
+                  <>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium text-primary-600">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="text-xs text-gray-500">PNG or JPG up to 2MB</p>
+                  </>
                 )}
-            </div>
+              </div>
+            )}
+          </div>
         </div>
-        
+
         {/* Pricing & Stock */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Grande Price (₱)</label>
-                <input type="number" value={formData.sizes.find(s=>s.name==='Grande')?.price} onChange={e => handleSizeChange('Grande', +e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700">Venti Price (₱)</label>
-                <input type="number" value={formData.sizes.find(s=>s.name==='Venti')?.price} onChange={e => handleSizeChange('Venti', +e.target.value)} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
-            </div>
-            <div>
-                <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Stock</label>
-                <input type="number" name="stock" id="stock" value={formData.stock} onChange={e => setFormData(p => ({...p, stock: +e.target.value}))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
-            </div>
-             <div>
-                <label htmlFor="displayOrder" className="block text-sm font-medium text-gray-700">Display Order</label>
-                <input type="number" name="displayOrder" id="displayOrder" value={formData.displayOrder} onChange={e => setFormData(p => ({...p, displayOrder: +e.target.value}))} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Grande Price (₱)</label>
+            <input type="number" value={formData.sizes.find(s => s.name === 'Grande')?.price} onChange={e => handleSizeChange('Grande', +e.target.value)} disabled={!isAdmin} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm disabled:bg-gray-100 disabled:text-gray-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Venti Price (₱)</label>
+            <input type="number" value={formData.sizes.find(s => s.name === 'Venti')?.price} onChange={e => handleSizeChange('Venti', +e.target.value)} disabled={!isAdmin} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm disabled:bg-gray-100 disabled:text-gray-500" />
+          </div>
+          <div>
+            <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Stock</label>
+            <input type="number" name="stock" id="stock" value={formData.stock} onChange={e => setFormData(p => ({ ...p, stock: +e.target.value }))} disabled={!isAdmin} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm disabled:bg-gray-100 disabled:text-gray-500" />
+          </div>
+          <div>
+            <label htmlFor="displayOrder" className="block text-sm font-medium text-gray-700">Display Order</label>
+            <input type="number" name="displayOrder" id="displayOrder" value={formData.displayOrder} onChange={e => setFormData(p => ({ ...p, displayOrder: +e.target.value }))} disabled={!isAdmin} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm disabled:bg-gray-100 disabled:text-gray-500" />
+          </div>
         </div>
         {/* Flags */}
         <div className="flex items-center space-x-6">
-            <div className="flex items-center"><input type="checkbox" name="available" checked={formData.available} onChange={handleChange} className="h-4 w-4 rounded" /><label className="ml-2 text-sm">Available</label></div>
-            <div className="flex items-center"><input type="checkbox" name="popular" checked={formData.popular} onChange={handleChange} className="h-4 w-4 rounded" /><label className="ml-2 text-sm">Popular</label></div>
-            <div className="flex items-center"><input type="checkbox" name="new" checked={formData.new} onChange={handleChange} className="h-4 w-4 rounded" /><label className="ml-2 text-sm">New</label></div>
+          <div className="flex items-center"><input type="checkbox" name="available" checked={formData.available} onChange={handleChange} disabled={!isAdmin} className="h-4 w-4 rounded disabled:opacity-50" /><label className="ml-2 text-sm">Available</label></div>
+          <div className="flex items-center"><input type="checkbox" name="popular" checked={formData.popular} onChange={handleChange} disabled={!isAdmin} className="h-4 w-4 rounded disabled:opacity-50" /><label className="ml-2 text-sm">Popular</label></div>
+          <div className="flex items-center"><input type="checkbox" name="new" checked={formData.new} onChange={handleChange} disabled={!isAdmin} className="h-4 w-4 rounded disabled:opacity-50" /><label className="ml-2 text-sm">New</label></div>
         </div>
         {/* Recipe */}
         <div>
-            <h3 className="text-md font-medium text-gray-800">Recipe</h3>
-            <div className="mt-2 space-y-2 rounded-md border bg-gray-50 p-3">
-              {(formData.recipe || []).map((item, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <select value={item.ingredientId} onChange={e => handleRecipeChange(index, 'ingredientId', e.target.value)} className="block w-full rounded-md border-gray-300 shadow-sm">
-                    <option value="" disabled>Select Ingredient</option>
-                    {ingredients.map(ing => <option key={ing.id} value={ing.id}>{ing.name}</option>)}
-                  </select>
-                  <input type="number" value={item.quantity} onChange={e => handleRecipeChange(index, 'quantity', +e.target.value)} className="block w-32 rounded-md border-gray-300 shadow-sm" placeholder="Qty" />
+          <h3 className="text-md font-medium text-gray-800">Recipe</h3>
+          <div className="mt-2 space-y-2 rounded-md border bg-gray-50 p-3">
+            {(formData.recipe || []).map((item, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <select value={item.ingredientId} onChange={e => handleRecipeChange(index, 'ingredientId', e.target.value)} disabled={!isAdmin} className="block w-full rounded-md border-gray-300 shadow-sm disabled:bg-gray-100 disabled:text-gray-500">
+                  <option value="" disabled>Select Ingredient</option>
+                  {ingredients.map(ing => <option key={ing.id} value={ing.id}>{ing.name}</option>)}
+                </select>
+                <input type="number" value={item.quantity} onChange={e => handleRecipeChange(index, 'quantity', +e.target.value)} disabled={!isAdmin} className="block w-32 rounded-md border-gray-300 shadow-sm disabled:bg-gray-100 disabled:text-gray-500" placeholder="Qty" />
+                {isAdmin && (
                   <Button type="button" variant="ghost" size="sm" onClick={() => removeRecipeItem(index)} className="px-2"><Trash2 className="h-4 w-4 text-red-500" /></Button>
-                </div>
-              ))}
-              <Button type="button" variant="secondary" size="sm" onClick={addRecipeItem}><Plus className="mr-1 h-4 w-4"/>Add Ingredient</Button>
-            </div>
+                )}
+              </div>
+            ))}
+            {isAdmin && (
+              <Button type="button" variant="secondary" size="sm" onClick={addRecipeItem}><Plus className="mr-1 h-4 w-4" />Add Ingredient</Button>
+            )}
+            {!isAdmin && (formData.recipe || []).length === 0 && (
+              <p className="text-sm text-gray-500 italic">No recipe details available.</p>
+            )}
+          </div>
         </div>
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4" />}
-            {productToEdit ? 'Save Changes' : 'Add Product'}
-          </Button>
+          <Button type="button" variant="ghost" onClick={onClose}>Close</Button>
+          {isAdmin && (
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              {productToEdit ? 'Save Changes' : 'Add Product'}
+            </Button>
+          )}
         </div>
       </form>
     </Modal>

@@ -44,6 +44,11 @@ service cloud.firestore {
       allow write: if request.auth != null;
     }
     
+    // Email Verifications: For 2FA - Allow write during login, read/delete during verification
+    match /emailVerifications/{userId} {
+      allow read, write, delete: if true; // Allow full access for 2FA flow
+    }
+    
     // Settings: Authenticated only
     match /settings/{document=**} {
       allow read, write: if request.auth != null;

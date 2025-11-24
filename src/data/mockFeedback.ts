@@ -6,7 +6,7 @@ export interface Feedback {
   rating: number; // 1-5
   category: 'service' | 'food' | 'system' | 'other';
   comment: string;
-  status: 'pending' | 'reviewed' | 'resolved';
+  status: 'pending' | 'published' | 'resolved';
   response?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -25,7 +25,7 @@ export const mockUserFeedback: UserFeedback[] = [
     rating: 5,
     category: 'food',
     comment: "The Spanish Latte was absolutely perfect! Best coffee I've had in a long time. Keep up the great work!",
-    status: 'reviewed',
+    status: 'published',
     response: "Thank you so much for the kind words! We're thrilled you enjoyed it and hope to see you again soon.",
     createdAt: new Date(new Date().setDate(new Date().getDate() - 2)),
     updatedAt: new Date(new Date().setDate(new Date().getDate() - 1)),
@@ -61,7 +61,7 @@ export const mockUserFeedback: UserFeedback[] = [
     rating: 4,
     category: 'other',
     comment: "It would be great if you had more comfortable seating options available.",
-    status: 'reviewed',
+    status: 'published',
     createdAt: new Date(new Date().setDate(new Date().getDate() - 10)),
     updatedAt: new Date(new Date().setDate(new Date().getDate() - 9)),
   }

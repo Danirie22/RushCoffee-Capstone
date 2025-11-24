@@ -1,27 +1,19 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Coffee, Settings, BarChart3, ClipboardList, Package, MessageSquare, LogOut, Menu, X, History } from 'lucide-react';
+import { LayoutDashboard, ClipboardList, Package, History, LogOut, Menu, X } from 'lucide-react';
 
 import RushCoffeeLogo from '../layout/RushCoffeeLogo';
 import { useAuth } from '../../context/AuthContext';
-import ConfirmLogoutModal from './ConfirmLogoutModal';
+import ConfirmLogoutModal from '../admin/ConfirmLogoutModal';
 
 const sidebarNavLinks = [
-    { to: '/admin', text: 'Dashboard', icon: LayoutDashboard },
-    { to: '/admin/queue', text: 'Queue Management', icon: ClipboardList },
-    { to: '/admin/inventory', text: 'Inventory', icon: Package },
-    { to: '/admin/products', text: 'Products', icon: Coffee },
-    { to: '/admin/feedback', text: 'Feedback', icon: MessageSquare },
-    { to: '/admin/history', text: 'Order History', icon: History },
-    { to: '/admin/users', text: 'User Management', icon: Users },
-    { to: '/admin/analytics', text: 'Analytics', icon: BarChart3 },
-    { to: '/admin/settings', text: 'Settings', icon: Settings },
+    { to: '/employee', text: 'Dashboard', icon: LayoutDashboard },
+    { to: '/employee/queue', text: 'Queue Management', icon: ClipboardList },
+    { to: '/employee/inventory', text: 'Inventory', icon: Package },
+    { to: '/employee/history', text: 'Order History', icon: History },
 ];
 
-
-const AdminLayout: React.FC = () => {
+const EmployeeLayout: React.FC = () => {
     const { logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -30,8 +22,6 @@ const AdminLayout: React.FC = () => {
 
     // Determine current page title
     const currentPath = location.pathname;
-    // Find exact match or default to Dashboard. 
-    // Note: This simple logic assumes flat routes. For nested routes, you might need startsWith logic.
     const activeLink = sidebarNavLinks.find(link => link.to === currentPath) || sidebarNavLinks[0];
     const pageTitle = activeLink.text;
 
@@ -76,7 +66,7 @@ const AdminLayout: React.FC = () => {
             <div className="mb-8 flex items-center justify-between gap-2 px-2">
                 <div className="flex items-center gap-2">
                     <RushCoffeeLogo className="h-8 w-8 text-primary-400" />
-                    <span className="text-xl font-bold text-white">Admin Panel</span>
+                    <span className="text-xl font-bold text-white">Employee</span>
                 </div>
                 {isMobile && (
                     <button
@@ -94,7 +84,7 @@ const AdminLayout: React.FC = () => {
                         <li key={to} className="mb-1">
                             <NavLink
                                 to={to}
-                                end={to === '/admin'}
+                                end={to === '/employee'}
                                 onClick={isMobile ? closeMobileSidebar : undefined}
                                 className={({ isActive }) =>
                                     `flex items-center gap-3 rounded-md px-3 py-2 transition-colors ${isActive
@@ -188,4 +178,4 @@ const AdminLayout: React.FC = () => {
     );
 };
 
-export default AdminLayout;
+export default EmployeeLayout;
