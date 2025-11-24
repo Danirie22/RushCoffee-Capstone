@@ -107,25 +107,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
         const currentStatus = activeOrder?.status;
         const prevStatus = prevStatusRef.current;
 
-        // Only trigger if status changed to 'ready' from something else (or undefined if it's the first load and it just became ready)
-        // Note: If we want to avoid notification on initial load if it's already ready, we might need extra logic.
-        // But usually "Your order is ready" is good to see if you just opened the app and it's ready.
-        // However, the user said "When the order is on ready for pickup, the notification will only pop up".
-        // To be safe against re-renders, we check if it CHANGED.
-
         if (currentStatus === 'ready' && prevStatus !== 'ready') {
-            // Ensure we don't trigger if prevStatus was undefined (initial load) AND we want to avoid initial notification?
-            // Actually, if I open the app and my order is ready, I probably want to know.
-            // But if the user specifically wants it "real time" when it *becomes* ready, maybe they don't want it on refresh.
-            // Let's assume if prevStatus is undefined, we might skip? 
-            // No, let's show it. But the ref starts as undefined.
-
-            // If we want to avoid initial load notification, we can check if prevStatusRef.current is undefined.
-            // But let's stick to the simple logic: if it IS ready and WAS NOT ready (or we didn't know), show it.
-            // Wait, if I refresh and it's ready, prevStatus is undefined. undefined !== 'ready' is true. So it shows.
-            // If I want to avoid that, I should initialize ref with current status on first run?
-            // Let's stick to showing it, as it's safer to notify than not.
-
             const items = activeOrder?.orderItems.map(item => item.productName).join(', ');
             showNotification(`Your order for ${items} is ready!`, 'success');
         }
@@ -142,15 +124,11 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
             });
 
             // Optimistically update local state
-            // Note: With onSnapshot, this might be redundant or cause a double-update, 
-            // but it provides immediate feedback before the server round-trip.
             const newOrder: QueueItem = {
                 ...orderData,
                 id: docRef.id,
                 timestamp: new Date(),
             };
-            // We don't strictly need to set state here if onSnapshot is fast, but it's good for UX.
-            // However, onSnapshot will overwrite this shortly.
             setOrderHistory(prevHistory => [newOrder, ...prevHistory]);
             setActiveOrder(newOrder);
 
