@@ -184,12 +184,7 @@ const QueuePage: React.FC = () => {
         if (selectedProduct) {
             const defaultSize = selectedProduct.sizes[0];
 
-            addToCart({
-                product: selectedProduct,
-                size: defaultSize,
-                quantity,
-                customizations,
-            });
+            addToCart(selectedProduct, defaultSize, customizations, quantity);
             showToast(`Added ${quantity} ${selectedProduct.name} to cart`);
             setIsCustomizeModalOpen(false);
         }

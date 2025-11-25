@@ -24,6 +24,8 @@ const EmployeeLayout: React.FC = () => {
     const currentPath = location.pathname;
     const activeLink = sidebarNavLinks.find(link => link.to === currentPath) || sidebarNavLinks[0];
     const pageTitle = activeLink.text;
+    // Only hide header for POS page, not the main dashboard
+    const isPOSPage = currentPath === '/employee/pos';
 
     const handleLogoutClick = () => {
         setIsLogoutModalOpen(true);
@@ -71,7 +73,7 @@ const EmployeeLayout: React.FC = () => {
                 {isMobile && (
                     <button
                         onClick={closeMobileSidebar}
-                        className="rounded-md p-2 text-gray-300 transition hover:bg-gray-700 hover:text-white md:hidden"
+                        className="rounded-md p-2 text-gray-300 transition hover:bg-gray-700 hover:text-white lg:hidden"
                         aria-label="Close menu"
                     >
                         <X className="h-6 w-6" />
@@ -117,14 +119,16 @@ const EmployeeLayout: React.FC = () => {
 
     return (
         <div className="flex h-screen bg-gray-100">
-            {/* Desktop Sidebar */}
-            <aside className="hidden w-64 flex-shrink-0 bg-gray-800 p-4 text-white md:flex md:flex-col">
-                <SidebarContent />
-            </aside>
+            {/* Desktop Sidebar - Hidden on POS page */}
+            {!isPOSPage && (
+                <aside className="hidden w-64 flex-shrink-0 bg-gray-800 p-4 text-white lg:flex lg:flex-col">
+                    <SidebarContent />
+                </aside>
+            )}
 
             {/* Mobile Sidebar Overlay */}
             <div
-                className={`fixed inset-0 z-50 transform transition-opacity duration-300 md:hidden ${isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+                className={`fixed inset-0 z-50 transform transition-opacity duration-300 lg:hidden ${isMobileSidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
                     }`}
             >
                 {/* Backdrop */}
@@ -148,23 +152,25 @@ const EmployeeLayout: React.FC = () => {
 
             {/* Main Content */}
             <div className="flex flex-1 flex-col overflow-hidden">
-                <header className="border-b bg-white shadow-sm">
-                    <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-                        {/* Mobile Menu Button */}
-                        <button
-                            onClick={() => setIsMobileSidebarOpen(true)}
-                            className="rounded-md p-1.5 text-gray-700 transition hover:bg-gray-100 md:hidden"
-                            aria-label="Open menu"
-                            aria-expanded={isMobileSidebarOpen}
-                        >
-                            <Menu className="h-5 w-5" />
-                        </button>
+                {!isPOSPage && (
+                    <header className="border-b bg-white shadow-sm">
+                        <div className="flex h-16 items-center justify-between px-4 sm:px-6">
+                            {/* Mobile Menu Button */}
+                            <button
+                                onClick={() => setIsMobileSidebarOpen(true)}
+                                className="rounded-md p-1.5 text-gray-700 transition hover:bg-gray-100 lg:hidden"
+                                aria-label="Open menu"
+                                aria-expanded={isMobileSidebarOpen}
+                            >
+                                <Menu className="h-5 w-5" />
+                            </button>
 
-                        <h1 className="text-lg font-semibold text-gray-800 sm:text-xl">{pageTitle}</h1>
-                        <div className="w-10 md:w-0">{/* Spacer for mobile to center title */}</div>
-                    </div>
-                </header>
-                <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+                            <h1 className="text-lg font-semibold text-gray-800 sm:text-xl">{pageTitle}</h1>
+                            <div className="w-10 lg:w-0">{/* Spacer for mobile to center title */}</div>
+                        </div>
+                    </header>
+                )}
+                <main className={`flex-1 overflow-y-auto ${isPOSPage ? '' : 'p-4 sm:p-6'}`}>
                     <Outlet />
                 </main>
             </div>

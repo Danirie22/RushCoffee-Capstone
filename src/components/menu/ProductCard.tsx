@@ -9,10 +9,11 @@ import Badge from '../ui/Badge';
 interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product, selectedSize: ProductSize) => void;
+  onBuyNow?: (product: Product, selectedSize: ProductSize) => void;
   isLoggedIn: boolean;
 }
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLoggedIn }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onBuyNow, isLoggedIn }) => {
   const { name, description, category, imageUrl, comboImageUrl, available, stock, popular, new: isNew } = product;
   const navigate = useNavigate();
 
@@ -25,10 +26,20 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLogge
 
   const isOutOfStock = !available || stock === 0;
 
-  const handleAddToCartClick = () => {
+  const handleAddToCartClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (isLoggedIn) {
       onAddToCart(product, selectedSize);
     } else {
+      navigate('/auth/login');
+    }
+  };
+
+  const handleBuyNowClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isLoggedIn && onBuyNow) {
+      onBuyNow(product, selectedSize);
+    } else if (!isLoggedIn) {
       navigate('/auth/login');
     }
   };
@@ -76,7 +87,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLogge
         <div>
           <p className="text-[10px] text-gray-500 sm:text-xs">{category}</p>
           <h3 className="font-semibold text-coffee-900 text-sm sm:text-lg leading-tight">{name}</h3>
-          <p className="hidden mt-1 h-10 text-sm text-gray-600 line-clamp-2 sm:block">{description}</p>
         </div>
 
         <div className="mt-auto pt-2 sm:pt-4">
@@ -89,10 +99,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLogge
             {product.sizes.map((size) => (
               <button
                 key={size.name}
-                onClick={() => setSelectedSize(size)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedSize(size);
+                }}
                 className={`w-1/2 rounded-full py-1 text-[10px] sm:text-xs font-semibold transition-colors sm:py-1.5 ${selectedSize.name === size.name
-                  ? 'bg-primary-600 text-white shadow'
-                  : 'text-gray-600 hover:bg-primary-50'
+                    ? 'bg-primary-600 text-white shadow'
+                    : 'text-gray-600 hover:bg-primary-50'
                   }`}
               >
                 {size.name} <span className="hidden sm:inline">({size.size})</span>
@@ -100,23 +113,39 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, isLogge
             ))}
           </div>
 
-          <button
-            onClick={handleAddToCartClick}
-            disabled={isOutOfStock}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-3 py-2 text-[10px] font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400 sm:mt-3 sm:px-4 sm:py-2.5 sm:text-sm"
-            aria-label={isLoggedIn ? `Add ${name} to cart` : `Login to order ${name}`}
-          >
+          <div className="mt-2 flex gap-2 sm:mt-3">
             {isOutOfStock ? (
-              'Out of Stock'
+              <button
+                disabled
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-gray-100 px-3 py-2 text-[10px] font-semibold text-gray-400 sm:px-4 sm:py-2.5 sm:text-sm cursor-not-allowed"
+              >
+                Out of Stock
+              </button>
             ) : isLoggedIn ? (
               <>
-                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4" />
-                Add to Cart
+                <button
+                  onClick={handleAddToCartClick}
+                  className="flex items-center justify-center rounded-xl bg-primary-50 px-3 py-2 text-primary-700 hover:bg-primary-100 transition-colors"
+                  title="Add to Cart"
+                >
+                  <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
+                </button>
+                <button
+                  onClick={handleBuyNowClick}
+                  className="flex-1 flex items-center justify-center rounded-xl bg-primary-600 px-3 py-2 text-[10px] font-bold text-white shadow-sm transition-colors hover:bg-primary-700 sm:text-sm"
+                >
+                  Buy Now
+                </button>
               </>
             ) : (
-              'Login to Order'
+              <button
+                onClick={() => navigate('/auth/login')}
+                className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-3 py-2 text-[10px] font-semibold text-white shadow-sm hover:bg-primary-700 sm:px-4 sm:py-2.5 sm:text-sm"
+              >
+                Login to Order
+              </button>
             )}
-          </button>
+          </div>
         </div>
       </div>
     </Card>

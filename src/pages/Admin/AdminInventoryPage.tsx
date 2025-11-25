@@ -216,6 +216,7 @@ const AdminInventoryPage: React.FC = () => {
                 querySnapshot.forEach((doc) => {
                     ingredientsList.push({ id: doc.id, ...doc.data() } as Ingredient);
                 });
+                console.log('📦 Fetched Ingredients:', ingredientsList.map(i => `${i.name} (${i.id})`));
                 setIngredients(ingredientsList);
                 setIsLoading(false);
             }, (error) => {

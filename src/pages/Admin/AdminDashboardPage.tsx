@@ -89,10 +89,12 @@ const AdminDashboardPage: React.FC = () => {
         const unsubscribeQueue = queueQuery.onSnapshot(snapshot => {
             const orders: QueueItem[] = [];
             snapshot.forEach(doc => {
+                const data = doc.data();
                 orders.push({
                     id: doc.id,
-                    ...doc.data(),
-                    timestamp: doc.data().timestamp.toDate(),
+                    ...data,
+                    orderItems: data.orderItems || data.items || [], // Handle both new and old field names
+                    timestamp: data.timestamp.toDate(),
                 } as QueueItem);
             });
             orders.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
@@ -139,7 +141,7 @@ const AdminDashboardPage: React.FC = () => {
             snapshot.forEach(doc => {
                 const order = doc.data();
                 if (order.status === 'completed') {
-                    revenue += order.totalAmount;
+                    revenue += (order.totalAmount || 0);
                 }
             });
 
@@ -213,7 +215,7 @@ const AdminDashboardPage: React.FC = () => {
                 yesterdayOrdersSnapshot.forEach(doc => {
                     const order = doc.data();
                     if (order.status === 'completed') {
-                        revenueYesterday += order.totalAmount;
+                        revenueYesterday += (order.totalAmount || 0);
                     }
                 });
 

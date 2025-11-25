@@ -14,11 +14,16 @@ const AdminOrdersHistoryPage: React.FC = () => {
         const unsubscribe = db.collection('orders')
             .orderBy('timestamp', 'desc')
             .onSnapshot((snapshot) => {
-                const fetchedOrders = snapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    timestamp: doc.data().timestamp?.toDate() || new Date(),
-                })) as QueueItem[];
+                const fetchedOrders = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        orderItems: data.orderItems || data.items || [], // Handle both new and old field names
+                        timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : (data.timestamp ? new Date(data.timestamp) : new Date()),
+                        totalAmount: data.totalAmount || data.subtotal || 0, // Handle missing totalAmount
+                    };
+                }) as QueueItem[];
                 setOrders(fetchedOrders);
                 setLoading(false);
             }, (error) => {
@@ -36,8 +41,8 @@ const AdminOrdersHistoryPage: React.FC = () => {
         // Search Filter
         const matchesSearch =
             order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase());
+            (order.customerName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            (order.orderNumber || '').toLowerCase().includes(searchTerm.toLowerCase());
 
         // Date Filter
         let matchesDate = true;
@@ -87,14 +92,21 @@ const AdminOrdersHistoryPage: React.FC = () => {
         );
     };
 
-    const formatDate = (date: Date) => {
-        return new Intl.DateTimeFormat('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true
-        }).format(date);
+    const formatDate = (date: any) => {
+        try {
+            if (!date) return 'N/A';
+            const d = new Date(date);
+            if (isNaN(d.getTime())) return 'Invalid Date';
+            return new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            }).format(d);
+        } catch (e) {
+            return 'Error';
+        }
     };
 
     return (
@@ -195,8 +207,8 @@ const AdminOrdersHistoryPage: React.FC = () => {
                                             {order.customerName}
                                         </td>
                                         <td className="px-6 py-4 text-gray-600">
-                                            <span title={order.orderItems.map(i => `${i.quantity}x ${i.productName}`).join(', ')} className="text-sm">
-                                                {order.orderItems.length} items
+                                            <span title={(order.orderItems || []).map(i => `${i.quantity}x ${i.productName}`).join(', ')} className="text-sm">
+                                                {(order.orderItems || []).length} items
                                             </span>
                                         </td>
                                         <td className="px-6 py-4">

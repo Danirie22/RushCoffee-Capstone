@@ -2,6 +2,7 @@ import { db } from '../firebaseConfig';
 import firebase from 'firebase/compat/app';
 import { Customizations } from '../context/CartContext';
 import { mockCustomizationOptions } from '../data/mockCustomizationOptions';
+import { mockProducts } from '../data/mockProducts';
 
 export interface OrderItem {
     productId: string;
@@ -9,6 +10,7 @@ export interface OrderItem {
     quantity: number;
     price: number;
     customizations?: Customizations;
+    size?: string;
 }
 
 /**
@@ -21,6 +23,7 @@ export const deductInventoryForOrder = async (orderItems: OrderItem[]): Promise<
         const ingredientsRef = db.collection('ingredients');
 
         for (const item of orderItems) {
+            console.log(`🔄 Processing item: ${item.productName} (ID: ${item.productId})`);
             const { quantity, customizations } = item;
 
             // 1. Deduct sugar syrup based on sugar level
@@ -86,19 +89,75 @@ export const deductInventoryForOrder = async (orderItems: OrderItem[]): Promise<
                 }
             }
 
-            // 4. TODO: Deduct base recipe ingredients
-            // This would require a recipes collection that maps productId to ingredients
-            // For now, we're only handling customizations (sugar, ice, toppings)
-            // Example structure:
-            // const recipeDoc = await db.collection('recipes').doc(item.productId).get();
-            // if (recipeDoc.exists) {
-            //   const recipe = recipeDoc.data();
-            //   for (const ingredient of recipe.ingredients) {
-            //     batch.update(ingredientsRef.doc(ingredient.id), {
-            //       stock: firebase.firestore.FieldValue.increment(-ingredient.amount * quantity)
-            //     });
-            //   }
-            // }
+            // 4. Deduct base recipe ingredients
+            const product = mockProducts.find(p => p.id === item.productId);
+            if (product) {
+                console.log(`🔍 Found product for deduction: ${product.name} (Recipe: ${product.recipe ? product.recipe.length : 0} items)`);
+
+                // 4a. Deduct Recipe Ingredients
+                if (product.recipe) {
+                    for (const ingredient of product.recipe) {
+                        const ingredientRef = ingredientsRef.doc(ingredient.ingredientId);
+                        const totalAmount = ingredient.quantity * quantity;
+
+                        batch.update(ingredientRef, {
+                            stock: firebase.firestore.FieldValue.increment(-totalAmount)
+                        });
+
+                        console.log(`📉 Deducting ${totalAmount} of ${ingredient.ingredientId} for ${item.productName} (Qty: ${quantity})`);
+                    }
+                } else {
+                    console.warn(`⚠️ Product ${product.name} has no recipe defined.`);
+                }
+
+                // 4b. Deduct Packaging (Cups, Lids, Straws, Napkins)
+                const isBeverage = ['Coffee Based', 'Non-Coffee Based', 'Matcha Series', 'Refreshments'].includes(product.category);
+
+                if (isBeverage && item.size) {
+                    const sizeLower = item.size.toLowerCase();
+                    let cupId = '';
+                    let lidId = '';
+
+                    if (sizeLower === 'grande') {
+                        cupId = 'cup-grande';
+                        lidId = 'lid-grande';
+                    } else if (sizeLower === 'venti') {
+                        cupId = 'cup-venti';
+                        lidId = 'lid-venti';
+                    }
+
+                    // Deduct Cup
+                    if (cupId) {
+                        batch.update(ingredientsRef.doc(cupId), {
+                            stock: firebase.firestore.FieldValue.increment(-quantity)
+                        });
+                        console.log(`🥤 Deducting ${quantity} ${cupId}`);
+                    }
+
+                    // Deduct Lid
+                    if (lidId) {
+                        batch.update(ingredientsRef.doc(lidId), {
+                            stock: firebase.firestore.FieldValue.increment(-quantity)
+                        });
+                        console.log(`🥤 Deducting ${quantity} ${lidId}`);
+                    }
+
+                    // Deduct Straw (1 per beverage)
+                    batch.update(ingredientsRef.doc('straw'), {
+                        stock: firebase.firestore.FieldValue.increment(-quantity)
+                    });
+                    console.log(`🥤 Deducting ${quantity} straw`);
+                }
+
+                // Deduct Napkins (1 per item)
+                batch.update(ingredientsRef.doc('napkins'), {
+                    stock: firebase.firestore.FieldValue.increment(-quantity)
+                });
+                console.log(`🧻 Deducting ${quantity} napkins`);
+
+            } else {
+                console.error(`❌ Product not found in mockProducts: ${item.productId}`);
+            }
         }
 
         // Commit all updates in a single batch

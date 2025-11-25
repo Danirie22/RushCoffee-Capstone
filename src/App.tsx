@@ -38,6 +38,8 @@ import EmployeeLayout from './components/employee/EmployeeLayout';
 import TermsPage from './pages/Home/TermsPage';
 import PrivacyPolicyPage from './pages/Home/PrivacyPolicyPage';
 import CookiePolicyPage from './pages/Home/CookiePolicyPage';
+import POSDashboard from './pages/Employee/POSDashboard';
+import POSPage from './pages/Employee/POSPage';
 
 // Placeholder for pages that are not yet created
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
@@ -143,7 +145,8 @@ const AppContent: React.FC = () => {
                 {/* Employee Routes */}
                 <Route element={<ProtectedRoute allowedRoles={['employee', 'admin']} />}>
                     <Route path="/employee" element={<EmployeeLayout />}>
-                        <Route index element={<AdminDashboardPage />} />
+                        <Route index element={<POSDashboard />} />
+                        <Route path="pos" element={<POSPage />} />
                         <Route path="queue" element={<AdminQueuePage />} />
                         <Route path="inventory" element={<AdminInventoryPage />} />
                         <Route path="history" element={<AdminOrdersHistoryPage />} />

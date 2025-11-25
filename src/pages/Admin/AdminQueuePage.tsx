@@ -19,11 +19,15 @@ const AdminQueuePage: React.FC = () => {
             .orderBy('timestamp', 'desc')
             .limit(100)
             .onSnapshot((snapshot) => {
-                const fetchedOrders = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                    timestamp: doc.data().timestamp?.toDate() || new Date(),
-                })) as QueueItem[];
+                const fetchedOrders = snapshot.docs.map((doc) => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        orderItems: data.orderItems || data.items || [], // Handle legacy data
+                        timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : (data.timestamp ? new Date(data.timestamp) : new Date()),
+                    };
+                }) as QueueItem[];
                 setOrders(fetchedOrders);
                 setLoading(false);
             });
@@ -94,7 +98,7 @@ const AdminQueuePage: React.FC = () => {
                             </div>
 
                             <div className="space-y-1 mb-3">
-                                {order.orderItems.map((item, idx) => (
+                                {(order.orderItems || []).map((item, idx) => (
                                     <div key={idx} className="text-sm flex justify-between">
                                         <span className="text-gray-700">{item.quantity}x {item.productName}</span>
                                     </div>

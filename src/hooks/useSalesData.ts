@@ -49,10 +49,16 @@ export const useSalesData = (timeRange: TimeRange = 'today') => {
                     .where('timestamp', '<', endDate)
                     .get();
 
-                const orders = ordersSnapshot.docs.map(doc => ({
-                    id: doc.id,
-                    ...doc.data()
-                }));
+                const orders = ordersSnapshot.docs.map(doc => {
+                    const data = doc.data();
+                    return {
+                        id: doc.id,
+                        ...data,
+                        orderItems: data.orderItems || data.items || [], // Handle legacy data
+                        timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : (data.timestamp ? new Date(data.timestamp) : new Date()),
+                        totalAmount: data.totalAmount || data.subtotal || 0,
+                    };
+                });
 
                 // Process sales data by date
                 const salesByDate = processSalesByDate(orders, timeRange);

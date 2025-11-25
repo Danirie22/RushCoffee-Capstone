@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useProduct } from '../../context/ProductContext';
 import { Loader2, Plus, Edit, Trash2, AlertCircle, Search, Coffee, Snowflake, Leaf, Apple, UtensilsCrossed, Package, AlertTriangle, XCircle, Star, Eye, Info } from 'lucide-react';
 import ProductFormModal from '../../components/admin/ProductFormModal';
-import { Product } from '../../data/mockProducts';
+import { Product, mockProducts } from '../../data/mockProducts';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { db } from '../../firebaseConfig';

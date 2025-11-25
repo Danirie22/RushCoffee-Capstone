@@ -10,7 +10,10 @@ interface ProductCustomizeModalProps {
     selectedSize: ProductSize;
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (customizations: Customizations, quantity: number) => void;
+    onConfirm: (customizations: Customizations, quantity: number, totalPrice?: number) => void;
+    onBuyNow?: (customizations: Customizations, quantity: number) => void;
+    initialCustomizations?: Customizations;
+    initialQuantity?: number;
 }
 
 const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
@@ -19,6 +22,9 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
     isOpen,
     onClose,
     onConfirm,
+    onBuyNow,
+    initialCustomizations,
+    initialQuantity = 1,
 }) => {
     const [sugarLevel, setSugarLevel] = useState('100%');
     const [iceLevel, setIceLevel] = useState('Normal');
@@ -29,27 +35,49 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
     const { toppings, isLoading: toppingsLoading } = useToppings();
     const { options, isLoading: optionsLoading } = useCustomizationOptions();
 
-    // Reset state when modal is closed
+    // Reset or Initialize state when modal opens
     React.useEffect(() => {
-        if (!isOpen) {
-            setQuantity(1);
-            setSugarLevel('100%');
-            setIceLevel('Normal');
-            setSelectedTopping('None');
+        if (isOpen) {
+            if (initialCustomizations) {
+                setSugarLevel(initialCustomizations.sugarLevel || '100%');
+                setIceLevel(initialCustomizations.iceLevel || 'Normal');
+                // Handle toppings array to single selection mapping
+                const toppingName = initialCustomizations.toppings && initialCustomizations.toppings.length > 0
+                    ? initialCustomizations.toppings[0]
+                    : 'None';
+                setSelectedTopping(toppingName);
+            } else {
+                // Reset to defaults if no initial customizations
+                setSugarLevel('100%');
+                setIceLevel('Normal');
+                setSelectedTopping('None');
+            }
+            setQuantity(initialQuantity); // Use initialQuantity
         }
-    }, [isOpen]);
+    }, [isOpen, initialCustomizations, initialQuantity]);
 
     if (!isOpen) return null;
 
+    const getCustomizations = () => {
+        const isBeverage = ['Coffee Based', 'Non-Coffee Based', 'Matcha Series', 'Refreshments'].includes(product.category);
+        const customizations: any = {
+            toppings: selectedTopping !== 'None' ? [selectedTopping] : [],
+        };
+
+        if (isBeverage) {
+            customizations.sugarLevel = sugarLevel;
+            customizations.iceLevel = iceLevel;
+        }
+
+        return customizations;
+    };
+
     const handleConfirm = () => {
-        onConfirm(
-            {
-                sugarLevel,
-                iceLevel,
-                toppings: selectedTopping !== 'None' ? [selectedTopping] : [],
-            },
-            quantity
-        );
+        onConfirm(getCustomizations(), quantity, totalPrice / quantity); // Pass unit price (total / quantity)
+    };
+
+    const handleBuyNow = () => {
+        onBuyNow(getCustomizations(), quantity);
         onClose();
     };
 
@@ -74,170 +102,143 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
             />
 
             {/* Modal Content */}
-            <div className="relative z-10 w-full max-w-lg overflow-hidden bg-white shadow-2xl transition-all duration-300 ease-out sm:rounded-3xl rounded-t-3xl max-h-[92vh] flex flex-col animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+            <div className="relative z-10 w-full max-w-lg overflow-hidden bg-white shadow-2xl transition-all duration-300 ease-out sm:rounded-3xl rounded-t-3xl max-h-[90vh] flex flex-col animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95">
 
-                {/* Hero Image Section */}
-                <div className="relative h-72 shrink-0 overflow-hidden">
-                    {/* Product Image */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-primary-50 to-primary-100">
+                {/* Compact Header */}
+                <div className="relative shrink-0 bg-white border-b border-gray-100 p-4 flex items-center gap-4">
+                    {/* Thumbnail */}
+                    <div className="h-20 w-20 shrink-0 rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
                         <img
                             src={product.imageUrl}
                             alt={product.name}
-                            className="h-full w-full object-cover scale-110 hover:scale-125 transition-transform duration-700"
+                            className="h-full w-full object-cover"
                         />
                     </div>
 
-                    {/* Subtle gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-xl text-gray-900 leading-tight mb-1">
+                            {product.name}
+                        </h3>
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                            <span className="bg-gray-100 px-2 py-0.5 rounded font-medium text-gray-700">
+                                {selectedSize.name}
+                            </span>
+                            <span>{selectedSize.size}</span>
+                        </div>
+                    </div>
 
                     {/* Close Button */}
                     <button
                         onClick={onClose}
-                        className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/95 text-gray-900 shadow-xl backdrop-blur-sm transition-all hover:bg-white hover:scale-110 active:scale-95 z-10"
-                        aria-label="Close modal"
+                        className="h-9 w-9 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors"
                     >
                         <X className="h-5 w-5" />
                     </button>
-
-                    {/* Product Info */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 pb-8">
-                        <div className="space-y-2">
-                            <h3 className="font-display text-3xl sm:text-4xl font-bold leading-tight tracking-tight text-white drop-shadow-lg">
-                                {product.name}
-                            </h3>
-                            <div className="flex items-center gap-3">
-                                <span className="inline-flex items-center rounded-full bg-white/20 backdrop-blur-md px-4 py-1.5 text-sm font-semibold text-white border border-white/30">
-                                    {selectedSize.name}
-                                </span>
-                                <span className="inline-flex items-center rounded-full bg-white/20 backdrop-blur-md px-4 py-1.5 text-sm font-semibold text-white border border-white/30">
-                                    {selectedSize.size}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Scrollable Content */}
-                <div className="flex-1 overflow-y-auto px-6 py-6 pb-28">
+                <div className="flex-1 overflow-y-auto px-5 py-5 pb-24 space-y-6">
                     {isLoading ? (
                         <div className="flex items-center justify-center py-12">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                            <Loader2 className="h-8 w-8 animate-spin text-coffee-600" />
                         </div>
                     ) : (
                         <>
-                            {/* Sugar Level */}
-                            <div className="mb-8">
-                                <h4 className="mb-4 font-display text-lg font-bold text-gray-900 flex items-center gap-2">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-primary-600"></span>
-                                    Sugar Level
-                                </h4>
-                                <div className="flex flex-wrap gap-2.5">
-                                    {options.sugarLevels.map((level) => (
-                                        <button
-                                            key={level.value}
-                                            onClick={() => setSugarLevel(level.value)}
-                                            className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${sugarLevel === level.value
-                                                ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30 scale-105 ring-2 ring-primary-600 ring-offset-2'
-                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
-                                                }`}
-                                        >
-                                            {level.value}
-                                        </button>
-                                    ))}
+                            {/* Sugar Level - Only for beverages */}
+                            {['Coffee Based', 'Non-Coffee Based', 'Matcha Series', 'Refreshments'].includes(product.category) && (
+                                <div>
+                                    <h4 className="mb-3 text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2">
+                                        Sugar Level
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {options.sugarLevels.map((level) => (
+                                            <button
+                                                key={level.value}
+                                                onClick={() => setSugarLevel(level.value)}
+                                                className={`flex-1 min-w-[60px] rounded-lg py-2 text-sm font-semibold transition-all border ${sugarLevel === level.value
+                                                    ? 'bg-coffee-600 text-white border-coffee-600 shadow-md'
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-coffee-300 hover:bg-coffee-50'
+                                                    }`}
+                                            >
+                                                {level.value}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Ice Level */}
-                            <div className="mb-8">
-                                <h4 className="mb-4 font-display text-lg font-bold text-gray-900 flex items-center gap-2">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-primary-600"></span>
-                                    Ice Level
-                                </h4>
-                                <div className="flex flex-wrap gap-2.5">
-                                    {options.iceLevels.map((level) => (
-                                        <button
-                                            key={level.value}
-                                            onClick={() => setIceLevel(level.value)}
-                                            className={`rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 ${iceLevel === level.value
-                                                ? 'bg-primary-600 text-white shadow-lg shadow-primary-600/30 scale-105 ring-2 ring-primary-600 ring-offset-2'
-                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105'
-                                                }`}
-                                        >
-                                            {level.value}
-                                        </button>
-                                    ))}
+                            {/* Ice Level - Only for beverages */}
+                            {['Coffee Based', 'Non-Coffee Based', 'Matcha Series', 'Refreshments'].includes(product.category) && (
+                                <div>
+                                    <h4 className="mb-3 text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2">
+                                        Ice Level
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {options.iceLevels.map((level) => (
+                                            <button
+                                                key={level.value}
+                                                onClick={() => setIceLevel(level.value)}
+                                                className={`flex-1 min-w-[60px] rounded-lg py-2 text-sm font-semibold transition-all border ${iceLevel === level.value
+                                                    ? 'bg-coffee-600 text-white border-coffee-600 shadow-md'
+                                                    : 'bg-white text-gray-600 border-gray-200 hover:border-coffee-300 hover:bg-coffee-50'
+                                                    }`}
+                                            >
+                                                {level.value}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
 
-                            {/* Toppings - Radio Buttons */}
-                            <div className="mb-8">
-                                <h4 className="mb-4 font-display text-lg font-bold text-gray-900 flex items-center gap-2">
-                                    <span className="h-1.5 w-1.5 rounded-full bg-primary-600"></span>
-                                    Choose Your Topping
-                                    <span className="ml-auto text-sm font-normal text-gray-500">(Select one)</span>
+                            {/* Toppings - Chips Layout */}
+                            <div>
+                                <h4 className="mb-3 text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center justify-between">
+                                    <span>Toppings</span>
+                                    <span className="text-xs font-normal text-gray-500 normal-case">Select one</span>
                                 </h4>
-                                <div className="space-y-2.5">
+                                <div className="flex flex-wrap gap-2">
                                     {toppingOptions.map((topping) => {
                                         const isSelected = selectedTopping === topping.name;
                                         return (
-                                            <label
+                                            <button
                                                 key={topping.id}
-                                                className={`flex cursor-pointer items-center justify-between rounded-2xl border-2 p-4 transition-all duration-200 ${isSelected
-                                                    ? 'border-primary-600 bg-primary-50 shadow-md shadow-primary-600/10 scale-[1.02]'
-                                                    : 'border-gray-200 hover:border-primary-300 hover:bg-gray-50 hover:shadow-sm'
-                                                    }`}
+                                                onClick={() => setSelectedTopping(topping.name)}
+                                                className={`
+                                                    relative px-3 py-2 rounded-lg text-sm font-medium transition-all border flex items-center gap-2
+                                                    ${isSelected
+                                                        ? 'bg-coffee-50 border-coffee-600 text-coffee-700 shadow-sm ring-1 ring-coffee-600'
+                                                        : 'bg-white border-gray-200 text-gray-600 hover:border-coffee-300 hover:bg-gray-50'
+                                                    }
+                                                `}
                                             >
-                                                <div className="flex items-center gap-3">
-                                                    {/* Radio Button */}
-                                                    <div className={`flex h-6 w-6 items-center justify-center rounded-full border-2 transition-all duration-200 ${isSelected
-                                                        ? 'border-primary-600 bg-primary-600 shadow-sm'
-                                                        : 'border-gray-400 bg-white'
-                                                        }`}>
-                                                        {isSelected && (
-                                                            <div className="h-2.5 w-2.5 rounded-full bg-white animate-in zoom-in-50 duration-200" />
-                                                        )}
-                                                    </div>
-                                                    <input
-                                                        type="radio"
-                                                        name="topping"
-                                                        checked={isSelected}
-                                                        onChange={() => setSelectedTopping(topping.name)}
-                                                        className="hidden"
-                                                    />
-                                                    <span className={`font-semibold transition-colors ${isSelected ? 'text-primary-900' : 'text-gray-700'
-                                                        }`}>
-                                                        {topping.name}
-                                                    </span>
-                                                </div>
+                                                <span>{topping.name}</span>
                                                 {topping.price > 0 && (
-                                                    <span className={`font-bold transition-colors ${isSelected ? 'text-primary-600' : 'text-gray-900'
-                                                        }`}>
+                                                    <span className={`text-xs font-bold ${isSelected ? 'text-coffee-600' : 'text-gray-400'}`}>
                                                         +₱{topping.price}
                                                     </span>
                                                 )}
-                                            </label>
+                                            </button>
                                         );
                                     })}
                                 </div>
                             </div>
 
                             {/* Quantity */}
-                            <div className="flex items-center justify-between rounded-2xl bg-gray-50 p-4 border border-gray-200">
-                                <span className="font-display text-lg font-bold text-gray-900">Quantity</span>
-                                <div className="flex items-center gap-4 rounded-full bg-white px-2 py-2 shadow-sm border border-gray-200">
+                            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                                <span className="font-bold text-gray-900">Quantity</span>
+                                <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-1 border border-gray-200">
                                     <button
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="rounded-full p-2 text-gray-600 hover:bg-primary-50 hover:text-primary-600 disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-gray-600 transition-all"
+                                        className="h-8 w-8 rounded-md bg-white shadow-sm flex items-center justify-center text-gray-600 hover:text-coffee-600 disabled:opacity-50 transition-colors"
                                         disabled={quantity <= 1}
-                                        aria-label="Decrease quantity"
                                     >
                                         <Minus className="h-4 w-4" />
                                     </button>
                                     <span className="w-8 text-center font-bold text-gray-900 tabular-nums">{quantity}</span>
                                     <button
                                         onClick={() => setQuantity(quantity + 1)}
-                                        className="rounded-full p-2 text-gray-600 hover:bg-primary-50 hover:text-primary-600 transition-all"
-                                        aria-label="Increase quantity"
+                                        className="h-8 w-8 rounded-md bg-coffee-600 shadow-sm flex items-center justify-center text-white hover:bg-coffee-700 transition-colors"
                                     >
                                         <Plus className="h-4 w-4" />
                                     </button>
@@ -248,31 +249,18 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                 </div>
 
                 {/* Sticky Footer */}
-                <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white/95 backdrop-blur-md p-5 shadow-[0_-8px_16px_-4px_rgba(0,0,0,0.08)]">
-                    <button
-                        onClick={handleConfirm}
-                        disabled={isLoading}
-                        className="group flex w-full items-center justify-between rounded-2xl bg-gradient-to-r from-primary-600 to-primary-700 px-6 py-4 text-lg font-bold text-white shadow-xl shadow-primary-600/30 transition-all duration-200 hover:shadow-2xl hover:shadow-primary-600/40 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <span className="flex items-center gap-2">
-                            {isLoading ? (
-                                <>
-                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                    <span>Loading...</span>
-                                </>
-                            ) : (
-                                <>
-                                    <span>Add to Cart</span>
-                                    {quantity > 1 && (
-                                        <span className="rounded-full bg-white/20 px-2.5 py-0.5 text-sm font-semibold">
-                                            ×{quantity}
-                                        </span>
-                                    )}
-                                </>
-                            )}
-                        </span>
-                        <span className="font-display text-xl tabular-nums">₱{totalPrice.toFixed(2)}</span>
-                    </button>
+                <div className="absolute bottom-0 left-0 right-0 border-t border-gray-200 bg-white p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                    <div className="flex gap-3">
+                        {/* Add to Order Button (Primary) */}
+                        <button
+                            onClick={handleConfirm}
+                            disabled={isLoading}
+                            className="w-full flex items-center justify-between rounded-xl bg-gradient-to-r from-coffee-600 to-coffee-700 px-6 py-3.5 text-white font-bold shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <span>Add to Order</span>
+                            <span className="text-lg tabular-nums">₱{totalPrice.toFixed(2)}</span>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

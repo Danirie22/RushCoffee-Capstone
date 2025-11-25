@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { db } from '../firebaseConfig';
 import { Product, mockProducts } from '../data/mockProducts';
@@ -72,6 +71,34 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
             })) as Product[];
 
             setProducts(productList);
+
+            // Auto-sync recipes from code to Firestore
+            // This ensures that any changes to recipes in mockProducts.ts are reflected in Firestore
+            // We do this silently in the background
+            const batch = db.batch();
+            let hasUpdates = false;
+
+            mockProducts.forEach(mockProduct => {
+                const firestoreProduct = productList.find(p => p.id === mockProduct.id);
+                if (firestoreProduct) {
+                    // Check if recipe is different
+                    const currentRecipe = JSON.stringify(firestoreProduct.recipe || []);
+                    const newRecipe = JSON.stringify(mockProduct.recipe || []);
+
+                    if (currentRecipe !== newRecipe) {
+                        const ref = productsCollectionRef.doc(mockProduct.id);
+                        batch.update(ref, { recipe: mockProduct.recipe });
+                        hasUpdates = true;
+                        console.log(`Syncing recipe for ${mockProduct.name}`);
+                    }
+                }
+            });
+
+            if (hasUpdates) {
+                await batch.commit();
+                console.log('✅ Recipes synced from code to Firestore');
+            }
+
         } catch (err: any) {
             if (err.code === 'permission-denied') {
                 console.info("Firestore permission denied. This is expected if security rules are not yet configured or if you are offline. Falling back to mock data for demonstration.");
