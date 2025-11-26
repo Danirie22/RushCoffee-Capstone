@@ -1,0 +1,6 @@
+import{r as g,j as s}from"./index-C0udEWay.js";import{S as b}from"./star-ZPQWvlRV.js";const j=["Poor","Fair","Good","Very Good","Excellent"],y={sm:"h-4 w-4",md:"h-6 w-6",lg:"h-8 w-8"},S=({rating:o,onRatingChange:i,readonly:d=!1,size:u="md",className:m=""})=>{const[x,l]=g.useState(0),e=!d&&i,f=a=>{e&&i(a)},h=a=>{e&&l(a)},v=()=>{e&&l(0)},r=x||o,p=r>0?j[r-1]:"";return s.jsxs("div",{className:`flex flex-col items-center gap-2 ${m}`,children:[s.jsx("div",{className:"flex",onMouseLeave:v,role:e?"radiogroup":"img","aria-label":e?"Star rating":`Rating: ${o} out of 5 stars`,children:[...Array(5)].map((a,c)=>{const t=c+1,n=t<=r;return s.jsx("button",{type:"button",disabled:!e,onClick:()=>f(t),onMouseEnter:()=>h(t),className:`transition-colors duration-200 ${e?"cursor-pointer":"cursor-default"}`,"aria-label":e?`${t} star`:void 0,"aria-checked":e?o===t:void 0,role:e?"radio":void 0,children:s.jsx(b,{className:`
+                  ${y[u]}
+                  ${n?"text-yellow-400":"text-gray-300"}
+                  transition-transform duration-200
+                  ${e&&n?"hover:scale-110":""}
+                `,fill:n?"currentColor":"none"})},c)})}),e&&s.jsx("div",{className:"h-5 text-sm font-medium text-gray-600",children:p})]})};export{S};
