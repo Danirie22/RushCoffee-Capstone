@@ -73,6 +73,7 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
 
     const handleConfirm = () => {
         onConfirm(getCustomizations(), quantity, totalPrice / quantity); // Pass unit price (total / quantity)
+        onClose(); // Close the modal after confirming
     };
 
     const handleBuyNow = () => {

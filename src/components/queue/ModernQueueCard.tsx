@@ -283,7 +283,7 @@ const ModernQueueCard: React.FC<ModernQueueCardProps> = ({ order, onDismiss }) =
                                             size="lg"
                                             className="w-full rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-primary-600/30 transition-all font-bold py-3.5 text-base"
                                             onClick={() => {
-                                                navigate('/menu');
+                                                navigate('/queue');
                                                 if (onDismiss) onDismiss();
                                             }}
                                         >

@@ -48,6 +48,7 @@ const CheckoutPage: React.FC = () => {
             productName: `${item.product.name} (${item.selectedSize.name})`,
             quantity: item.quantity,
             price: item.selectedSize.price,
+            imageUrl: item.product.imageUrl,
         })),
         [selectedCartItems]);
 
