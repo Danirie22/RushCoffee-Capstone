@@ -7,10 +7,11 @@ interface AuthModalProps {
     isOpen: boolean;
     onClose: () => void;
     initialView?: 'login' | 'register';
-    onVerificationNeeded?: (email: string, userId: string) => void;
+    onVerificationNeeded?: (email: string, userId: string, role?: string) => void;
+    onAuthSuccess: (role?: string) => void;
 }
 
-const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialView = 'login', onVerificationNeeded }) => {
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialView = 'login', onVerificationNeeded, onAuthSuccess }) => {
     const [view, setView] = React.useState(initialView);
 
     React.useEffect(() => {
@@ -29,15 +30,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialView = 'l
                     key="login"
                     onForgotPassword={() => { }}
                     onRegister={() => setView('register')}
-                    onSuccess={onClose}
-                    onVerificationNeeded={(email, userId) => onVerificationNeeded?.(email, userId)}
+                    onSuccess={(role) => onAuthSuccess(role)}
+                    onVerificationNeeded={(email, userId, role) => onVerificationNeeded?.(email, userId, role)}
                 />
             ) : (
                 <RegisterForm
                     key="register"
                     onLogin={() => setView('login')}
-                    onSuccess={onClose}
-                    onVerificationNeeded={(email) => onVerificationNeeded?.(email, 'new-user-id')}
+                    onSuccess={() => onAuthSuccess()}
+                    onVerificationNeeded={(email, userId, role) => onVerificationNeeded?.(email, userId, role)}
                 />
             )}
         </Modal>

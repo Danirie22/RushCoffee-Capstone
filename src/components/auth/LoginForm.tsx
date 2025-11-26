@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+
 import RushCoffeeLogo from '../layout/RushCoffeeLogo';
 
 interface LoginFormProps {
     onForgotPassword: () => void;
     onRegister: () => void;
-    onSuccess: () => void;
-    onVerificationNeeded: (email: string, userId: string) => void;
+    onSuccess: (role?: string) => void;
+    onVerificationNeeded: (email: string, userId: string, role?: string) => void;
 }
 
 // Google Icon SVG
@@ -31,13 +31,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
     const [error, setError] = useState<string | null>(null);
 
     const { login, signInWithGoogle } = useAuth();
-    const navigate = useNavigate();
 
-    const handleNavigation = (role?: string) => {
-        if (role === 'admin') navigate('/admin');
-        else if (role === 'employee') navigate('/employee');
-        else navigate('/menu');
-    };
+
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,9 +48,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
             const result = await login(email, password, rememberMe);
 
             if (result.needsVerification && result.userId) {
-                onVerificationNeeded(email, result.userId);
+                onVerificationNeeded(email, result.userId, result.role);
             } else {
-                onSuccess();
+                onSuccess(result.role);
             }
         } catch (err: any) {
             setError(err.message || 'Failed to login');
@@ -68,8 +64,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
         setError(null);
         try {
             const userProfile = await signInWithGoogle();
-            onSuccess();
-            handleNavigation(userProfile.role);
+            onSuccess(userProfile.role);
         } catch (err: any) {
             setError(err.message || 'Failed to sign in with Google');
         } finally {

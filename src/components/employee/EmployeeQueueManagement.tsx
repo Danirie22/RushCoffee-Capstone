@@ -12,6 +12,23 @@ const EmployeeQueueManagement: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'preparing' | 'ready'>('all');
     const [selectedOrder, setSelectedOrder] = useState<(OrderData & { id: string }) | null>(null);
+    const previousOrderCount = React.useRef(0);
+
+    // Unlock Audio Context on first user interaction
+    useEffect(() => {
+        const unlockAudio = () => {
+            const audio = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq');
+            audio.play().catch(() => { });
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('touchstart', unlockAudio);
+        };
+        document.addEventListener('click', unlockAudio);
+        document.addEventListener('touchstart', unlockAudio);
+        return () => {
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('touchstart', unlockAudio);
+        };
+    }, []);
 
     // Real-time listener for orders
     useEffect(() => {
@@ -21,7 +38,7 @@ const EmployeeQueueManagement: React.FC = () => {
         const q = query(
             ordersCollection,
             where('status', 'in', ['preparing', 'ready']),
-            orderBy('createdAt', 'desc')
+            orderBy('timestamp', 'desc')
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -29,6 +46,13 @@ const EmployeeQueueManagement: React.FC = () => {
                 id: doc.id,
                 ...doc.data() as OrderData
             }));
+
+            // Audio Alert for New Orders
+            if (ordersData.length > previousOrderCount.current && previousOrderCount.current !== 0) {
+                const audio = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq'); // Short beep
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+            previousOrderCount.current = ordersData.length;
 
             setOrders(ordersData);
             setLoading(false);
@@ -47,7 +71,8 @@ const EmployeeQueueManagement: React.FC = () => {
     });
 
     // Handle status update
-    const handleStatusUpdate = async (orderId: string, newStatus: 'preparing' | 'ready' | 'completed') => {
+    const handleStatusUpdate = async (orderId: string, newStatus: 'preparing' | 'ready' | 'completed' | 'cancelled') => {
+        console.log(`🔘 handleStatusUpdate called for order ${orderId} with status: ${newStatus}`);
         try {
             await updateOrderStatus(orderId, newStatus);
         } catch (error) {
@@ -73,7 +98,7 @@ const EmployeeQueueManagement: React.FC = () => {
     // Format timestamp
     const formatTime = (timestamp: any) => {
         if (!timestamp) return '';
-        const date = timestamp.toDate();
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     };
 
@@ -154,15 +179,22 @@ const EmployeeQueueManagement: React.FC = () => {
                                     <h3 className="font-bold text-lg text-gray-900">{order.orderNumber}</h3>
                                     <div className="flex items-center gap-1.5 text-sm text-gray-500 mt-1">
                                         <Clock className="h-4 w-4" />
-                                        <span>{formatTime(order.createdAt)}</span>
+                                        <span>{formatTime(order.timestamp)}</span>
                                     </div>
                                 </div>
                                 {getStatusBadge(order.status)}
                             </div>
+                            <div className="mb-3 flex gap-2">
+                                {order.orderType === 'online' ? (
+                                    <Badge className="bg-blue-100 text-blue-800 text-xs">🌐 Online Order</Badge>
+                                ) : (
+                                    <Badge className="bg-purple-100 text-purple-800 text-xs">🏪 Walk-in</Badge>
+                                )}
+                            </div>
 
                             {/* Order Items */}
                             <div className="mb-4 p-3 bg-gray-50 rounded-lg max-h-40 overflow-y-auto">
-                                {order.items.map((item: OrderItem, idx: number) => (
+                                {(order.orderItems || []).map((item: OrderItem, idx: number) => (
                                     <div key={idx} className="flex justify-between text-sm py-1">
                                         <span className="text-gray-700">
                                             {item.quantity}x {item.productName}{' '}

@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import Card from './Card';
 
@@ -37,13 +38,32 @@ const Modal: React.FC<ModalProps> = ({
 
   // Effect 1: Lock Body Scroll (Only changes when isOpen changes)
   React.useEffect(() => {
+    // Store current overflow style
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    let originalMainStyle = '';
+    const mainContent = document.getElementById('admin-main-content');
+
     if (isOpen) {
+      // Lock scroll on body
       document.body.style.overflow = 'hidden';
+
+      // Lock scroll on admin main content
+      if (mainContent) {
+        originalMainStyle = window.getComputedStyle(mainContent).overflow;
+        mainContent.style.overflow = 'hidden';
+      }
     } else {
       document.body.style.overflow = '';
+      if (mainContent) {
+        mainContent.style.overflow = '';
+      }
     }
+
     return () => {
       document.body.style.overflow = '';
+      if (mainContent) {
+        mainContent.style.overflow = '';
+      }
     };
   }, [isOpen]);
 
@@ -67,7 +87,7 @@ const Modal: React.FC<ModalProps> = ({
     xl: 'max-w-2xl',
   };
 
-  return (
+  return typeof document !== 'undefined' ? createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-fade-in"
       role="dialog"
@@ -111,8 +131,9 @@ const Modal: React.FC<ModalProps> = ({
           )}
         </Card>
       </div>
-    </div>
-  );
+    </div>,
+    document.body
+  ) : null;
 };
 
 export default Modal;

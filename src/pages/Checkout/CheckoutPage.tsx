@@ -1,6 +1,4 @@
 
-
-
 import * as React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ShoppingBag, User, Phone, MessageSquare, Check, Coffee, AlertCircle, Loader2 } from 'lucide-react';
@@ -118,11 +116,15 @@ const CheckoutPage: React.FC = () => {
                     productName: `${item.product.name} (${item.selectedSize.name})`,
                     quantity: item.quantity,
                     price: item.selectedSize.price,
+                    size: item.selectedSize.name,
+                    category: item.product.category,
+                    customizations: item.customizations,
                 })),
                 totalAmount: total,
                 paymentMethod: selectedPaymentMethod!,
                 paymentStatus: selectedPaymentMethod === 'gcash' ? 'paid' : 'pending',
                 estimatedTime: 10,
+                orderType: 'online',
             };
 
             // This now just creates the order document.

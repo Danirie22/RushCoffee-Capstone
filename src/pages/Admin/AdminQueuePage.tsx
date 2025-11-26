@@ -5,6 +5,8 @@ import { Clock, Coffee, CheckCircle, AlertCircle, XCircle, Play, Trash2 } from '
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { useCart } from '../../context/CartContext';
+import { deductInventoryForOrder } from '../../utils/inventoryDeduction';
+import { useProduct } from '../../context/ProductContext';
 
 type OrderStatus = 'waiting' | 'preparing' | 'ready' | 'completed' | 'cancelled';
 
@@ -12,6 +14,24 @@ const AdminQueuePage: React.FC = () => {
     const [orders, setOrders] = useState<QueueItem[]>([]);
     const [loading, setLoading] = useState(true);
     const { showToast } = useCart();
+    const { products } = useProduct();
+    const previousOrderCount = React.useRef(0);
+
+    // Unlock Audio Context on first user interaction
+    useEffect(() => {
+        const unlockAudio = () => {
+            const audio = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq');
+            audio.play().catch(() => { });
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('touchstart', unlockAudio);
+        };
+        document.addEventListener('click', unlockAudio);
+        document.addEventListener('touchstart', unlockAudio);
+        return () => {
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('touchstart', unlockAudio);
+        };
+    }, []);
 
     useEffect(() => {
         const unsubscribe = db
@@ -28,6 +48,14 @@ const AdminQueuePage: React.FC = () => {
                         timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : (data.timestamp ? new Date(data.timestamp) : new Date()),
                     };
                 }) as QueueItem[];
+
+                // Audio Alert for New Orders
+                if (fetchedOrders.length > previousOrderCount.current && previousOrderCount.current !== 0) {
+                    const audio = new Audio('data:audio/mp3;base64,//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq//NExAAAAANIAAAAAExBTUUzLjEwMKqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq'); // Short beep
+                    audio.play().catch(e => console.log('Audio play failed:', e));
+                }
+                previousOrderCount.current = fetchedOrders.length;
+
                 setOrders(fetchedOrders);
                 setLoading(false);
             });
@@ -43,6 +71,28 @@ const AdminQueuePage: React.FC = () => {
 
             if (reason) {
                 updateData.cancellationReason = reason;
+            }
+
+            // Deduct inventory when marking as ready
+            if (newStatus === 'ready') {
+                const orderDoc = await db.collection('orders').doc(orderId).get();
+                if (orderDoc.exists) {
+                    const orderData = orderDoc.data();
+
+                    if (orderData?.inventoryDeducted) {
+                        console.log(`ℹ️ Inventory already deducted for order ${orderId}. Skipping.`);
+                    } else if (orderData && orderData.orderItems) {
+                        console.log(`📉 Deducting inventory for order ${orderId} (Status: Ready)`);
+                        try {
+                            // Cast to any because QueueItem might have slightly different structure but runtime data is compatible
+                            await deductInventoryForOrder(orderData.orderItems as any);
+                            updateData.inventoryDeducted = true;
+                        } catch (inventoryError) {
+                            console.error('⚠️ Failed to deduct inventory:', inventoryError);
+                            // We continue to update status even if deduction fails
+                        }
+                    }
+                }
             }
 
             await db.collection('orders').doc(orderId).update(updateData);
@@ -85,11 +135,11 @@ const AdminQueuePage: React.FC = () => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto space-y-3 pr-1">
-                    {columnOrders.map(order => (
+                    {columnOrders.map((order, index) => (
                         <Card key={order.id} className="p-3 shadow-sm hover:shadow-md transition-shadow bg-white">
                             <div className="flex justify-between items-start mb-2">
                                 <div>
-                                    <span className="font-bold text-lg">#{order.orderNumber}</span>
+                                    <span className="font-bold text-lg">{order.orderNumber}</span>
                                     <p className="text-xs text-gray-500">{order.customerName}</p>
                                 </div>
                                 <span className="text-xs text-gray-400">
@@ -97,12 +147,40 @@ const AdminQueuePage: React.FC = () => {
                                 </span>
                             </div>
 
-                            <div className="space-y-1 mb-3">
-                                {(order.orderItems || []).map((item, idx) => (
-                                    <div key={idx} className="text-sm flex justify-between">
-                                        <span className="text-gray-700">{item.quantity}x {item.productName}</span>
-                                    </div>
-                                ))}
+                            <div className="mb-2">
+                                {order.orderType === 'online' ? (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                        🌐 Online
+                                    </span>
+                                ) : (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                        🏪 Walk-in
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="space-y-2 mb-3">
+                                {(order.orderItems || []).map((item, idx) => {
+                                    const product = products.find(p => p.id === item.productId);
+                                    return (
+                                        <div key={idx} className="text-sm flex items-center gap-3 bg-gray-50 p-2 rounded-lg">
+                                            {product?.imageUrl && (
+                                                <img
+                                                    src={product.imageUrl}
+                                                    alt={item.productName}
+                                                    className="h-10 w-10 rounded-md object-cover flex-shrink-0"
+                                                />
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex justify-between items-start">
+                                                    <span className="font-medium text-gray-900 truncate">{item.productName}</span>
+                                                    <span className="text-xs font-bold bg-white px-1.5 py-0.5 rounded border ml-2">x{item.quantity}</span>
+                                                </div>
+                                                {item.size && <p className="text-xs text-gray-500">{item.size}</p>}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
                             </div>
 
                             <div className="flex gap-2 mt-2">
@@ -118,8 +196,17 @@ const AdminQueuePage: React.FC = () => {
                                 {nextStatus && (
                                     <Button
                                         size="sm"
-                                        className="w-full flex items-center justify-center gap-1"
-                                        onClick={() => updateOrderStatus(order.id, nextStatus)}
+                                        className={`w-full flex items-center justify-center gap-1 ${status === 'waiting' && index !== 0 ? 'bg-gray-600 hover:bg-gray-700' : ''}`}
+                                        onClick={() => {
+                                            if (status === 'waiting' && index !== 0) {
+                                                if (window.confirm(`⚠️ Are you sure you want to skip the previous ${index} order(s)?\n\nIt is recommended to serve orders in sequence.`)) {
+                                                    updateOrderStatus(order.id, nextStatus);
+                                                }
+                                            } else {
+                                                updateOrderStatus(order.id, nextStatus);
+                                            }
+                                        }}
+                                        title={status === 'waiting' && index !== 0 ? "Click to skip previous orders" : ""}
                                     >
                                         {actionLabel || 'Next'}
                                     </Button>

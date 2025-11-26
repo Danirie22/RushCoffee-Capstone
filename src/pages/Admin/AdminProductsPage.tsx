@@ -305,7 +305,11 @@ const AdminProductsPage: React.FC = () => {
                             const isAvailable = product.available && availability.available;
 
                             return (
-                                <tr key={product.id} className="hover:bg-gray-50">
+                                <tr
+                                    key={product.id}
+                                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                                    onClick={() => handleOpenModal(product)}
+                                >
                                     <td className="whitespace-nowrap px-6 py-4">
                                         <div className="flex items-center">
                                             <div className="h-10 w-10 flex-shrink-0">
@@ -346,14 +350,25 @@ const AdminProductsPage: React.FC = () => {
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
                                         <button
-                                            onClick={() => handleOpenModal(product)}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOpenModal(product);
+                                            }}
                                             className="p-1 text-primary-600 hover:text-primary-800"
                                             title={isAdmin ? "Edit" : "View Details"}
                                         >
                                             {isAdmin ? <Edit className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                         </button>
                                         {isAdmin && (
-                                            <button onClick={() => handleDelete(product.id, product.name)} className="ml-2 p-1 text-red-600 hover:text-red-800"><Trash2 className="h-4 w-4" /></button>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(product.id, product.name);
+                                                }}
+                                                className="ml-2 p-1 text-red-600 hover:text-red-800"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </button>
                                         )}
                                     </td>
                                 </tr>

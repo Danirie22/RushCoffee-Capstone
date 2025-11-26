@@ -20,13 +20,22 @@ const POSProductCard: React.FC<POSProductCardProps> = ({ product, onSelect }) =>
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (!isOutOfStock && (e.key === 'Enter' || e.key === ' ')) {
+            e.preventDefault();
+            handleClick();
+        }
+    };
+
     return (
-        <button
+        <div
+            role="button"
+            tabIndex={isOutOfStock ? -1 : 0}
             onClick={handleClick}
-            disabled={isOutOfStock}
+            onKeyDown={handleKeyDown}
             className={`w-full text-left rounded-2xl overflow-hidden bg-white shadow-sm border transition-all ${isOutOfStock
-                    ? 'opacity-60 cursor-not-allowed'
-                    : 'hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-gray-200 hover:border-coffee-300'
+                ? 'opacity-60 cursor-not-allowed'
+                : 'cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-gray-200 hover:border-coffee-300'
                 }`}
         >
             {/* Image */}
@@ -51,16 +60,16 @@ const POSProductCard: React.FC<POSProductCardProps> = ({ product, onSelect }) =>
 
                 {/* Size Selector */}
                 <div className="flex gap-1 mb-3">
-                    {product.sizes.map((size) => (
+                    {product.sizes.map((size, index) => (
                         <button
-                            key={size.name}
+                            key={`${size.name}-${index}`}
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setSelectedSize(size);
                             }}
                             className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold transition-colors ${selectedSize.name === size.name
-                                    ? 'bg-coffee-600 text-white'
-                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                ? 'bg-coffee-600 text-white'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
                             {size.name}
@@ -78,7 +87,7 @@ const POSProductCard: React.FC<POSProductCardProps> = ({ product, onSelect }) =>
                     )}
                 </div>
             </div>
-        </button>
+        </div>
     );
 };
 

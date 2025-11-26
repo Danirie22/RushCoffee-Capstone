@@ -1,19 +1,7 @@
 import * as React from 'react';
 import { HashRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import HomePage from './pages/HomePage';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
-import LoginPage from './pages/Auth/LoginPage';
-import RegisterPage from './pages/Auth/RegisterPage';
-import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
-import MenuPage from './pages/Menu/MenuPage';
-import CheckoutPage from './pages/Checkout/CheckoutPage';
-import QueuePage from './pages/Queue/QueuePage';
-import RewardsPage from './pages/Rewards/RewardsPage';
-import ProfilePage from './pages/Profile/ProfilePage';
-import AboutPage from './pages/Home/AboutPage';
-import ContactPage from './pages/ContactPage';
-import FAQPage from './pages/Home/FAQPage';
 import { NotificationProvider } from './context/NotificationContext';
 import OrderNotification from './components/ui/OrderNotification';
 import { AuthProvider } from './context/AuthContext';
@@ -24,22 +12,41 @@ import CartSidebar from './components/menu/CartSidebar';
 import ScrollToTop from './components/utils/ScrollToTop';
 import RushCoffeeLogo from './components/layout/RushCoffeeLogo';
 import ProtectedRoute from './components/auth/ProtectedRoute';
-import AdminDashboardPage from './pages/Admin/AdminDashboardPage';
-import AdminQueuePage from './pages/Admin/AdminQueuePage';
-import AdminLayout from './components/admin/AdminLayout';
-import AdminInventoryPage from './pages/Admin/AdminInventoryPage';
-import AdminProductsPage from './pages/Admin/AdminProductsPage';
-import AdminAnalyticsPage from './pages/Admin/AdminAnalyticsPage';
-import AdminFeedbackPage from './pages/Admin/AdminFeedbackPage';
-import AdminSettingsPage from './pages/Admin/AdminSettingsPage';
-import AdminOrdersHistoryPage from './pages/Admin/AdminOrdersHistoryPage';
-import AdminUsersPage from './pages/Admin/AdminUsersPage';
-import EmployeeLayout from './components/employee/EmployeeLayout';
-import TermsPage from './pages/Home/TermsPage';
-import PrivacyPolicyPage from './pages/Home/PrivacyPolicyPage';
-import CookiePolicyPage from './pages/Home/CookiePolicyPage';
-import POSDashboard from './pages/Employee/POSDashboard';
-import POSPage from './pages/Employee/POSPage';
+import PageLoader from './components/ui/PageLoader';
+
+// Lazy load pages
+const HomePage = React.lazy(() => import('./pages/HomePage'));
+const LoginPage = React.lazy(() => import('./pages/Auth/LoginPage'));
+const RegisterPage = React.lazy(() => import('./pages/Auth/RegisterPage'));
+const ForgotPasswordPage = React.lazy(() => import('./pages/Auth/ForgotPasswordPage'));
+const MenuPage = React.lazy(() => import('./pages/Menu/MenuPage'));
+const CheckoutPage = React.lazy(() => import('./pages/Checkout/CheckoutPage'));
+const QueuePage = React.lazy(() => import('./pages/Queue/QueuePage'));
+const RewardsPage = React.lazy(() => import('./pages/Rewards/RewardsPage'));
+const ProfilePage = React.lazy(() => import('./pages/Profile/ProfilePage'));
+const AboutPage = React.lazy(() => import('./pages/Home/AboutPage'));
+const ContactPage = React.lazy(() => import('./pages/ContactPage'));
+const FAQPage = React.lazy(() => import('./pages/Home/FAQPage'));
+const TermsPage = React.lazy(() => import('./pages/Home/TermsPage'));
+const PrivacyPolicyPage = React.lazy(() => import('./pages/Home/PrivacyPolicyPage'));
+const CookiePolicyPage = React.lazy(() => import('./pages/Home/CookiePolicyPage'));
+
+// Admin Pages
+const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
+const AdminDashboardPage = React.lazy(() => import('./pages/Admin/AdminDashboardPage'));
+const AdminQueuePage = React.lazy(() => import('./pages/Admin/AdminQueuePage'));
+const AdminInventoryPage = React.lazy(() => import('./pages/Admin/AdminInventoryPage'));
+const AdminProductsPage = React.lazy(() => import('./pages/Admin/AdminProductsPage'));
+const AdminAnalyticsPage = React.lazy(() => import('./pages/Admin/AdminAnalyticsPage'));
+const AdminFeedbackPage = React.lazy(() => import('./pages/Admin/AdminFeedbackPage'));
+const AdminSettingsPage = React.lazy(() => import('./pages/Admin/AdminSettingsPage'));
+const AdminOrdersHistoryPage = React.lazy(() => import('./pages/Admin/AdminOrdersHistoryPage'));
+const AdminUsersPage = React.lazy(() => import('./pages/Admin/AdminUsersPage'));
+
+// Employee Pages
+const EmployeeLayout = React.lazy(() => import('./components/employee/EmployeeLayout'));
+const POSDashboard = React.lazy(() => import('./pages/Employee/POSDashboard'));
+const POSPage = React.lazy(() => import('./pages/Employee/POSPage'));
 
 // Placeholder for pages that are not yet created
 const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
@@ -110,51 +117,53 @@ const AppContent: React.FC = () => {
         <>
             <ScrollToTop />
             <OrderNotification />
-            <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/menu" element={<MenuPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/auth/login" element={<LoginPage />} />
-                <Route path="/auth/register" element={<RegisterPage />} />
-                <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/checkout" element={<CheckoutPage />} />
-                <Route path="/queue" element={<QueuePage />} />
-                <Route path="/rewards" element={<RewardsPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/faq" element={<FAQPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/privacy" element={<PrivacyPolicyPage />} />
-                <Route path="/cookies" element={<CookiePolicyPage />} />
+            <React.Suspense fallback={<PageLoader />}>
+                <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/menu" element={<MenuPage />} />
+                    <Route path="/contact" element={<ContactPage />} />
+                    <Route path="/auth/login" element={<LoginPage />} />
+                    <Route path="/auth/register" element={<RegisterPage />} />
+                    <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/checkout" element={<CheckoutPage />} />
+                    <Route path="/queue" element={<QueuePage />} />
+                    <Route path="/rewards" element={<RewardsPage />} />
+                    <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/faq" element={<FAQPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
+                    <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                    <Route path="/cookies" element={<CookiePolicyPage />} />
 
-                {/* Admin Routes */}
-                <Route element={<ProtectedRoute />}>
-                    <Route path="/admin" element={<AdminLayout />}>
-                        <Route index element={<AdminDashboardPage />} />
-                        <Route path="queue" element={<AdminQueuePage />} />
-                        <Route path="history" element={<AdminOrdersHistoryPage />} />
-                        <Route path="users" element={<AdminUsersPage />} />
-                        <Route path="inventory" element={<AdminInventoryPage />} />
-                        <Route path="products" element={<AdminProductsPage />} />
-                        <Route path="analytics" element={<AdminAnalyticsPage />} />
-                        <Route path="feedback" element={<AdminFeedbackPage />} />
-                        <Route path="settings" element={<AdminSettingsPage />} />
+                    {/* Admin Routes */}
+                    <Route element={<ProtectedRoute />}>
+                        <Route path="/admin" element={<AdminLayout />}>
+                            <Route index element={<AdminDashboardPage />} />
+                            <Route path="queue" element={<AdminQueuePage />} />
+                            <Route path="history" element={<AdminOrdersHistoryPage />} />
+                            <Route path="users" element={<AdminUsersPage />} />
+                            <Route path="inventory" element={<AdminInventoryPage />} />
+                            <Route path="products" element={<AdminProductsPage />} />
+                            <Route path="analytics" element={<AdminAnalyticsPage />} />
+                            <Route path="feedback" element={<AdminFeedbackPage />} />
+                            <Route path="settings" element={<AdminSettingsPage />} />
+                        </Route>
                     </Route>
-                </Route>
 
-                {/* Employee Routes */}
-                <Route element={<ProtectedRoute allowedRoles={['employee', 'admin']} />}>
-                    <Route path="/employee" element={<EmployeeLayout />}>
-                        <Route index element={<POSDashboard />} />
-                        <Route path="pos" element={<POSPage />} />
-                        <Route path="queue" element={<AdminQueuePage />} />
-                        <Route path="inventory" element={<AdminInventoryPage />} />
-                        <Route path="history" element={<AdminOrdersHistoryPage />} />
+                    {/* Employee Routes */}
+                    <Route element={<ProtectedRoute allowedRoles={['employee', 'admin']} />}>
+                        <Route path="/employee" element={<EmployeeLayout />}>
+                            <Route index element={<POSDashboard />} />
+                            <Route path="pos" element={<POSPage />} />
+                            <Route path="queue" element={<AdminQueuePage />} />
+                            <Route path="inventory" element={<AdminInventoryPage />} />
+                            <Route path="history" element={<AdminOrdersHistoryPage />} />
+                        </Route>
                     </Route>
-                </Route>
 
-                <Route path="*" element={<NotFound />} />
-            </Routes>
+                    <Route path="*" element={<NotFound />} />
+                </Routes>
+            </React.Suspense>
             <CartSidebar
                 isOpen={isCartOpen}
                 onClose={closeCart}

@@ -7,7 +7,7 @@ import RushCoffeeLogo from '../layout/RushCoffeeLogo';
 interface RegisterFormProps {
     onLogin: () => void;
     onSuccess: () => void;
-    onVerificationNeeded: (email: string) => void;
+    onVerificationNeeded: (email: string, userId: string, role?: string) => void;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerificationNeeded }) => {
@@ -38,8 +38,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
         setIsLoading(true);
         try {
             await executeRecaptcha();
-            await register(formData.email, formData.password, formData.firstName, formData.lastName, formData.phone);
-            onVerificationNeeded(formData.email);
+            const user = await register(formData.email, formData.password, formData.firstName, formData.lastName, formData.phone);
+            onVerificationNeeded(formData.email, user.uid, user.role);
         } catch (err: any) {
             setError(err.message || 'Failed to register');
         } finally {

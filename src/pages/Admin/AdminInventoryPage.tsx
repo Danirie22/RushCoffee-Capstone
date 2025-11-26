@@ -625,7 +625,11 @@ const AdminInventoryPage: React.FC = () => {
                         {filteredIngredients.map((item) => {
                             const status = getStockStatus(item);
                             return (
-                                <tr key={item.id} className="hover:bg-gray-50">
+                                <tr
+                                    key={item.id}
+                                    className="hover:bg-gray-50 cursor-pointer transition-colors"
+                                    onClick={() => handleOpenUpdateModal(item)}
+                                >
                                     <td className="whitespace-nowrap px-6 py-4">
                                         <div className="text-sm font-medium text-gray-900">{item.name}</div>
                                     </td>
@@ -644,7 +648,15 @@ const AdminInventoryPage: React.FC = () => {
                                         </div>
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
-                                        <button onClick={() => handleOpenUpdateModal(item)} className="text-primary-600 hover:text-primary-800">Update Stock</button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleOpenUpdateModal(item);
+                                            }}
+                                            className="text-primary-600 hover:text-primary-800"
+                                        >
+                                            Update Stock
+                                        </button>
                                     </td>
                                 </tr>
                             );

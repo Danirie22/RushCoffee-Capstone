@@ -52,7 +52,7 @@ interface AuthContextType {
     currentUser: UserProfile | null;
     loading: boolean;
     register: (email: string, password: string, firstName: string, lastName: string, phone: string) => Promise<UserProfile>;
-    login: (email: string, password: string, rememberMe: boolean) => Promise<{ needsVerification: boolean; userId?: string; email?: string }>;
+    login: (email: string, password: string, rememberMe: boolean) => Promise<{ needsVerification: boolean; userId?: string; email?: string; role?: string }>;
     logout: () => Promise<void>;
     sendPasswordReset: (email: string) => Promise<void>;
     signInWithGoogle: () => Promise<UserProfile>;
@@ -317,7 +317,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         return fetchUserProfile(user.uid);
     };
 
-    const login = async (email: string, password: string, rememberMe: boolean): Promise<{ needsVerification: boolean; userId?: string; email?: string }> => {
+    const login = async (email: string, password: string, rememberMe: boolean): Promise<{ needsVerification: boolean; userId?: string; email?: string; role?: string }> => {
         console.log('🟢 AuthContext.login called with:', { email, rememberMe });
 
         // FIX: Use firebase.auth.Auth.Persistence for v8.
@@ -355,13 +355,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             // For development, log the code
             console.log(`🔐 Verification code for ${email}: ${verificationCode}`);
 
-            console.log('🟢 Returning verification needed response...');
+            // Fetch user profile to get role
+            const userDoc = await db.collection('users').doc(userId).get();
+            const role = userDoc.data()?.role;
+
+            console.log('🟢 Returning verification needed response with role:', role);
 
             // Return verification needed status (keep user signed in)
             return {
                 needsVerification: true,
                 userId: userId,
-                email: email
+                email: email,
+                role: role
             };
         } catch (error) {
             // Login failed, clear the flag so we don't block future auth states

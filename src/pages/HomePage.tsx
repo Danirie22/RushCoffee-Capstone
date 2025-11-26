@@ -73,6 +73,7 @@ const defaultTestimonials = [
         initial: "S",
         avatarBg: "bg-primary-100",
         avatarText: "text-primary-600",
+        rating: 5
     },
     {
         quote: "The queue system is genius. I can track exactly when my coffee will be ready. Plus, earning rewards with every purchase is a nice bonus!",
@@ -81,6 +82,7 @@ const defaultTestimonials = [
         initial: "M",
         avatarBg: "bg-blue-100",
         avatarText: "text-blue-600",
+        rating: 5
     },
     {
         quote: "Best coffee experience in Manila. Fast, convenient, and the coffee is always perfect. The mobile app makes everything so easy!",
@@ -89,13 +91,25 @@ const defaultTestimonials = [
         initial: "A",
         avatarBg: "bg-green-100",
         avatarText: "text-green-600",
+        rating: 5
     }
 ];
 
 
 const HomePage: React.FC = () => {
     const { currentUser } = useAuth();
-    const orderNowPath = currentUser ? '/menu' : '/auth/register';
+
+    let orderNowPath = '/auth/register';
+    if (currentUser) {
+        if (currentUser.role === 'admin') {
+            orderNowPath = '/admin';
+        } else if (currentUser.role === 'employee') {
+            orderNowPath = '/employee';
+        } else {
+            orderNowPath = '/menu';
+        }
+    }
+
     const [testimonials, setTestimonials] = React.useState(defaultTestimonials);
 
     React.useEffect(() => {

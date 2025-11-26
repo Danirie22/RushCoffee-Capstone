@@ -242,6 +242,11 @@ const MenuPage: React.FC = () => {
                                         <ProductCard
                                             product={product}
                                             onAddToCart={handleAddToCart}
+                                            onProductClick={(product, size) => {
+                                                setSelectedProduct(product);
+                                                setSelectedSize(size);
+                                                setIsCustomizeModalOpen(true);
+                                            }}
                                             isLoggedIn={!!currentUser}
                                         />
                                     </motion.div>

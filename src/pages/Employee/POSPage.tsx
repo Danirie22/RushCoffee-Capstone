@@ -10,6 +10,7 @@ import PaymentModal from '../../components/employee/PaymentModal';
 import { saveOrder, generateOrderNumber, OrderItem } from '../../services/orderService';
 
 interface CartItem {
+    id: string;
     product: Product;
     size: ProductSize;
     quantity: number;
@@ -53,7 +54,7 @@ const POSPage: React.FC = () => {
             // If editing, replace the item at the specific index
             if (editingCartIndex !== null) {
                 const updated = [...prev];
-                updated[editingCartIndex] = { product, size, quantity, customizations, finalPrice: itemPrice };
+                updated[editingCartIndex] = { ...updated[editingCartIndex], product, size, quantity, customizations, finalPrice: itemPrice };
                 return updated;
             }
 
@@ -66,7 +67,14 @@ const POSPage: React.FC = () => {
                 updated[existingIndex].finalPrice = itemPrice;
                 return updated;
             }
-            return [...prev, { product, size, quantity, customizations, finalPrice: itemPrice }];
+            return [...prev, {
+                id: `cart-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                product,
+                size,
+                quantity,
+                customizations,
+                finalPrice: itemPrice
+            }];
         });
         setEditingCartIndex(null); // Reset edit mode
         setSelectedSize(null);
@@ -144,9 +152,10 @@ const POSPage: React.FC = () => {
                     percentage: discountPercentage * 100,
                     cardId: discountCardId || null
                 } : null,
-                status: 'preparing' as const,
+                status: 'waiting' as const,
                 employeeId: currentUser?.uid || 'unknown',
                 employeeName: currentUser?.displayName || currentUser?.email || 'Employee',
+                orderType: 'walk-in',
             });
 
             setCart([]);
@@ -238,7 +247,7 @@ const POSPage: React.FC = () => {
                             </div>
                         ) : cart.map((item, i) => (
                             <div
-                                key={i}
+                                key={item.id}
                                 onClick={() => handleEditCartItem(i)}
                                 className="bg-white rounded-2xl p-3 border shadow-sm group hover:border-coffee-500 hover:shadow-md transition-all cursor-pointer relative"
                             >

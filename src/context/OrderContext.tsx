@@ -5,6 +5,7 @@ import { db } from '../firebaseConfig';
 import { useAuth } from './AuthContext';
 import { Customizations } from './CartContext';
 import { useNotification } from './NotificationContext';
+// import { deductInventoryForOrder } from '../utils/inventoryDeduction'; // Removed as per request
 
 export interface QueueItem {
     id: string; // Firestore document ID
@@ -19,6 +20,8 @@ export interface QueueItem {
         quantity: number;
         price: number;
         customizations?: Customizations;
+        size?: string; // Added for inventory deduction
+        category?: string; // Added for inventory deduction
     }>;
     totalAmount: number;
     paymentMethod: 'gcash' | 'cash';
@@ -26,6 +29,7 @@ export interface QueueItem {
     timestamp: Date;
     estimatedTime: number; // in minutes
     cancellationReason?: string;
+    orderType?: 'online' | 'walk-in';
 }
 
 interface OrderContextType {

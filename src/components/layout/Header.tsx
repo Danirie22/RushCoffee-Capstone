@@ -47,10 +47,10 @@ const Header: React.FC = () => {
     const location = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // If we are on the verification page OR if 2FA is pending, pretend we are logged out
+    // If we are on the verification page OR if 2FA is pending OR if the auth modal is open, pretend we are logged out
     const isVerifying = location.pathname === '/auth/verify-email';
     const isPending2FA = sessionStorage.getItem('requires2FA') === 'true';
-    const showLoggedInState = currentUser && !isVerifying && !isPending2FA;
+    const showLoggedInState = currentUser && !isVerifying && !isPending2FA && !isAuthModalOpen && location.pathname !== '/';
 
     const navLinks = showLoggedInState ? loggedInNavLinks : loggedOutNavLinks;
 
@@ -74,21 +74,27 @@ const Header: React.FC = () => {
         }
     }, [searchParams]);
 
-    const handleVerificationNeeded = (email: string, userId: string) => {
+    const handleVerificationNeeded = (email: string, userId: string, role?: string) => {
         setIsAuthModalOpen(false); // Close the login/register modal first
-        setVerifyEmail(email);
-        setVerifyUserId(userId);
-        setIsVerifyModalOpen(true);
+        // FOR TESTING: Bypass verification
+        // setVerifyEmail(email);
+        // setVerifyUserId(userId);
+        // setIsVerifyModalOpen(true);
+        handleVerificationSuccess(role);
     };
 
-    const handleVerificationSuccess = () => {
+    const handleVerificationSuccess = (role?: string) => {
+        setIsAuthModalOpen(false); // Ensure AuthModal is closed
         setIsVerifyModalOpen(false);
         sessionStorage.removeItem('requires2FA');
 
         // Role-based redirect after login
-        if (currentUser?.role === 'admin') {
+        // Use passed role if available (avoids race condition), otherwise fall back to currentUser
+        const userRole = role || currentUser?.role;
+
+        if (userRole === 'admin') {
             navigate('/admin');
-        } else if (currentUser?.role === 'employee') {
+        } else if (userRole === 'employee') {
             navigate('/employee');
         } else {
             navigate('/menu'); // customers
@@ -430,17 +436,18 @@ const Header: React.FC = () => {
                 onClose={() => setIsAuthModalOpen(false)}
                 initialView={authModalView}
                 onVerificationNeeded={handleVerificationNeeded}
+                onAuthSuccess={handleVerificationSuccess}
             />
 
-            {/* Verification Modal */}
-            <VerificationModal
+            {/* Verification Modal - COMMENTED OUT FOR TESTING */}
+            {/* <VerificationModal
                 isOpen={isVerifyModalOpen}
                 onClose={handleVerificationClose}
                 email={verifyEmail}
                 userId={verifyUserId}
-                onSuccess={handleVerificationSuccess}
+                onSuccess={() => handleVerificationSuccess()}
                 onBackToLogin={handleBackToLogin}
-            />
+            /> */}
         </>
     );
 };

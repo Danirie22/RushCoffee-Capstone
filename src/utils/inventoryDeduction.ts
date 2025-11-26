@@ -110,8 +110,9 @@ export const deductInventoryForOrder = async (orderItems: OrderItem[]): Promise<
                     console.warn(`⚠️ Product ${product.name} has no recipe defined.`);
                 }
 
-                // 4b. Deduct Packaging (Cups, Lids, Straws, Napkins)
+                // 4b. Deduct Packaging (Cups, Lids, Straws, Napkins, Takeout Packs)
                 const isBeverage = ['Coffee Based', 'Non-Coffee Based', 'Matcha Series', 'Refreshments'].includes(product.category);
+                const isMeal = ['Meals'].includes(product.category);
 
                 if (isBeverage && item.size) {
                     const sizeLower = item.size.toLowerCase();
@@ -147,13 +148,28 @@ export const deductInventoryForOrder = async (orderItems: OrderItem[]): Promise<
                         stock: firebase.firestore.FieldValue.increment(-quantity)
                     });
                     console.log(`🥤 Deducting ${quantity} straw`);
+
+                    // Deduct Napkins (2 per beverage)
+                    batch.update(ingredientsRef.doc('napkins'), {
+                        stock: firebase.firestore.FieldValue.increment(-(quantity * 2))
+                    });
+                    console.log(`🧻 Deducting ${quantity * 2} napkins (beverage)`);
                 }
 
-                // Deduct Napkins (1 per item)
-                batch.update(ingredientsRef.doc('napkins'), {
-                    stock: firebase.firestore.FieldValue.increment(-quantity)
-                });
-                console.log(`🧻 Deducting ${quantity} napkins`);
+                // Deduct Meal Packaging
+                if (isMeal) {
+                    // Deduct Takeout Pack
+                    batch.update(ingredientsRef.doc('takeout-pack'), {
+                        stock: firebase.firestore.FieldValue.increment(-quantity)
+                    });
+                    console.log(`🥡 Deducting ${quantity} takeout-pack`);
+
+                    // Deduct Napkins (2 per meal)
+                    batch.update(ingredientsRef.doc('napkins'), {
+                        stock: firebase.firestore.FieldValue.increment(-(quantity * 2))
+                    });
+                    console.log(`🧻 Deducting ${quantity * 2} napkins (meal)`);
+                }
 
             } else {
                 console.error(`❌ Product not found in mockProducts: ${item.productId}`);

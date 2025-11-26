@@ -34,13 +34,15 @@ export interface OrderData {
         percentage: number;
         cardId?: string;
     } | null;
-    status: 'preparing' | 'ready' | 'completed' | 'cancelled';
+    status: 'waiting' | 'preparing' | 'ready' | 'completed' | 'cancelled';
     customerId?: string;
     customerName?: string;
     employeeId: string;
     employeeName: string;
     timestamp: any;
     completedAt?: any;
+    orderType?: 'online' | 'walk-in';
+    inventoryDeducted?: boolean;
 }
 
 /**
@@ -59,22 +61,20 @@ export const generateOrderNumber = async (): Promise<string> => {
  */
 export const saveOrder = async (orderData: Omit<OrderData, 'timestamp'>): Promise<string> => {
     try {
-        const docRef = await db.collection('orders').add({
-            ...orderData,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-
-        console.log('✅ Order saved successfully:', docRef.id);
-
-        // Deduct inventory
+        // Deduct inventory immediately for POS orders
         try {
             await deductInventoryForOrder(orderData.orderItems);
         } catch (inventoryError) {
             console.error('⚠️ Order saved but inventory deduction failed:', inventoryError);
-            // We don't throw here to avoid failing the order if inventory fails
-            // But in a real app, we might want to handle this better (e.g. alert admin)
         }
 
+        const docRef = await db.collection('orders').add({
+            ...orderData,
+            inventoryDeducted: true, // Flag to prevent double deduction
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+        console.log('✅ Order saved successfully:', docRef.id);
         return docRef.id;
     } catch (error) {
         console.error('❌ Error saving order:', error);
@@ -90,11 +90,33 @@ export const updateOrderStatus = async (
     status: 'preparing' | 'ready' | 'completed' | 'cancelled'
 ): Promise<void> => {
     try {
+        console.log(`🛠️ updateOrderStatus called for ${orderId} -> ${status}`);
         const updateData: any = { status };
 
         // Add completedAt timestamp when marking as completed
         if (status === 'completed') {
             updateData.completedAt = firebase.firestore.FieldValue.serverTimestamp();
+        }
+
+        // Deduct inventory when marking as ready (if not already deducted)
+        if (status === 'ready') {
+            const orderDoc = await db.collection('orders').doc(orderId).get();
+            if (orderDoc.exists) {
+                const orderData = orderDoc.data();
+
+                // Check if inventory was already deducted
+                if (orderData?.inventoryDeducted) {
+                    console.log(`ℹ️ Inventory already deducted for order ${orderId}. Skipping.`);
+                } else if (orderData && orderData.orderItems) {
+                    console.log(`📉 Deducting inventory for order ${orderId} (Status: Ready)`);
+                    try {
+                        await deductInventoryForOrder(orderData.orderItems);
+                        updateData.inventoryDeducted = true; // Mark as deducted
+                    } catch (inventoryError) {
+                        console.error('⚠️ Failed to deduct inventory:', inventoryError);
+                    }
+                }
+            }
         }
 
         await db.collection('orders').doc(orderId).update(updateData);

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Clock, User, CreditCard, Package, Check } from 'lucide-react';
 import { OrderData, OrderItem } from '../../services/orderService';
 import Badge from '../ui/Badge';
+import { db } from '../../firebaseConfig';
 
 interface OrderDetailsModalProps {
     order: OrderData & { id: string };
@@ -11,6 +13,112 @@ interface OrderDetailsModalProps {
 }
 
 const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, onClose, onStatusUpdate }) => {
+    const [employeeFullName, setEmployeeFullName] = useState<string>('');
+    const [toppingPrices, setToppingPrices] = useState<Map<string, number>>(new Map());
+
+    // Fetch employee data from Firestore
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const fetchEmployeeData = async () => {
+            console.log('🔍 Fetching employee data:', {
+                employeeId: order.employeeId,
+                employeeName: order.employeeName
+            });
+
+            // If no employeeId but we have employeeName, use it directly
+            if (!order.employeeId) {
+                console.log('⚠️ No employeeId found, using employeeName:', order.employeeName);
+                setEmployeeFullName(order.employeeName || 'Unknown Employee');
+                return;
+            }
+
+            try {
+                const employeeDoc = await db.collection('users').doc(order.employeeId).get();
+                if (employeeDoc.exists) {
+                    const data = employeeDoc.data();
+                    console.log('✅ Employee data found:', { firstName: data?.firstName, lastName: data?.lastName });
+                    const fullName = `${data?.firstName || ''} ${data?.lastName || ''}`.trim();
+                    setEmployeeFullName(fullName || order.employeeName || 'Unknown Employee');
+                } else {
+                    console.log('❌ Employee document not found for ID:', order.employeeId);
+                    setEmployeeFullName(order.employeeName || 'Unknown Employee');
+                }
+            } catch (error) {
+                console.error('❌ Error fetching employee data:', error);
+                setEmployeeFullName(order.employeeName || 'Unknown Employee');
+            }
+        };
+
+        fetchEmployeeData();
+    }, [isOpen, order.employeeId, order.employeeName]);
+
+    // Fetch topping prices from Firestore
+    useEffect(() => {
+        if (!isOpen) return;
+
+        const fetchToppingPrices = async () => {
+            try {
+                const toppingsSnapshot = await db.collection('ingredients')
+                    .where('isTopping', '==', true)
+                    .get();
+
+                const pricesMap = new Map<string, number>();
+                toppingsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    pricesMap.set(data.name, data.toppingPrice || 0);
+                });
+
+                setToppingPrices(pricesMap);
+            } catch (error) {
+                console.error('Error fetching topping prices:', error);
+            }
+        };
+
+        fetchToppingPrices();
+    }, [isOpen]);
+
+    // Prevent background scroll when modal is open
+    useEffect(() => {
+        // Store current overflow style
+        const originalStyle = window.getComputedStyle(document.body).overflow;
+        let originalMainStyle = '';
+        const mainContent = document.getElementById('admin-main-content');
+        const employeeContent = document.getElementById('employee-main-content');
+
+        if (isOpen) {
+            // Lock scroll on body
+            document.body.style.overflow = 'hidden';
+
+            // Lock scroll on admin main content
+            if (mainContent) {
+                mainContent.style.overflow = 'hidden';
+            }
+            // Lock scroll on employee main content
+            if (employeeContent) {
+                employeeContent.style.overflow = 'hidden';
+            }
+        } else {
+            document.body.style.overflow = '';
+            if (mainContent) {
+                mainContent.style.overflow = '';
+            }
+            if (employeeContent) {
+                employeeContent.style.overflow = '';
+            }
+        }
+
+        return () => {
+            document.body.style.overflow = '';
+            if (mainContent) {
+                mainContent.style.overflow = '';
+            }
+            if (employeeContent) {
+                employeeContent.style.overflow = '';
+            }
+        };
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const formatTime = (timestamp: any) => {
@@ -39,7 +147,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
         }
     };
 
-    return (
+    return typeof document !== 'undefined' ? createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
@@ -73,41 +181,90 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                             Order Items
                         </h3>
                         <div className="space-y-2">
-                            {order.items.map((item: OrderItem, idx: number) => (
-                                <div key={idx} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                                    <div className="flex-1">
-                                        <div className="font-semibold text-gray-900">{item.productName}</div>
-                                        <div className="text-sm text-gray-500 mt-1">
-                                            Size: {item.sizeLabel}
+                            {order.items.map((item: OrderItem, idx: number) => {
+                                // Calculate topping prices
+                                let toppingTotal = 0;
+                                if (item.customizations?.toppings) {
+                                    item.customizations.toppings.forEach((topping: string) => {
+                                        const price = toppingPrices.get(topping);
+                                        if (price) toppingTotal += price;
+                                    });
+                                }
+
+                                const basePrice = item.price - toppingTotal;
+
+                                return (
+                                    <div key={idx} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+                                        <div className="flex-1">
+                                            <div className="font-semibold text-gray-900">{item.productName}</div>
+                                            <div className="text-sm text-gray-500 mt-1">
+                                                Size: {item.sizeLabel}
+                                            </div>
+                                            {item.customizations && (
+                                                <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                                                    {item.customizations.sugarLevel && (
+                                                        <div>• Sugar: {item.customizations.sugarLevel}</div>
+                                                    )}
+                                                    {item.customizations.iceLevel && (
+                                                        <div>• Ice: {item.customizations.iceLevel}</div>
+                                                    )}
+                                                    {item.customizations.toppings && item.customizations.toppings.length > 0 && (
+                                                        <div>• Toppings: {item.customizations.toppings.map((topping: string, i: number) => {
+                                                            const price = toppingPrices.get(topping);
+                                                            return (
+                                                                <span key={i}>
+                                                                    {topping}
+                                                                    {price && ` (+₱${price})`}
+                                                                    {i < item.customizations.toppings.length - 1 ? ', ' : ''}
+                                                                </span>
+                                                            );
+                                                        })}</div>
+                                                    )}
+                                                </div>
+                                            )}
                                         </div>
-                                        {item.customizations && (
-                                            <div className="text-xs text-gray-500 mt-1 space-y-0.5">
-                                                {item.customizations.sugarLevel && (
-                                                    <div>• Sugar: {item.customizations.sugarLevel}</div>
-                                                )}
-                                                {item.customizations.iceLevel && (
-                                                    <div>• Ice: {item.customizations.iceLevel}</div>
-                                                )}
-                                                {item.customizations.toppings && item.customizations.toppings.length > 0 && (
-                                                    <div>• Toppings: {item.customizations.toppings.join(', ')}</div>
+                                        <div className="text-right min-w-[100px]">
+                                            <div className="text-xs text-gray-500 space-y-0.5">
+                                                <div>Qty: {item.quantity}</div>
+                                                <div>Base: ₱{basePrice.toFixed(2)}</div>
+                                                {toppingTotal > 0 && (
+                                                    <div>Toppings: +₱{toppingTotal.toFixed(2)}</div>
                                                 )}
                                             </div>
-                                        )}
+                                            <div className="font-bold text-gray-900 mt-1 pt-1 border-t border-gray-300">
+                                                ₱{(item.price * item.quantity).toFixed(2)}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="text-sm text-gray-500">Qty: {item.quantity}</div>
-                                        <div className="font-bold text-gray-900">₱{(item.price * item.quantity).toFixed(2)}</div>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
 
-                        {/* Total */}
-                        <div className="mt-4 p-4 bg-coffee-50 rounded-lg border-2 border-coffee-200">
-                            <div className="flex justify-between items-center">
-                                <span className="font-bold text-gray-900 text-lg">Total</span>
-                                <span className="font-bold text-coffee-700 text-2xl">₱{order.subtotal.toFixed(2)}</span>
-                            </div>
+                        {/* Total Breakdown */}
+                        <div className="mt-4 p-4 bg-coffee-50 rounded-lg border-2 border-coffee-200 space-y-2">
+                            {(() => {
+                                const itemsTotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                                const additionalFees = order.subtotal - itemsTotal;
+
+                                return (
+                                    <>
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="text-gray-600">Items Total:</span>
+                                            <span className="font-medium text-gray-900">₱{itemsTotal.toFixed(2)}</span>
+                                        </div>
+                                        {additionalFees > 0 && (
+                                            <div className="flex justify-between items-center text-sm">
+                                                <span className="text-gray-600">Additional Fees:</span>
+                                                <span className="font-medium text-gray-900">₱{additionalFees.toFixed(2)}</span>
+                                            </div>
+                                        )}
+                                        <div className="pt-2 border-t border-coffee-300 flex justify-between items-center">
+                                            <span className="font-bold text-gray-900 text-lg">Total</span>
+                                            <span className="font-bold text-coffee-700 text-2xl">₱{order.subtotal.toFixed(2)}</span>
+                                        </div>
+                                    </>
+                                );
+                            })()}
                         </div>
                     </div>
 
@@ -132,7 +289,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-gray-600">Change:</span>
-                                            <span className="font-medium">₱{order.paymentDetails.change?.toFixed(2)}</span>
+                                            <span className="font-medium">₱{(order.paymentDetails.amountReceived - order.subtotal).toFixed(2)}</span>
                                         </div>
                                     </>
                                 )}
@@ -152,7 +309,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                                 <span className="font-semibold">Processed By</span>
                             </div>
                             <div className="text-sm">
-                                <div className="font-medium text-gray-900">{order.employeeName}</div>
+                                <div className="font-medium text-gray-900">{employeeFullName || order.employeeName}</div>
                                 {order.customerName && (
                                     <div className="text-gray-600 mt-1">
                                         Customer: {order.customerName}
@@ -199,8 +356,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                     </div>
                 )}
             </div>
-        </div>
-    );
+        </div>,
+        document.body
+    ) : null;
 };
 
 export default OrderDetailsModal;
