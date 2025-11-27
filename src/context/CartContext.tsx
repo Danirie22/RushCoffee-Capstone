@@ -44,6 +44,7 @@ interface CartContextType {
   addToCart: (product: Product, selectedSize: ProductSize, customizations?: Customizations, quantity?: number) => void;
   addMultipleToCart: (items: ReorderItem[]) => void;
   updateQuantity: (cartItemId: string, newQuantity: number) => void;
+  updateCartItem: (oldCartItemId: string, product: Product, selectedSize: ProductSize, customizations?: Customizations, quantity?: number) => void;
   removeFromCart: (cartItemId: string) => void;
   openCart: () => void;
   closeCart: () => void;
@@ -264,6 +265,32 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
   };
 
+  const updateCartItem = (oldCartItemId: string, product: Product, selectedSize: ProductSize, customizations?: Customizations, quantity: number = 1) => {
+    // Remove old item and add new one with updated values
+    const newCart = cartItems.filter(item => item.id !== oldCartItemId);
+
+    const customizationString = customizations ? JSON.stringify(customizations) : '';
+    const newCartItemId = `${product.id}-${selectedSize.name}-${customizationString}`;
+
+    // Check if new configuration already exists
+    const existingItem = newCart.find(item => item.id === newCartItemId);
+
+    let finalCart;
+    if (existingItem) {
+      // Add to existing item quantity
+      finalCart = newCart.map(item =>
+        item.id === newCartItemId ? { ...item, quantity: Math.min(item.quantity + quantity, product.stock) } : item
+      );
+    } else {
+      // Add as new item
+      finalCart = [...newCart, { id: newCartItemId, product, selectedSize, quantity: Math.min(quantity, product.stock), customizations }];
+    }
+
+    setCartItems(finalCart);
+    updateFirestoreCart(finalCart);
+    showToast(`${product.name} (${selectedSize.name}) updated!`);
+  };
+
   const clearCart = () => {
     setCartItems([]);
     setSelectedItemIds([]);
@@ -307,6 +334,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     addToCart,
     addMultipleToCart,
     updateQuantity,
+    updateCartItem,
     removeFromCart,
     openCart,
     closeCart,

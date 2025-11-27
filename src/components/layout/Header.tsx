@@ -76,11 +76,9 @@ const Header: React.FC = () => {
 
     const handleVerificationNeeded = (email: string, userId: string, role?: string) => {
         setIsAuthModalOpen(false); // Close the login/register modal first
-        // FOR TESTING: Bypass verification
-        // setVerifyEmail(email);
-        // setVerifyUserId(userId);
-        // setIsVerifyModalOpen(true);
-        handleVerificationSuccess(role);
+        setVerifyEmail(email);
+        setVerifyUserId(userId);
+        setIsVerifyModalOpen(true);
     };
 
     const handleVerificationSuccess = (role?: string) => {
@@ -439,15 +437,15 @@ const Header: React.FC = () => {
                 onAuthSuccess={handleVerificationSuccess}
             />
 
-            {/* Verification Modal - COMMENTED OUT FOR TESTING */}
-            {/* <VerificationModal
+            {/* Verification Modal */}
+            <VerificationModal
                 isOpen={isVerifyModalOpen}
                 onClose={handleVerificationClose}
                 email={verifyEmail}
                 userId={verifyUserId}
                 onSuccess={() => handleVerificationSuccess()}
                 onBackToLogin={handleBackToLogin}
-            /> */}
+            />
         </>
     );
 };

@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, User, Phone, MessageSquare, Check, Coffee, AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
+import { ShoppingBag, User, Phone, MessageSquare, Check, Coffee, AlertCircle, Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
 
 import Header from '../../components/layout/Header';
+import Button from '../../components/ui/Button';
 
 import PaymentMethodSelector from '../../components/checkout/PaymentMethodSelector';
 import GCashPayment from '../../components/checkout/GCashPayment';
@@ -120,6 +121,22 @@ const CheckoutPage: React.FC = () => {
         }
     }, [currentUser]);
 
+    // Real-time form validation check
+    const isFormValid = React.useMemo(() => {
+        const hasValidName = customerInfo.name.trim().length >= 2;
+        const hasValidPhone = /^(09|\+639)\d{9}$/.test(customerInfo.phone);
+        const hasPaymentMethod = selectedPaymentMethod !== null;
+
+        // If GCash is selected, check for reference and account name
+        if (selectedPaymentMethod === 'gcash') {
+            const hasReference = paymentReference.trim().length > 0;
+            const hasAccountName = accountName.trim().length > 0;
+            return hasValidName && hasValidPhone && hasPaymentMethod && hasReference && hasAccountName;
+        }
+
+        return hasValidName && hasValidPhone && hasPaymentMethod;
+    }, [customerInfo.name, customerInfo.phone, selectedPaymentMethod, paymentReference, accountName]);
+
     // Form validation
     const validateForm = () => {
         const newErrors: typeof errors = {};
@@ -218,14 +235,7 @@ const CheckoutPage: React.FC = () => {
         }
     };
 
-    const isButtonDisabled =
-        isProcessing ||
-        !selectedPaymentMethod ||
-        !customerInfo.name ||
-        !/^(09|\+639)\d{9}$/.test(customerInfo.phone) ||
-        !/^(09|\+639)\d{9}$/.test(customerInfo.phone) ||
-        !/^(09|\+639)\d{9}$/.test(customerInfo.phone) ||
-        (selectedPaymentMethod === 'gcash' && (!paymentReference || !accountName));
+
 
 
     if (!currentUser || (totalCartItems === 0 && !orderPlaced)) {
@@ -441,14 +451,19 @@ const CheckoutPage: React.FC = () => {
 
                         {/* Desktop Action Button */}
                         <div className="hidden lg:block">
-                            <button
+                            <Button
                                 type="submit"
                                 form="checkout-form"
-                                disabled={isButtonDisabled}
-                                className="mt-2 flex w-full max-w-xs justify-center rounded-full bg-primary-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-400"
+                                disabled={!isFormValid || isProcessing}
+                                isLoading={isProcessing}
+                                variant="secondary"
+                                size="lg"
+                                fullWidth
+                                endIcon={!isProcessing ? <ArrowRight className="h-5 w-5" /> : undefined}
+                                className="mt-2 rounded-xl bg-gradient-to-r from-coffee-600 to-coffee-700 shadow-lg shadow-coffee-600/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                             >
-                                {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : 'Place Order'}
-                            </button>
+                                Place Order
+                            </Button>
                         </div>
                     </div>
 
@@ -461,14 +476,19 @@ const CheckoutPage: React.FC = () => {
 
             {/* Fixed Action Button on Mobile */}
             <div className="sticky bottom-0 left-0 right-0 border-t border-gray-200 bg-white/90 p-4 backdrop-blur-sm lg:hidden">
-                <button
+                <Button
                     type="submit"
                     form="checkout-form"
-                    disabled={isButtonDisabled}
-                    className="flex w-full justify-center rounded-full bg-primary-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:bg-primary-400"
+                    disabled={!isFormValid || isProcessing}
+                    isLoading={isProcessing}
+                    variant="secondary"
+                    size="lg"
+                    fullWidth
+                    endIcon={!isProcessing ? <ArrowRight className="h-5 w-5" /> : undefined}
+                    className="rounded-xl bg-gradient-to-r from-coffee-600 to-coffee-700 shadow-lg shadow-coffee-600/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                 >
-                    {isProcessing ? <Loader2 className="h-6 w-6 animate-spin" /> : `Place Order (₱${total.toFixed(2)})`}
-                </button>
+                    {`Place Order (₱${total.toFixed(2)})`}
+                </Button>
             </div>
 
 

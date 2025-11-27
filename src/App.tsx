@@ -5,10 +5,12 @@ import Footer from './components/layout/Footer';
 import { NotificationProvider } from './context/NotificationContext';
 import OrderNotification from './components/ui/OrderNotification';
 import { AuthProvider } from './context/AuthContext';
-import { CartProvider, useCart } from './context/CartContext';
+import { CartProvider, useCart, CartItem, Customizations } from './context/CartContext';
 import { OrderProvider } from './context/OrderContext';
 import { ProductProvider } from './context/ProductContext';
 import CartSidebar from './components/menu/CartSidebar';
+import ProductCustomizeModal from './components/menu/ProductCustomizeModal';
+import { Product, ProductSize } from './data/mockProducts';
 import ScrollToTop from './components/utils/ScrollToTop';
 import RushCoffeeLogo from './components/layout/RushCoffeeLogo';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -99,6 +101,7 @@ const AppContent: React.FC = () => {
         closeCart,
         cartItems,
         updateQuantity,
+        updateCartItem,
         removeFromCart,
         toastMessage,
         selectedItemIds,
@@ -108,9 +111,26 @@ const AppContent: React.FC = () => {
     } = useCart();
     const navigate = useNavigate();
 
+    // State for editing cart items
+    const [editingCartItem, setEditingCartItem] = React.useState<CartItem | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
+
     const handleCheckout = () => {
         closeCart();
         navigate('/checkout');
+    };
+
+    const handleEditCartItem = (cartItem: CartItem) => {
+        setEditingCartItem(cartItem);
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdateCartItem = (customizations: Customizations, quantity: number, totalPrice?: number, selectedSize?: ProductSize) => {
+        if (editingCartItem && selectedSize) {
+            updateCartItem(editingCartItem.id, editingCartItem.product, selectedSize, customizations, quantity);
+            setIsEditModalOpen(false);
+            setEditingCartItem(null);
+        }
     };
 
     return (
@@ -171,11 +191,26 @@ const AppContent: React.FC = () => {
                 onUpdateQuantity={updateQuantity}
                 onRemoveItem={removeFromCart}
                 onCheckout={handleCheckout}
+                onEditItem={handleEditCartItem}
                 selectedItemIds={selectedItemIds}
                 onToggleItemSelection={toggleItemSelection}
                 onSelectAll={selectAllItems}
                 onDeselectAll={deselectAllItems}
             />
+            {editingCartItem && (
+                <ProductCustomizeModal
+                    product={editingCartItem.product}
+                    selectedSize={editingCartItem.selectedSize}
+                    isOpen={isEditModalOpen}
+                    onClose={() => {
+                        setIsEditModalOpen(false);
+                        setEditingCartItem(null);
+                    }}
+                    onConfirm={handleUpdateCartItem}
+                    initialCustomizations={editingCartItem.customizations}
+                    initialQuantity={editingCartItem.quantity}
+                />
+            )}
             {toastMessage && (
                 <div className="fixed bottom-4 right-4 z-[100] animate-fade-in-up rounded-lg bg-gray-900 px-4 py-3 text-white shadow-lg">
                     {toastMessage}

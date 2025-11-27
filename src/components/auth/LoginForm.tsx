@@ -44,6 +44,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
 
         setIsLoading(true);
         setError(null);
+        console.log('🔵 LoginForm submitting:', { email, password, rememberMe });
         try {
             const result = await login(email, password, rememberMe);
 
