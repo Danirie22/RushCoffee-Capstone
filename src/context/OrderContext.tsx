@@ -5,7 +5,6 @@ import { db } from '../firebaseConfig';
 import { useAuth } from './AuthContext';
 import { Customizations } from './CartContext';
 import { useNotification } from './NotificationContext';
-// import { deductInventoryForOrder } from '../utils/inventoryDeduction'; // Removed as per request
 
 export interface QueueItem {
     id: string; // Firestore document ID
@@ -20,12 +19,15 @@ export interface QueueItem {
         quantity: number;
         price: number;
         customizations?: Customizations;
-        size?: string; // Added for inventory deduction
-        category?: string; // Added for inventory deduction
+        size?: string;
+        category?: string;
     }>;
     totalAmount: number;
     paymentMethod: 'gcash' | 'cash';
-    paymentStatus: 'pending' | 'paid';
+    paymentStatus: 'pending' | 'paid' | 'failed';
+    receiptUrl?: string;
+    paymentReference?: string;
+    paymentAccountName?: string;
     timestamp: Date;
     estimatedTime: number; // in minutes
     cancellationReason?: string;
@@ -80,6 +82,16 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
                     timestamp: doc.data().timestamp?.toDate() || new Date(),
                 })) as QueueItem[];
 
+                // Check for status changes to trigger notifications
+                snapshot.docChanges().forEach(change => {
+                    if (change.type === 'modified') {
+                        const data = change.doc.data() as QueueItem;
+                        if (data.status === 'cancelled') {
+                            showNotification(`Your order ${data.orderNumber} has been cancelled. Reason: ${data.cancellationReason || 'No reason provided'}`, 'error');
+                        }
+                    }
+                });
+
                 // Perform sorting on the client-side
                 history.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
@@ -104,7 +116,7 @@ export const OrderProvider: React.FC<OrderProviderProps> = ({ children }) => {
         return () => {
             if (unsubscribe) unsubscribe();
         };
-    }, [currentUser]);
+    }, [currentUser, showNotification]);
 
     // Trigger notification ONLY when status changes to 'ready'
     React.useEffect(() => {

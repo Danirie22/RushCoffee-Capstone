@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Clock, User, CreditCard, Package, Check } from 'lucide-react';
+import { X, Clock, User, CreditCard, Package, Check, FileText } from 'lucide-react';
 import { OrderData, OrderItem } from '../../services/orderService';
 import Badge from '../ui/Badge';
 import { db } from '../../firebaseConfig';
@@ -158,7 +158,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                             <div className="flex items-center gap-3 text-coffee-100">
                                 <div className="flex items-center gap-1.5">
                                     <Clock className="h-4 w-4" />
-                                    <span className="text-sm">{formatTime(order.createdAt)}</span>
+                                    <span className="text-sm">{formatTime(order.timestamp)}</span>
                                 </div>
                                 {getStatusBadge(order.status)}
                             </div>
@@ -181,7 +181,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                             Order Items
                         </h3>
                         <div className="space-y-2">
-                            {order.items.map((item: OrderItem, idx: number) => {
+                            {(order.orderItems || order.items || []).map((item: OrderItem, idx: number) => {
                                 // Calculate topping prices
                                 let toppingTotal = 0;
                                 if (item.customizations?.toppings) {
@@ -243,7 +243,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                         {/* Total Breakdown */}
                         <div className="mt-4 p-4 bg-coffee-50 rounded-lg border-2 border-coffee-200 space-y-2">
                             {(() => {
-                                const itemsTotal = order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                                const itemsTotal = (order.orderItems || order.items || []).reduce((sum, item) => sum + (item.price * item.quantity), 0);
                                 const additionalFees = order.subtotal - itemsTotal;
 
                                 return (
@@ -293,11 +293,21 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                                         </div>
                                     </>
                                 )}
-                                {order.paymentMethod === 'gcash' && order.paymentDetails.referenceNumber && (
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Ref:</span>
-                                        <span className="font-medium">{order.paymentDetails.referenceNumber}</span>
-                                    </div>
+                                {order.paymentMethod === 'gcash' && (
+                                    <>
+                                        {order.paymentAccountName && (
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Account Name:</span>
+                                                <span className="font-medium">{order.paymentAccountName}</span>
+                                            </div>
+                                        )}
+                                        {(order.paymentDetails?.referenceNumber || order.paymentReference) && (
+                                            <div className="flex justify-between">
+                                                <span className="text-gray-600">Ref No:</span>
+                                                <span className="font-medium">{order.paymentDetails?.referenceNumber || order.paymentReference}</span>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -320,42 +330,69 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                     </div>
                 </div>
 
-                {/* Footer Actions */}
-                {onStatusUpdate && (order.status === 'preparing' || order.status === 'ready') && (
-                    <div className="p-6 border-t bg-gray-50 flex gap-3">
-                        {order.status === 'preparing' && (
-                            <button
-                                onClick={() => {
-                                    onStatusUpdate(order.id, 'ready');
-                                    onClose();
-                                }}
-                                className="flex-1 py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                {/* Receipt Image */}
+                {order.receiptUrl && (
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex items-center gap-2 text-gray-600 mb-3">
+                            <FileText className="h-4 w-4" />
+                            <span className="font-semibold">Payment Receipt</span>
+                        </div>
+                        <div className="relative w-full overflow-hidden rounded-lg bg-white border border-gray-200">
+                            <img
+                                src={order.receiptUrl}
+                                alt="Payment Receipt"
+                                className="w-full h-auto object-contain max-h-[300px]"
+                            />
+                        </div>
+                        <div className="mt-3 text-center">
+                            <a
+                                href={order.receiptUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-primary-600 hover:text-primary-700 hover:underline font-medium inline-flex items-center gap-1"
                             >
-                                <Check className="h-5 w-5" />
-                                Mark as Ready
-                            </button>
-                        )}
-                        {order.status === 'ready' && (
-                            <button
-                                onClick={() => {
-                                    onStatusUpdate(order.id, 'completed');
-                                    onClose();
-                                }}
-                                className="flex-1 py-3 px-4 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
-                            >
-                                <Check className="h-5 w-5" />
-                                Mark as Completed
-                            </button>
-                        )}
-                        <button
-                            onClick={onClose}
-                            className="px-6 py-3 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl font-semibold transition-colors"
-                        >
-                            Close
-                        </button>
+                                View Full Size
+                            </a>
+                        </div>
                     </div>
                 )}
             </div>
+
+            {/* Footer Actions */}
+            {onStatusUpdate && (order.status === 'preparing' || order.status === 'ready') && (
+                <div className="p-6 border-t bg-gray-50 flex gap-3">
+                    {order.status === 'preparing' && (
+                        <button
+                            onClick={() => {
+                                onStatusUpdate(order.id, 'ready');
+                                onClose();
+                            }}
+                            className="flex-1 py-3 px-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Check className="h-5 w-5" />
+                            Mark as Ready
+                        </button>
+                    )}
+                    {order.status === 'ready' && (
+                        <button
+                            onClick={() => {
+                                onStatusUpdate(order.id, 'completed');
+                                onClose();
+                            }}
+                            className="flex-1 py-3 px-4 bg-gray-800 hover:bg-gray-900 text-white rounded-xl font-semibold transition-colors flex items-center justify-center gap-2"
+                        >
+                            <Check className="h-5 w-5" />
+                            Mark as Completed
+                        </button>
+                    )}
+                    <button
+                        onClick={onClose}
+                        className="px-6 py-3 bg-white hover:bg-gray-100 text-gray-700 border border-gray-300 rounded-xl font-semibold transition-colors"
+                    >
+                        Close
+                    </button>
+                </div>
+            )}
         </div>,
         document.body
     ) : null;

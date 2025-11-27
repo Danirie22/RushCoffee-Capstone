@@ -137,6 +137,25 @@ const DigitalReceipt: React.FC<DigitalReceiptProps> = ({ order, isOpen, onClose 
                             </p>
                         </div>
 
+                        {/* Payment Receipt (if available) */}
+                        {order.receiptUrl && (
+                            <div className="mt-6 rounded-lg border border-gray-200 p-4">
+                                <p className="text-xs text-gray-500 uppercase tracking-wider mb-2 text-center">Payment Receipt</p>
+                                <div className="relative aspect-[3/4] w-full overflow-hidden rounded-md bg-gray-100">
+                                    <img
+                                        src={order.receiptUrl}
+                                        alt="Payment Receipt"
+                                        className="h-full w-full object-contain"
+                                    />
+                                </div>
+                                {order.paymentReference && (
+                                    <p className="mt-2 text-center text-xs text-gray-500">
+                                        Ref: <span className="font-mono font-medium text-gray-900">{order.paymentReference}</span>
+                                    </p>
+                                )}
+                            </div>
+                        )}
+
                         {/* Footer */}
                         <div className="mt-8 text-center border-t border-gray-100 pt-6">
                             <p className="font-display text-lg font-bold text-coffee-900 mb-1">Thank You!</p>

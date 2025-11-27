@@ -39,30 +39,31 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, currentPoints, onRedeem
   };
 
   return (
-    <Card className="flex flex-col overflow-hidden transition-transform duration-300 hover:-translate-y-1" hover>
-      <div className="relative">
+    <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md border border-gray-100 rounded-2xl" hover>
+      <div className="relative group">
+        <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-300 z-10 pointer-events-none"></div>
         <img
           src={imageUrl}
           alt={name}
-          className={`h-40 w-full object-cover ${!available ? 'grayscale' : ''}`}
+          className={`h-48 w-full object-cover transition-transform duration-500 group-hover:scale-110 ${!available ? 'grayscale' : ''}`}
         />
-        <Badge className={`absolute top-2 left-2 capitalize ${categoryColors[category]}`}>
+        <Badge className={`absolute top-3 left-3 capitalize shadow-sm z-20 ${categoryColors[category]}`}>
           {category}
         </Badge>
         {!available && (
-          <Badge className="absolute top-2 right-2 bg-gray-500 text-white">
+          <Badge className="absolute top-3 right-3 bg-gray-500 text-white z-20 shadow-sm">
             Temporarily Unavailable
           </Badge>
         )}
       </div>
-      
-      <div className="flex flex-1 flex-col p-4">
+
+      <div className="flex flex-1 flex-col p-5">
         <div className="flex-grow">
-          <h3 className="text-lg font-semibold text-coffee-900">{name}</h3>
-          <p className="mt-1 h-10 text-sm text-gray-600 line-clamp-2">{description}</p>
+          <h3 className="text-lg font-bold text-coffee-900 group-hover:text-primary-600 transition-colors">{name}</h3>
+          <p className="mt-2 h-10 text-sm text-gray-600 line-clamp-2 leading-relaxed">{description}</p>
         </div>
-        
-        <div className="mt-4 flex items-center justify-between">
+
+        <div className="mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
           <div className="flex items-center gap-2 text-primary-600">
             <Gift className="h-5 w-5" />
             <p className="text-lg font-bold">{pointsCost} points</p>
@@ -72,7 +73,10 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, currentPoints, onRedeem
         <button
           onClick={() => onRedeem(id)}
           disabled={!isRedeemable}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:text-gray-100"
+          className={`mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 
+            ${isRedeemable
+              ? 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 hover:shadow-lg transform hover:scale-[1.02]'
+              : 'bg-gray-300 cursor-not-allowed text-gray-500'}`}
           aria-label={isRedeemable ? `Redeem ${name}` : `Cannot redeem ${name}`}
         >
           {getButtonContent()}

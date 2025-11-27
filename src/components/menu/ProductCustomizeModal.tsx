@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Minus, Loader2 } from 'lucide-react';
+import { Plus, Minus, Loader2, X } from 'lucide-react';
 import { Product, ProductSize } from '../../data/mockProducts';
 import { Customizations } from '../../context/CartContext';
 import { useToppings } from '../../hooks/useToppings';
@@ -11,8 +11,8 @@ interface ProductCustomizeModalProps {
     selectedSize: ProductSize;
     isOpen: boolean;
     onClose: () => void;
-    onConfirm: (customizations: Customizations, quantity: number, totalPrice?: number) => void;
-    onBuyNow?: (customizations: Customizations, quantity: number) => void;
+    onConfirm: (customizations: Customizations, quantity: number, totalPrice?: number, selectedSize?: ProductSize) => void;
+    onBuyNow?: (customizations: Customizations, quantity: number, selectedSize?: ProductSize) => void;
     initialCustomizations?: Customizations;
     initialQuantity?: number;
 }
@@ -31,6 +31,7 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
     const [iceLevel, setIceLevel] = useState('Normal');
     const [selectedTopping, setSelectedTopping] = useState('None');
     const [quantity, setQuantity] = useState(1);
+    const [currentSize, setCurrentSize] = useState<ProductSize>(selectedSize);
 
     // Fetch dynamic data from Firestore
     const { toppings, isLoading: toppingsLoading } = useToppings();
@@ -54,8 +55,9 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                 setSelectedTopping('None');
             }
             setQuantity(initialQuantity); // Use initialQuantity
+            setCurrentSize(selectedSize); // Initialize with prop
         }
-    }, [isOpen, initialCustomizations, initialQuantity]);
+    }, [isOpen, initialCustomizations, initialQuantity, selectedSize]);
 
     const getCustomizations = () => {
         const isBeverage = ['Coffee Based', 'Non-Coffee Based', 'Matcha Series', 'Refreshments'].includes(product.category);
@@ -72,13 +74,13 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
     };
 
     const handleConfirm = () => {
-        onConfirm(getCustomizations(), quantity, totalPrice / quantity); // Pass unit price (total / quantity)
+        onConfirm(getCustomizations(), quantity, totalPrice / quantity, currentSize); // Pass unit price (total / quantity) and size
         onClose(); // Close the modal after confirming
     };
 
     const handleBuyNow = () => {
         if (onBuyNow) {
-            onBuyNow(getCustomizations(), quantity);
+            onBuyNow(getCustomizations(), quantity, currentSize);
             onClose();
         }
     };
@@ -91,7 +93,7 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
 
     const selectedToppingData = toppingOptions.find((t) => t.name === selectedTopping);
     const toppingPrice = selectedToppingData?.price || 0;
-    const totalPrice = (selectedSize.price + toppingPrice) * quantity;
+    const totalPrice = (currentSize.price + toppingPrice) * quantity;
 
     const isLoading = toppingsLoading || optionsLoading;
 
@@ -99,7 +101,7 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
         <button
             onClick={handleConfirm}
             disabled={isLoading}
-            className="w-full flex items-center justify-between rounded-xl bg-gradient-to-r from-coffee-600 to-coffee-700 px-6 py-3.5 text-white font-bold shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-between rounded-xl bg-gradient-to-r from-coffee-600 to-coffee-700 px-6 py-3 text-white font-bold shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
             <span>Add to Order</span>
             <span className="text-lg tabular-nums">₱{totalPrice.toFixed(2)}</span>
@@ -110,28 +112,36 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title={product.name}
+            hideHeader={true}
+            hideCloseButton={true}
             footer={footerContent}
             className="sm:max-w-lg"
         >
-            <div className="space-y-6">
+            <div>
                 {/* Product Header Info */}
-                <div className="flex items-center gap-4 pb-4 border-b border-gray-100">
-                    <div className="h-20 w-20 shrink-0 rounded-xl overflow-hidden bg-gray-100 border border-gray-200">
+                <div className="-mx-6 -mt-6 mb-2">
+                    <div className="bg-[#F5F5F0] w-full h-96 flex items-center justify-center relative overflow-hidden">
+                        {/* Custom Close Button */}
+                        <button
+                            onClick={onClose}
+                            className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/50 hover:bg-white/80 backdrop-blur-sm transition-colors text-gray-600 hover:text-gray-900"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+
                         <img
                             src={product.imageUrl}
                             alt={product.name}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-cover object-center"
                         />
                     </div>
-                    <div>
-                        <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-                            <span className="bg-gray-100 px-2 py-0.5 rounded font-medium text-gray-700">
-                                {selectedSize.name}
-                            </span>
-                            <span>{selectedSize.size}</span>
+
+                    <div className="px-6 pt-4">
+                        <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium text-coffee-600 tracking-wide uppercase">{product.category}</span>
                         </div>
-                        <p className="text-sm text-gray-500 line-clamp-2">{product.description}</p>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h2>
+                        <p className="text-gray-500 leading-relaxed text-sm">{product.description}</p>
                     </div>
                 </div>
 
@@ -140,10 +150,31 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                         <Loader2 className="h-8 w-8 animate-spin text-coffee-600" />
                     </div>
                 ) : (
-                    <>
+                    <div className="space-y-1">
+                        {/* Size Selection */}
+                        <div className="py-4 border-b border-gray-100 -mx-6 px-6">
+                            <h4 className="mb-3 text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2">
+                                Size
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                                {product.sizes.map((size) => (
+                                    <button
+                                        key={size.name}
+                                        onClick={() => setCurrentSize(size)}
+                                        className={`flex-1 min-w-[80px] rounded-lg py-2 text-sm font-semibold transition-all border ${currentSize.name === size.name
+                                            ? 'bg-coffee-600 text-white border-coffee-600 shadow-md'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:border-coffee-300 hover:bg-coffee-50'
+                                            }`}
+                                    >
+                                        {size.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
                         {/* Sugar Level - Only for beverages */}
                         {['Coffee Based', 'Non-Coffee Based', 'Matcha Series', 'Refreshments'].includes(product.category) && (
-                            <div>
+                            <div className="py-4 border-b border-gray-100 -mx-6 px-6">
                                 <h4 className="mb-3 text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2">
                                     Sugar Level
                                 </h4>
@@ -166,7 +197,7 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
 
                         {/* Ice Level - Only for beverages */}
                         {['Coffee Based', 'Non-Coffee Based', 'Matcha Series', 'Refreshments'].includes(product.category) && (
-                            <div>
+                            <div className="py-4 border-b border-gray-100 -mx-6 px-6">
                                 <h4 className="mb-3 text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2">
                                     Ice Level
                                 </h4>
@@ -188,7 +219,7 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                         )}
 
                         {/* Toppings - Chips Layout */}
-                        <div>
+                        <div className="py-4 border-b border-gray-100 -mx-6 px-6">
                             <h4 className="mb-3 text-sm font-bold text-gray-900 uppercase tracking-wide flex items-center justify-between">
                                 <span>Toppings</span>
                                 <span className="text-xs font-normal text-gray-500 normal-case">Select one</span>
@@ -221,7 +252,7 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                         </div>
 
                         {/* Quantity */}
-                        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-between py-4 -mx-6 px-6">
                             <span className="font-bold text-gray-900">Quantity</span>
                             <div className="flex items-center gap-3 bg-gray-50 rounded-lg p-1 border border-gray-200">
                                 <button
@@ -240,7 +271,7 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                                 </button>
                             </div>
                         </div>
-                    </>
+                    </div>
                 )}
             </div>
         </Modal>

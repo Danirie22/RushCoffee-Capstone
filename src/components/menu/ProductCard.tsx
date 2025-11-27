@@ -16,7 +16,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onBuyNo
   const { name, category, imageUrl, comboImageUrl, available, stock, popular, new: isNew } = product;
   const navigate = useNavigate();
 
-  const [selectedSize, setSelectedSize] = React.useState<ProductSize>(product.sizes[0]);
+  // Default to the first size since selection is now in the modal
+  const selectedSize = product.sizes[0];
 
   const displayImageUrl =
     selectedSize.name === 'Combo Meal' && comboImageUrl
@@ -49,8 +50,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onBuyNo
       onClick={!isOutOfStock ? handleCardClick : undefined}
       onKeyDown={handleKeyDown}
       className={`w-full text-left rounded-2xl overflow-hidden bg-white shadow-sm border transition-all ${isOutOfStock
-          ? 'opacity-60 cursor-not-allowed'
-          : 'cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-gray-200 hover:border-coffee-300'
+        ? 'opacity-60 cursor-not-allowed'
+        : 'cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-gray-200 hover:border-coffee-300'
         }`}
     >
       {/* Image */}
@@ -82,25 +83,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onBuyNo
       <div className="p-3 md:p-4">
         <p className="text-xs text-gray-500 mb-1">{category}</p>
         <h3 className="font-bold text-gray-900 text-sm md:text-base mb-2 line-clamp-1">{name}</h3>
-
-        {/* Size Selector */}
-        <div className="flex gap-1 mb-3">
-          {product.sizes.map((size, index) => (
-            <button
-              key={`${size.name}-${index}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedSize(size);
-              }}
-              className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold transition-colors ${selectedSize.name === size.name
-                  ? 'bg-coffee-600 text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-            >
-              {size.name}
-            </button>
-          ))}
-        </div>
 
         {/* Price & Action */}
         <div className="flex items-center justify-between">

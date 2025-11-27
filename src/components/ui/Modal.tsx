@@ -11,6 +11,7 @@ interface ModalProps {
   footer?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   hideHeader?: boolean;
+  hideCloseButton?: boolean;
   className?: string;
 }
 
@@ -22,6 +23,7 @@ const Modal: React.FC<ModalProps> = ({
   footer,
   size = 'md',
   hideHeader = false,
+  hideCloseButton = false,
   className = ''
 }) => {
   const [showScrollbar, setShowScrollbar] = React.useState(false);
@@ -101,13 +103,15 @@ const Modal: React.FC<ModalProps> = ({
       >
         <Card variant="elevated" className="rounded-3xl p-0 shadow-2xl flex flex-col max-h-full overflow-hidden bg-white">
           {/* Single Close Button - Top Right */}
-          <button
-            onClick={onClose}
-            className="absolute right-6 top-6 z-10 rounded-full p-2 text-gray-400 transition-all hover:bg-gray-100 hover:text-gray-600 active:scale-95"
-            aria-label="Close modal"
-          >
-            <X className="h-6 w-6" />
-          </button>
+          {!hideCloseButton && (
+            <button
+              onClick={onClose}
+              className="absolute right-6 top-6 z-10 rounded-full p-2 text-gray-400 transition-all hover:bg-gray-100 hover:text-gray-600 active:scale-95"
+              aria-label="Close modal"
+            >
+              <X className="h-6 w-6" />
+            </button>
+          )}
 
           {/* Optional Title */}
           {!hideHeader && title && (
@@ -119,13 +123,13 @@ const Modal: React.FC<ModalProps> = ({
           )}
 
           {/* Content */}
-          <div className={`${hideHeader && !title ? 'p-8 pb-10' : 'px-8 py-6 pb-10'} overflow-y-auto custom-scrollbar ${showScrollbar ? 'scrollbar-flash' : ''} flex-1`}>
+          <div className={`${hideHeader && !title ? 'p-6 pb-10' : 'px-6 py-6 pb-10'} overflow-y-auto custom-scrollbar ${showScrollbar ? 'scrollbar-flash' : ''} flex-1`}>
             {children}
           </div>
 
           {/* Footer */}
           {footer && (
-            <div className="flex justify-end gap-3 border-t border-gray-200 bg-gray-50 px-8 py-5 flex-shrink-0 rounded-b-3xl">
+            <div className="flex justify-end gap-3 px-6 pb-2 pt-2 flex-shrink-0">
               {footer}
             </div>
           )}

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
 import { QueueItem } from '../../context/OrderContext';
-import { Clock, Coffee, CheckCircle, AlertCircle, XCircle, Play, Trash2 } from 'lucide-react';
+import { Clock, Coffee, CheckCircle, AlertCircle, XCircle, Play, Trash2, FileText } from 'lucide-react';
+import DigitalReceipt from '../../components/checkout/DigitalReceipt';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { useCart } from '../../context/CartContext';
@@ -13,6 +15,7 @@ type OrderStatus = 'waiting' | 'preparing' | 'ready' | 'completed' | 'cancelled'
 const AdminQueuePage: React.FC = () => {
     const [orders, setOrders] = useState<QueueItem[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedReceiptOrder, setSelectedReceiptOrder] = useState<QueueItem | null>(null);
     const { showToast } = useCart();
     const { products } = useProduct();
     const previousOrderCount = React.useRef(0);
@@ -96,6 +99,53 @@ const AdminQueuePage: React.FC = () => {
             }
 
             await db.collection('orders').doc(orderId).update(updateData);
+
+            // Award points if order is completed
+            if (newStatus === 'completed') {
+                const orderDoc = await db.collection('orders').doc(orderId).get();
+                if (orderDoc.exists) {
+                    const orderData = orderDoc.data();
+                    if (orderData && orderData.userId) {
+                        let loyaltyPoints = 0;
+                        const items = orderData.orderItems || orderData.items || [];
+                        const productNames: string[] = [];
+
+                        items.forEach((item: any) => {
+                            productNames.push(item.productName);
+                            const productName = item.productName.toLowerCase();
+                            if (productName.includes('grande')) {
+                                loyaltyPoints += 4 * item.quantity;
+                            } else if (productName.includes('venti')) {
+                                loyaltyPoints += 5 * item.quantity;
+                            } else if (productName.includes('ala carte')) {
+                                loyaltyPoints += 4 * item.quantity;
+                            } else if (productName.includes('combo')) {
+                                loyaltyPoints += 5 * item.quantity;
+                            }
+                        });
+
+                        if (loyaltyPoints > 0) {
+                            const historyEntry = {
+                                id: `rh-${Date.now()}`,
+                                type: 'earned',
+                                points: loyaltyPoints,
+                                description: `Earned from ${productNames.join(', ')}`,
+                                date: new Date(),
+                            };
+
+                            await db.collection('users').doc(orderData.userId).update({
+                                totalOrders: firebase.firestore.FieldValue.increment(1),
+                                currentPoints: firebase.firestore.FieldValue.increment(loyaltyPoints),
+                                loyaltyPoints: firebase.firestore.FieldValue.increment(loyaltyPoints),
+                                rewardsHistory: firebase.firestore.FieldValue.arrayUnion(historyEntry)
+                            });
+
+                            console.log(`🌟 Awarded ${loyaltyPoints} points to user ${orderData.userId}`);
+                        }
+                    }
+                }
+            }
+
             showToast(`Order updated to ${newStatus}`);
         } catch (error) {
             console.error('Error updating order status:', error);
@@ -183,6 +233,37 @@ const AdminQueuePage: React.FC = () => {
                                 })}
                             </div>
 
+                            {/* GCash Details */}
+                            {order.paymentMethod === 'gcash' && (
+                                <div className="mt-2 mb-2 rounded bg-blue-50 p-2 text-xs text-blue-800 border border-blue-100">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-bold flex items-center gap-1">
+                                            <span className="h-2 w-2 rounded-full bg-blue-500"></span>
+                                            GCash
+                                        </span>
+                                        {order.receiptUrl && (
+                                            <button
+                                                onClick={() => setSelectedReceiptOrder(order)}
+                                                className="flex items-center gap-1 text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                                            >
+                                                <FileText className="h-3 w-3" />
+                                                View Receipt
+                                            </button>
+                                        )}
+                                    </div>
+                                    {order.paymentAccountName && (
+                                        <div className="mt-1 font-medium truncate" title={order.paymentAccountName}>
+                                            Acct: {order.paymentAccountName}
+                                        </div>
+                                    )}
+                                    {order.paymentReference && (
+                                        <div className="mt-1 font-mono truncate" title={order.paymentReference}>
+                                            Ref: {order.paymentReference}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="flex gap-2 mt-2">
                                 {status === 'waiting' && (
                                     <button
@@ -269,6 +350,14 @@ const AdminQueuePage: React.FC = () => {
                     actionLabel="Complete Order"
                 />
             </div>
+
+            {selectedReceiptOrder && (
+                <DigitalReceipt
+                    order={selectedReceiptOrder}
+                    isOpen={!!selectedReceiptOrder}
+                    onClose={() => setSelectedReceiptOrder(null)}
+                />
+            )}
         </div>
     );
 };

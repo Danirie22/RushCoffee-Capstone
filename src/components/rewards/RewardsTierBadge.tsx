@@ -43,9 +43,9 @@ const RewardsTierBadge: React.FC<RewardsTierBadgeProps> = ({
   showProgress = true,
 }) => {
   const config = tierConfig[tier];
-  
+
   const pointsToNextTier = nextTierPoints - currentPoints;
-  const progressPercent = tier !== 'gold' 
+  const progressPercent = tier !== 'gold'
     ? Math.max(0, Math.min(100, ((currentPoints - config.minPoints) / (nextTierPoints - config.minPoints)) * 100))
     : 100;
 

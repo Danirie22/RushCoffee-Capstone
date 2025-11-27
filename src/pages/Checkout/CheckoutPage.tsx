@@ -1,23 +1,37 @@
-
 import * as React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, User, Phone, MessageSquare, Check, Coffee, AlertCircle, Loader2 } from 'lucide-react';
+import { ShoppingBag, User, Phone, MessageSquare, Check, Coffee, AlertCircle, Loader2, ArrowLeft } from 'lucide-react';
 
 import Header from '../../components/layout/Header';
-import Footer from '../../components/layout/Footer';
+
 import PaymentMethodSelector from '../../components/checkout/PaymentMethodSelector';
 import GCashPayment from '../../components/checkout/GCashPayment';
 import OrderSummaryWidget from '../../components/checkout/OrderSummaryWidget';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useOrder, QueueItem } from '../../context/OrderContext';
+import { useToppings } from '../../hooks/useToppings';
+import { useRewards } from '../../hooks/useRewards';
+import { AvailableReward } from '../../data/mockRewards';
+import { db } from '../../firebaseConfig';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/storage';
 
 const CheckoutPage: React.FC = () => {
     const navigate = useNavigate();
     const { cartItems, showToast, totalCartItems, clearCart, selectedItemIds } = useCart();
     const { currentUser } = useAuth();
     const { setActiveOrder, addOrderToHistory } = useOrder();
+    const { toppings: availableToppings } = useToppings();
+    const { rewards, loading: loadingRewards } = useRewards();
 
+    const getToppingsPrice = (toppingNames?: string[]) => {
+        if (!toppingNames) return 0;
+        return toppingNames.reduce((acc, name) => {
+            const topping = availableToppings.find(t => t.name === name);
+            return acc + (topping?.price || 0);
+        }, 0);
+    };
 
     // Filter only selected items for checkout
     const selectedCartItems = React.useMemo(() =>
@@ -29,19 +43,50 @@ const CheckoutPage: React.FC = () => {
     const [selectedPaymentMethod, setSelectedPaymentMethod] = React.useState<'gcash' | 'cash' | null>(null);
     const [customerInfo, setCustomerInfo] = React.useState({ name: '', phone: '' });
     const [orderNotes, setOrderNotes] = React.useState('');
-    const [errors, setErrors] = React.useState<{ name?: string; phone?: string; payment?: string; gcash?: string }>({});
+    const [errors, setErrors] = React.useState<{ name?: string; phone?: string; payment?: string; gcash?: string; reference?: string; accountName?: string }>({});
 
-    const [receiptFile, setReceiptFile] = React.useState<File | null>(null);
+    const [paymentReference, setPaymentReference] = React.useState('');
+    const [accountName, setAccountName] = React.useState('');
 
     const [isProcessing, setIsProcessing] = React.useState(false);
     const [orderPlaced, setOrderPlaced] = React.useState(false);
+    const [selectedReward, setSelectedReward] = React.useState<AvailableReward | null>(null);
 
     // Memoized calculations for order summary
-    const { subtotal, serviceFee, total } = React.useMemo(() => {
+    const { subtotal, toppingsTotal, discountAmount, total } = React.useMemo(() => {
         const sub = selectedCartItems.reduce((acc, item) => acc + item.selectedSize.price * item.quantity, 0);
-        const fee = 15.00; // Example service fee
-        return { subtotal: sub, serviceFee: fee, total: sub + fee };
-    }, [selectedCartItems]);
+        const toppings = selectedCartItems.reduce((acc, item) => {
+            const itemToppingsPrice = getToppingsPrice(item.customizations?.toppings);
+            return acc + itemToppingsPrice * item.quantity;
+        }, 0);
+
+        let discount = 0;
+        if (selectedReward) {
+            if (selectedReward.category === 'discount') {
+                // 10% Off
+                if (selectedReward.name.includes('10%')) {
+                    discount = (sub + toppings) * 0.10;
+                }
+            } else if (selectedReward.category === 'drink' && selectedReward.name.includes('Free Grande')) {
+                // Find first Grande drink
+                const eligibleItem = selectedCartItems.find(item => item.selectedSize.name === 'Grande');
+                if (eligibleItem) {
+                    discount = eligibleItem.selectedSize.price;
+                }
+            } else if (selectedReward.category === 'food' && selectedReward.name.includes('Rice Meal')) {
+                // Find first Rice Meal
+                const eligibleItem = selectedCartItems.find(item => item.product.category === 'Meals' || item.product.name.includes('Rice'));
+                if (eligibleItem) {
+                    discount = eligibleItem.selectedSize.price;
+                }
+            }
+        }
+
+        // Ensure discount doesn't exceed total
+        discount = Math.min(discount, sub + toppings);
+
+        return { subtotal: sub, toppingsTotal: toppings, discountAmount: discount, total: sub + toppings - discount };
+    }, [selectedCartItems, availableToppings, selectedReward]);
 
     const summaryItems = React.useMemo(() =>
         selectedCartItems.map(item => ({
@@ -87,8 +132,13 @@ const CheckoutPage: React.FC = () => {
         if (!selectedPaymentMethod) {
             newErrors.payment = 'Please select a payment method.';
         }
-        if (selectedPaymentMethod === 'gcash' && !receiptFile) {
-            newErrors.gcash = 'Please upload your payment receipt to proceed.';
+        if (selectedPaymentMethod === 'gcash') {
+            if (!paymentReference.trim()) {
+                newErrors.reference = 'Please enter the GCash reference number.';
+            }
+            if (!accountName.trim()) {
+                newErrors.accountName = 'Please enter the GCash account name.';
+            }
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -104,8 +154,10 @@ const CheckoutPage: React.FC = () => {
         setIsProcessing(true);
         const newOrderNumber = `RC-2025-${Math.floor(1000 + Math.random() * 9000)}`;
 
-        // Simulate API call
-        setTimeout(async () => {
+        try {
+            // Receipt upload skipped
+            const receiptUrl = '';
+
             const orderData = {
                 userId: currentUser.uid,
                 customerName: customerInfo.name,
@@ -124,23 +176,46 @@ const CheckoutPage: React.FC = () => {
                 totalAmount: total,
                 paymentMethod: selectedPaymentMethod!,
                 paymentStatus: selectedPaymentMethod === 'gcash' ? 'paid' : 'pending',
+                receiptUrl: receiptUrl || null,
+                paymentReference: paymentReference || null,
+                paymentAccountName: accountName || null,
                 estimatedTime: 10,
                 orderType: 'online',
+                discountApplied: discountAmount,
+                rewardRedeemed: selectedReward ? {
+                    id: selectedReward.id,
+                    name: selectedReward.name,
+                    pointsCost: selectedReward.pointsCost
+                } : null,
             };
 
-            // This now just creates the order document.
-            // A backend Cloud Function will be triggered on document creation
-            // to securely process points and update user stats.
             await addOrderToHistory(orderData as Omit<QueueItem, 'id' | 'timestamp'>);
 
-            // The user's profile will update automatically via the new real-time listener in AuthContext.
+            // Deduct points if reward redeemed
+            if (selectedReward) {
+                const userDocRef = db.collection('users').doc(currentUser.uid);
+                await userDocRef.update({
+                    currentPoints: firebase.firestore.FieldValue.increment(-selectedReward.pointsCost),
+                    rewardsHistory: firebase.firestore.FieldValue.arrayUnion({
+                        id: `rh-${Date.now()}`,
+                        type: 'redeemed',
+                        points: -selectedReward.pointsCost,
+                        description: `Redeemed: ${selectedReward.name} (Checkout)`,
+                        date: new Date(),
+                    })
+                });
+            }
 
             clearCart();
             setIsProcessing(false);
             setOrderPlaced(true);
             navigate('/queue', { state: { fromCheckout: true, orderNumber: newOrderNumber } });
 
-        }, 2000);
+        } catch (error) {
+            console.error("Error placing order:", error);
+            showToast('Failed to place order. Please try again.');
+            setIsProcessing(false);
+        }
     };
 
     const isButtonDisabled =
@@ -148,7 +223,9 @@ const CheckoutPage: React.FC = () => {
         !selectedPaymentMethod ||
         !customerInfo.name ||
         !/^(09|\+639)\d{9}$/.test(customerInfo.phone) ||
-        (selectedPaymentMethod === 'gcash' && !receiptFile);
+        !/^(09|\+639)\d{9}$/.test(customerInfo.phone) ||
+        !/^(09|\+639)\d{9}$/.test(customerInfo.phone) ||
+        (selectedPaymentMethod === 'gcash' && (!paymentReference || !accountName));
 
 
     if (!currentUser || (totalCartItems === 0 && !orderPlaced)) {
@@ -165,7 +242,7 @@ const CheckoutPage: React.FC = () => {
                         </button>
                     </div>
                 </main>
-                <Footer />
+
             </div>
         );
     }
@@ -174,43 +251,161 @@ const CheckoutPage: React.FC = () => {
         <div className="flex min-h-screen flex-col bg-gray-50">
             <Header />
             <main className="container mx-auto max-w-7xl px-4 py-8">
-                <h1 className="mb-6 font-display text-3xl font-bold text-coffee-900">Checkout</h1>
+                <div className="mb-8 flex items-center gap-4">
+                    <button
+                        onClick={() => navigate('/menu')}
+                        className="rounded-full bg-white p-2 text-gray-500 shadow-sm transition-colors hover:bg-gray-50 hover:text-primary-600"
+                    >
+                        <ArrowLeft className="h-6 w-6" />
+                    </button>
+                    <div>
+                        <h1 className="font-display text-3xl font-bold text-coffee-900">Checkout</h1>
+                        <p className="text-sm text-gray-500">Complete your order details</p>
+                    </div>
+                </div>
                 <form onSubmit={handlePlaceOrder} id="checkout-form" className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Left Column */}
                     <div className="space-y-8 lg:col-span-2">
                         {/* Customer Info */}
-                        <div className="rounded-xl border bg-white p-6">
+                        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <h2 className="mb-4 font-display text-xl font-bold text-coffee-900">Your Information</h2>
                             <div className="space-y-4">
-                                <div className="relative">
+                                <div>
                                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
-                                    <User className="absolute left-3 top-10 h-5 w-5 text-gray-400" />
-                                    <input type="text" id="name" value={customerInfo.name} onChange={e => setCustomerInfo({ ...customerInfo, name: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="Juan dela Cruz" />
+                                    <div className="relative mt-1">
+                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <User className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            id="name"
+                                            value={customerInfo.name}
+                                            onChange={e => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                                            className="block w-full rounded-lg border-gray-200 bg-gray-50 py-2.5 pl-10 text-gray-900 shadow-sm transition-all focus:border-primary-500 focus:bg-white focus:ring-primary-500"
+                                            placeholder="Juan dela Cruz"
+                                        />
+                                    </div>
                                     {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
                                 </div>
-                                <div className="relative">
+                                <div>
                                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
-                                    <Phone className="absolute left-3 top-10 h-5 w-5 text-gray-400" />
-                                    <input type="tel" id="phone" value={customerInfo.phone} onChange={e => setCustomerInfo({ ...customerInfo, phone: e.target.value })} className="mt-1 block w-full rounded-md border-gray-300 py-2 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="09171234567" />
+                                    <div className="relative mt-1">
+                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                            <Phone className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="tel"
+                                            id="phone"
+                                            value={customerInfo.phone}
+                                            onChange={e => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                                            className="block w-full rounded-lg border-gray-200 bg-gray-50 py-2.5 pl-10 text-gray-900 shadow-sm transition-all focus:border-primary-500 focus:bg-white focus:ring-primary-500"
+                                            placeholder="09171234567"
+                                        />
+                                    </div>
                                     {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
                                 </div>
                             </div>
                         </div>
 
+                        {/* Rewards Selection */}
+                        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+                            <h2 className="mb-4 font-display text-xl font-bold text-coffee-900">Redeem Rewards</h2>
+                            {loadingRewards ? (
+                                <div className="flex justify-center py-8">
+                                    <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    {/* No Reward Option */}
+                                    <label
+                                        className={`relative flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all hover:border-primary-300 hover:shadow-md ${selectedReward === null
+                                            ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600'
+                                            : 'border-gray-200 bg-white'
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`flex h-12 w-12 items-center justify-center rounded-full transition-colors ${selectedReward === null ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'}`}>
+                                                <Coffee className="h-6 w-6" />
+                                            </div>
+                                            <div>
+                                                <p className={`font-semibold ${selectedReward === null ? 'text-primary-900' : 'text-gray-900'}`}>No Reward</p>
+                                                <p className="text-sm text-gray-500">Save your points for later</p>
+                                            </div>
+                                        </div>
+                                        <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${selectedReward === null ? 'border-primary-600 bg-primary-600' : 'border-gray-300'}`}>
+                                            {selectedReward === null && <div className="h-2 w-2 rounded-full bg-white" />}
+                                        </div>
+                                        <input
+                                            type="radio"
+                                            name="reward"
+                                            className="hidden"
+                                            checked={selectedReward === null}
+                                            onChange={() => setSelectedReward(null)}
+                                        />
+                                    </label>
+
+                                    {rewards.map(reward => {
+                                        const canAfford = currentUser.currentPoints >= reward.pointsCost;
+                                        const isSelected = selectedReward?.id === reward.id;
+                                        return (
+                                            <label
+                                                key={reward.id}
+                                                className={`relative flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${!canAfford ? 'cursor-not-allowed opacity-60 bg-gray-50' : 'hover:border-primary-300 hover:shadow-md'
+                                                    } ${isSelected
+                                                        ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600'
+                                                        : 'border-gray-200 bg-white'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-12 w-12 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
+                                                        <img src={reward.imageUrl} alt={reward.name} className="h-full w-full object-cover" />
+                                                    </div>
+                                                    <div>
+                                                        <p className={`font-semibold ${isSelected ? 'text-primary-900' : 'text-gray-900'}`}>{reward.name}</p>
+                                                        <div className="flex items-center gap-1">
+                                                            <span className={`text-sm font-bold ${canAfford ? 'text-primary-600' : 'text-gray-400'}`}>{reward.pointsCost} Points</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${isSelected ? 'border-primary-600 bg-primary-600' : 'border-gray-300'}`}>
+                                                    {isSelected && <div className="h-2 w-2 rounded-full bg-white" />}
+                                                </div>
+                                                <input
+                                                    type="radio"
+                                                    name="reward"
+                                                    className="hidden"
+                                                    disabled={!canAfford}
+                                                    checked={isSelected}
+                                                    onChange={() => setSelectedReward(reward)}
+                                                />
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                            <div className="mt-6 flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 text-sm">
+                                <span className="text-gray-600">Available Points</span>
+                                <span className="font-display text-lg font-bold text-primary-600">{currentUser.currentPoints}</span>
+                            </div>
+                        </div>
+
                         {/* Payment Method */}
-                        <div className="rounded-xl border bg-white p-6">
+                        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <PaymentMethodSelector selectedMethod={selectedPaymentMethod} onSelectMethod={setSelectedPaymentMethod} />
                             {errors.payment && <p className="mt-2 text-xs text-red-500">{errors.payment}</p>}
-
                             {selectedPaymentMethod === 'gcash' && (
                                 <div className="mt-6 border-t pt-6">
                                     <GCashPayment
                                         totalAmount={total}
-                                        orderNumber={`TEMP-${Date.now()}`}
-                                        receipt={receiptFile}
-                                        onReceiptUpload={setReceiptFile}
+                                        orderNumber={`RC-${Date.now()}`}
+                                        referenceNumber={paymentReference}
+                                        onReferenceNumberChange={setPaymentReference}
+                                        accountName={accountName}
+                                        onAccountNameChange={setAccountName}
                                     />
                                     {errors.gcash && <p className="mt-2 text-xs text-red-500 text-center">{errors.gcash}</p>}
+                                    {errors.accountName && <p className="mt-2 text-xs text-red-500 text-center">{errors.accountName}</p>}
+                                    {errors.reference && <p className="mt-2 text-xs text-red-500 text-center">{errors.reference}</p>}
                                 </div>
                             )}
 
@@ -229,13 +424,21 @@ const CheckoutPage: React.FC = () => {
                         </div>
 
                         {/* Order Notes */}
-                        <div className="rounded-xl border bg-white p-6">
+                        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <h2 className="mb-4 font-display text-xl font-bold text-coffee-900">Special Instructions (Optional)</h2>
                             <div className="relative">
                                 <MessageSquare className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                                <textarea id="notes" value={orderNotes} onChange={e => setOrderNotes(e.target.value)} rows={3} className="block w-full rounded-md border-gray-300 py-2 pl-10 shadow-sm focus:border-primary-500 focus:ring-primary-500" placeholder="e.g., less ice, extra shot..."></textarea>
+                                <textarea
+                                    id="notes"
+                                    value={orderNotes}
+                                    onChange={e => setOrderNotes(e.target.value)}
+                                    rows={3}
+                                    className="block w-full rounded-lg border-gray-200 bg-gray-50 py-2.5 pl-10 text-gray-900 shadow-sm transition-all focus:border-primary-500 focus:bg-white focus:ring-primary-500"
+                                    placeholder="e.g., less ice, extra shot..."
+                                ></textarea>
                             </div>
                         </div>
+
                         {/* Desktop Action Button */}
                         <div className="hidden lg:block">
                             <button
@@ -248,12 +451,14 @@ const CheckoutPage: React.FC = () => {
                             </button>
                         </div>
                     </div>
+
                     {/* Right Column */}
                     <div className="lg:col-span-1">
-                        <OrderSummaryWidget items={summaryItems} subtotal={subtotal} serviceFee={serviceFee} total={total} />
+                        <OrderSummaryWidget items={summaryItems} subtotal={subtotal} toppingsTotal={toppingsTotal} discount={discountAmount} total={total} />
                     </div>
                 </form>
             </main>
+
             {/* Fixed Action Button on Mobile */}
             <div className="sticky bottom-0 left-0 right-0 border-t border-gray-200 bg-white/90 p-4 backdrop-blur-sm lg:hidden">
                 <button
@@ -266,7 +471,7 @@ const CheckoutPage: React.FC = () => {
                 </button>
             </div>
 
-            <Footer />
+
         </div>
     );
 };

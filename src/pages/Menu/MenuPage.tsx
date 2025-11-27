@@ -67,9 +67,13 @@ const MenuPage: React.FC = () => {
         }
     };
 
-    const handleConfirmCustomization = (customizations: Customizations, quantity: number) => {
-        if (selectedProduct && selectedSize) {
-            addToCart(selectedProduct, selectedSize, customizations, quantity);
+    const handleConfirmCustomization = (customizations: Customizations, quantity: number, totalPrice?: number, size?: ProductSize) => {
+        if (selectedProduct && (size || selectedSize)) {
+            // Use the size from the modal if available, otherwise fallback to the initially selected size
+            const finalSize = size || selectedSize;
+            if (finalSize) {
+                addToCart(selectedProduct, finalSize, customizations, quantity);
+            }
         }
     };
 

@@ -43,6 +43,9 @@ export interface OrderData {
     completedAt?: any;
     orderType?: 'online' | 'walk-in';
     inventoryDeducted?: boolean;
+    receiptUrl?: string;
+    paymentAccountName?: string;
+    paymentReference?: string;
 }
 
 /**
@@ -96,6 +99,64 @@ export const updateOrderStatus = async (
         // Add completedAt timestamp when marking as completed
         if (status === 'completed') {
             updateData.completedAt = firebase.firestore.FieldValue.serverTimestamp();
+
+            // Calculate and award loyalty points
+            const orderDoc = await db.collection('orders').doc(orderId).get();
+            if (orderDoc.exists) {
+                const orderData = orderDoc.data() as OrderData;
+                // Check for userId or customerId (legacy support)
+                const targetUserId = (orderData as any).userId || orderData.customerId;
+
+                if (targetUserId) {
+                    let pointsEarned = 0;
+                    const productNames: string[] = [];
+
+                    // Calculate points based on items
+                    if (orderData.orderItems) {
+                        orderData.orderItems.forEach(item => {
+                            productNames.push(item.productName);
+                            // Points rules:
+                            // Grande / Combo Meal = 4 points
+                            // Venti / Ala Carte = 5 points
+
+                            // Check size field first, then fallback to product name
+                            const size = item.size;
+                            const productName = item.productName ? item.productName.toLowerCase() : '';
+
+                            if (size === 'Grande' || productName.includes('grande')) {
+                                pointsEarned += 4 * item.quantity;
+                            } else if (size === 'Venti' || productName.includes('venti')) {
+                                pointsEarned += 5 * item.quantity;
+                            } else if (size === 'Combo Meal' || productName.includes('combo')) {
+                                pointsEarned += 5 * item.quantity;
+                            } else if (size === 'Ala Carte' || productName.includes('ala carte')) {
+                                pointsEarned += 4 * item.quantity;
+                            }
+                        });
+                    }
+
+                    if (pointsEarned > 0) {
+                        console.log(`🌟 Awarding ${pointsEarned} points to customer ${targetUserId}`);
+
+                        const userRef = db.collection('users').doc(targetUserId);
+                        const rewardHistoryEntry = {
+                            id: `rh-${Date.now()}`,
+                            type: 'earned',
+                            points: pointsEarned,
+                            description: `Earned from ${productNames.join(', ')}`,
+                            date: new Date()
+                        };
+
+                        await userRef.update({
+                            currentPoints: firebase.firestore.FieldValue.increment(pointsEarned),
+                            lifetimePoints: firebase.firestore.FieldValue.increment(pointsEarned),
+                            totalOrders: firebase.firestore.FieldValue.increment(1),
+                            totalSpent: firebase.firestore.FieldValue.increment(orderData.subtotal),
+                            rewardsHistory: firebase.firestore.FieldValue.arrayUnion(rewardHistoryEntry)
+                        });
+                    }
+                }
+            }
         }
 
         // Deduct inventory when marking as ready (if not already deducted)

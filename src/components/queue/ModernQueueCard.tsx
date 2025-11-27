@@ -145,7 +145,10 @@ const ModernQueueCard: React.FC<ModernQueueCardProps> = ({ order, onDismiss }) =
         try {
             // Calculate loyalty points based on order sizes
             let loyaltyPoints = 0;
+            const productNames: string[] = [];
+
             order.orderItems.forEach(item => {
+                productNames.push(item.productName);
                 // Check if the product name contains size information
                 const productName = item.productName.toLowerCase();
 
@@ -179,6 +182,16 @@ const ModernQueueCard: React.FC<ModernQueueCardProps> = ({ order, onDismiss }) =
                 if (loyaltyPoints > 0) {
                     updateData.currentPoints = firebase.firestore.FieldValue.increment(loyaltyPoints);
                     updateData.loyaltyPoints = firebase.firestore.FieldValue.increment(loyaltyPoints);
+
+                    // Add to rewards history
+                    const historyEntry = {
+                        id: `rh-${Date.now()}`,
+                        type: 'earned',
+                        points: loyaltyPoints,
+                        description: `Earned from ${productNames.join(', ')}`,
+                        date: new Date(),
+                    };
+                    updateData.rewardsHistory = firebase.firestore.FieldValue.arrayUnion(historyEntry);
                 }
 
                 await db.collection('users').doc(order.userId).update(updateData);

@@ -9,14 +9,16 @@ interface OrderSummaryWidgetProps {
         imageUrl?: string;
     }>;
     subtotal: number;
-    serviceFee?: number;
+    toppingsTotal?: number;
+    discount?: number;
     total: number;
 }
 
 const OrderSummaryWidget: React.FC<OrderSummaryWidgetProps> = ({
     items,
     subtotal,
-    serviceFee = 0,
+    toppingsTotal = 0,
+    discount = 0,
     total,
 }) => {
     return (
@@ -62,10 +64,16 @@ const OrderSummaryWidget: React.FC<OrderSummaryWidgetProps> = ({
                         <span className="text-gray-600">Subtotal</span>
                         <span className="font-medium text-gray-900">₱{subtotal.toFixed(2)}</span>
                     </div>
-                    {serviceFee > 0 && (
+                    {toppingsTotal > 0 && (
                         <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Service Fee</span>
-                            <span className="font-medium text-gray-900">₱{serviceFee.toFixed(2)}</span>
+                            <span className="text-gray-600">Toppings</span>
+                            <span className="font-medium text-gray-900">₱{toppingsTotal.toFixed(2)}</span>
+                        </div>
+                    )}
+                    {discount > 0 && (
+                        <div className="flex justify-between text-sm text-green-600">
+                            <span className="font-medium">Discount</span>
+                            <span className="font-bold">-₱{discount.toFixed(2)}</span>
                         </div>
                     )}
                 </div>

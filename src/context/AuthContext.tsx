@@ -148,7 +148,14 @@ const fetchUserProfile = async (uid: string): Promise<UserProfile> => {
             lifetimePoints: data.lifetimePoints ?? 0,
             loyaltyPoints: data.loyaltyPoints ?? 0,
             tier: data.tier || 'bronze',
-            rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({ ...h, date: h.date.toDate() })).sort((a: any, b: any) => b.date - a.date),
+            rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({
+                ...h,
+                date: h.date && typeof h.date.toDate === 'function' ? h.date.toDate() : h.date
+            })).sort((a: any, b: any) => {
+                const dateA = a.date instanceof Date ? a.date : new Date(a.date);
+                const dateB = b.date instanceof Date ? b.date : new Date(b.date);
+                return dateB.getTime() - dateA.getTime();
+            }),
             preferences: data.preferences || { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } },
         };
     }
@@ -170,7 +177,14 @@ const fetchUserProfile = async (uid: string): Promise<UserProfile> => {
         lifetimePoints: data.lifetimePoints ?? 0,
         loyaltyPoints: data.loyaltyPoints ?? 0,
         tier: data.tier || 'bronze',
-        rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({ ...h, date: h.date.toDate() })).sort((a: any, b: any) => b.date - a.date),
+        rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({
+            ...h,
+            date: h.date && typeof h.date.toDate === 'function' ? h.date.toDate() : h.date
+        })).sort((a: any, b: any) => {
+            const dateA = a.date instanceof Date ? a.date : new Date(a.date);
+            const dateB = b.date instanceof Date ? b.date : new Date(b.date);
+            return dateB.getTime() - dateA.getTime();
+        }),
         preferences: data.preferences || { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } },
     };
 };
@@ -210,7 +224,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                             currentPoints: data.currentPoints ?? 0,
                             lifetimePoints: data.lifetimePoints ?? 0,
                             tier: data.tier || 'bronze',
-                            rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({ ...h, date: h.date.toDate() })).sort((a: any, b: any) => b.date - a.date),
+                            rewardsHistory: (data.rewardsHistory || []).map((h: any) => ({
+                                ...h,
+                                date: h.date && typeof h.date.toDate === 'function' ? h.date.toDate() : h.date
+                            })).sort((a: any, b: any) => {
+                                const dateA = a.date instanceof Date ? a.date : new Date(a.date);
+                                const dateB = b.date instanceof Date ? b.date : new Date(b.date);
+                                return dateB.getTime() - dateA.getTime();
+                            }),
                             preferences: data.preferences || { notifications: { push: true, emailUpdates: true, marketing: false }, theme: 'auto', privacy: { shareUsageData: true, personalizedRecs: true } },
                         };
                         setCurrentUser(userProfile);
