@@ -21,6 +21,13 @@ const GoogleIcon = () => (
     </svg>
 );
 
+// Facebook Icon SVG
+const FacebookIcon = () => (
+    <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#1877F2" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+    </svg>
+);
+
 const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onSuccess, onVerificationNeeded }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -28,9 +35,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+    const [isFacebookLoading, setIsFacebookLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const { login, signInWithGoogle } = useAuth();
+    const { login, signInWithGoogle, signInWithFacebook } = useAuth();
 
 
 
@@ -67,9 +75,42 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
             const userProfile = await signInWithGoogle();
             onSuccess(userProfile.role);
         } catch (err: any) {
-            setError(err.message || 'Failed to sign in with Google');
+            console.error('Google Sign-In Error:', err);
+            if (err.code === 'auth/popup-closed-by-user') {
+                setError('Sign-in cancelled.');
+            } else if (err.code === 'auth/popup-blocked') {
+                setError('Pop-up blocked. Please allow pop-ups for this site.');
+            } else if (err.code === 'auth/operation-not-allowed') {
+                setError('Google Sign-In is not enabled in Firebase Console.');
+            } else {
+                setError(err.message || 'Failed to sign in with Google');
+            }
         } finally {
             setIsGoogleLoading(false);
+        }
+    };
+
+    const handleFacebookSignIn = async () => {
+        setIsFacebookLoading(true);
+        setError(null);
+        try {
+            const userProfile = await signInWithFacebook();
+            onSuccess(userProfile.role);
+        } catch (err: any) {
+            console.error('Facebook Sign-In Error:', err);
+            if (err.code === 'auth/popup-closed-by-user') {
+                setError('Sign-in cancelled.');
+            } else if (err.code === 'auth/popup-blocked') {
+                setError('Pop-up blocked. Please allow pop-ups for this site.');
+            } else if (err.code === 'auth/operation-not-allowed') {
+                setError('Facebook Sign-In is not enabled in Firebase Console.');
+            } else if (err.code === 'auth/account-exists-with-different-credential') {
+                setError('An account already exists with the same email address but different sign-in credentials. Sign in using a provider associated with this email address.');
+            } else {
+                setError(err.message || 'Failed to sign in with Facebook');
+            }
+        } finally {
+            setIsFacebookLoading(false);
         }
     };
 
@@ -169,15 +210,27 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
                     </div>
                 </div>
 
-                <button
-                    type="button"
-                    onClick={handleGoogleSignIn}
-                    disabled={isGoogleLoading}
-                    className="w-full flex items-center justify-center gap-3 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 py-3.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleIcon />}
-                    <span className="font-semibold text-gray-700">Google</span>
-                </button>
+                <div className="grid grid-cols-2 gap-3">
+                    <button
+                        type="button"
+                        onClick={handleGoogleSignIn}
+                        disabled={isGoogleLoading || isFacebookLoading}
+                        className="flex items-center justify-center gap-2 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 py-3.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isGoogleLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <GoogleIcon />}
+                        <span className="font-semibold text-gray-700">Google</span>
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={handleFacebookSignIn}
+                        disabled={isGoogleLoading || isFacebookLoading}
+                        className="flex items-center justify-center gap-2 border-2 border-gray-200 hover:border-gray-300 hover:bg-gray-50 py-3.5 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isFacebookLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <FacebookIcon />}
+                        <span className="font-semibold text-gray-700">Facebook</span>
+                    </button>
+                </div>
 
                 <p className="text-center text-sm text-gray-600 mt-6">
                     Don't have an account?{' '}

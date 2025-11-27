@@ -6,10 +6,12 @@ import { db } from '../firebaseConfig';
 
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
+import Button from '../components/ui/Button';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
 import { useAuth } from '../context/AuthContext';
 import RushCoffeeLogo from '../components/layout/RushCoffeeLogo';
+import heroBgFull from '../assets/rushb.webp';
 
 const features = [
     {
@@ -190,59 +192,48 @@ const HomePage: React.FC = () => {
                     {/* Background Image with Overlay */}
                     <div className="absolute inset-0 z-0">
                         <img
-                            src="https://images.unsplash.com/photo-1497935586351-b67a49e012bf?q=80&w=2071&auto=format&fit=crop"
+                            src={heroBgFull}
                             alt="Coffee Shop Atmosphere"
-                            className="h-full w-full object-cover opacity-40"
+                            className="h-full w-full object-cover brightness-110"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent"></div>
+                        {/* Gradient overlay: Dark on left for text, transparent on right for products */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent"></div>
                     </div>
 
                     <div className="container relative z-10 mx-auto max-w-7xl px-6 py-20">
                         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
 
                             <div className="animate-fade-in-up text-center lg:text-left">
-                                <p className="mb-4 font-medium text-primary-400" style={{ animationDelay: '100ms', opacity: 0 }}>
-                                    ☕ Welcome to Rush Coffee
-                                </p>
-                                <h1 className="font-display text-5xl font-bold text-white md:text-6xl lg:text-7xl">
+                                <h1 className="font-display text-5xl font-bold text-white md:text-6xl lg:text-7xl leading-tight">
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 200ms forwards', opacity: 0 }}>Skip the Line,</span>
-                                    <span className="block text-primary-400" style={{ animation: 'fade-in-up 0.8s ease-out 300ms forwards', opacity: 0 }}>Get Your Coffee</span>
+                                    <span className="block text-[#8B5E3C]" style={{ animation: 'fade-in-up 0.8s ease-out 300ms forwards', opacity: 0 }}>Get Your Coffee</span>
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 400ms forwards', opacity: 0 }}>Faster.</span>
                                 </h1>
-                                <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-300 md:text-xl lg:mx-0" style={{ animation: 'fade-in-up 0.8s ease-out 500ms forwards', opacity: 0 }}>
+                                <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-200 md:text-xl lg:mx-0 shadow-black drop-shadow-md" style={{ animation: 'fade-in-up 0.8s ease-out 500ms forwards', opacity: 0 }}>
                                     Join our digital queue system. Order ahead, track your position in real-time, and breeze through pickup. Your perfect cup awaits—without the wait.
                                 </p>
 
-                                <div className="mt-8 flex flex-wrap justify-center gap-2 lg:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 600ms forwards', opacity: 0 }}>
-                                    <Badge className="bg-primary-900/50 text-white border border-primary-700">⚡ Real-Time Queue</Badge>
-                                    <Badge className="bg-primary-900/50 text-white border border-primary-700">📱 Mobile Ordering</Badge>
-                                    <Badge className="bg-primary-900/50 text-white border border-primary-700">🎁 Rewards Program</Badge>
+                                <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 600ms forwards', opacity: 0 }}>
+                                    <Badge className="bg-[#3E2723]/90 text-[#D7CCC8] border border-[#5D4037] backdrop-blur-sm px-4 py-2">⚡ Real-Time Queue</Badge>
+                                    <Badge className="bg-[#3E2723]/90 text-[#D7CCC8] border border-[#5D4037] backdrop-blur-sm px-4 py-2">📱 Mobile Ordering</Badge>
+                                    <Badge className="bg-[#3E2723]/90 text-[#D7CCC8] border border-[#5D4037] backdrop-blur-sm px-4 py-2">🎁 Rewards Program</Badge>
                                 </div>
 
-                                <div className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 700ms forwards', opacity: 0 }}>
-                                    <Link
-                                        to={orderNowPath}
-                                        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-transform hover:scale-105 hover:bg-primary-700 sm:w-auto"
-                                    >
-                                        <RushCoffeeLogo className="h-5 w-5" />
-                                        Order Now
+                                <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 700ms forwards', opacity: 0 }}>
+                                    <Link to={orderNowPath}>
+                                        <Button
+                                            variant="primary"
+                                            size="lg"
+                                            startIcon={<RushCoffeeLogo className="h-5 w-5" />}
+                                        >
+                                            Order Now
+                                        </Button>
                                     </Link>
                                 </div>
-
-                                <p className="mt-6 text-sm text-gray-400" style={{ animation: 'fade-in-up 0.8s ease-out 800ms forwards', opacity: 0 }}>
-                                    Join 4,000+ happy customers ⭐⭐⭐⭐⭐
-                                </p>
                             </div>
 
-                            <div className="relative hidden h-96 lg:flex lg:items-center lg:justify-center">
-                                {/* Floating 3D-like elements or just the logo with a nice glow */}
-                                <div className="absolute h-80 w-80 animate-float rounded-full bg-primary-500/20 blur-3xl"></div>
-                                <div className="absolute bottom-0 right-0 h-64 w-64 animate-float-delay rounded-full bg-coffee-500/20 blur-2xl"></div>
-
-                                <div className="relative animate-fade-in-up" style={{ animationDelay: '500ms', opacity: 0 }}>
-                                    <RushCoffeeLogo className="h-auto w-[250px] animate-float drop-shadow-2xl text-white lg:w-[350px]" />
-                                </div>
-                            </div>
+                            {/* Right column is empty as the image is now the background */}
+                            <div className="hidden lg:block"></div>
                         </div>
                     </div>
                 </section>
