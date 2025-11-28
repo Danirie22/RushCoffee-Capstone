@@ -23,11 +23,20 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, initial
         setIsLoading(true);
         setError(null);
         setSuccessMessage(null);
+        console.log('Attempting to send password reset email to:', email);
         try {
             await sendPasswordReset(email);
+            console.log('Password reset email sent successfully');
             setSuccessMessage('Password reset link sent! Please check your email.');
         } catch (err: any) {
-            setError(err.message || 'Failed to send reset link');
+            console.error('Password reset error:', err);
+            if (err.code === 'auth/user-not-found') {
+                setError('No account found with this email address.');
+            } else if (err.code === 'auth/invalid-email') {
+                setError('Please enter a valid email address.');
+            } else {
+                setError(err.message || 'Failed to send reset link');
+            }
         } finally {
             setIsLoading(false);
         }

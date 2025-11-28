@@ -293,7 +293,7 @@ const Header: React.FC = () => {
             <header className="sticky top-0 z-50 w-full border-b border-gray-200/80 bg-white/95 shadow-md backdrop-blur-sm">
                 <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:h-20 sm:px-6 lg:px-8 md:grid md:grid-cols-3">
                     {/* Logo - Left side */}
-                    <NavLink to="/" className="flex items-center gap-2 flex-shrink-0 md:justify-self-start">
+                    <NavLink to={currentUser ? "/menu" : "/"} className="flex items-center gap-2 flex-shrink-0 md:justify-self-start">
                         <RushCoffeeLogo className="h-7 w-7 text-primary-600 sm:h-8 sm:w-8" />
                         <span className="text-lg font-bold text-primary-600 whitespace-nowrap sm:text-2xl">
                             Rush Coffee
@@ -355,7 +355,7 @@ const Header: React.FC = () => {
                     aria-labelledby="mobile-menu-title"
                 >
                     <div className="flex items-center justify-between border-b p-4">
-                        <NavLink to="/" className="flex items-center gap-2" onClick={closeMobileMenu}>
+                        <NavLink to={currentUser ? "/menu" : "/"} className="flex items-center gap-2" onClick={closeMobileMenu}>
                             <RushCoffeeLogo className="h-7 w-7 text-primary-600" />
                             <span id="mobile-menu-title" className="text-xl font-bold text-primary-600">
                                 Rush Coffee

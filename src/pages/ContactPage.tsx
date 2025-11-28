@@ -46,7 +46,7 @@ const InfoCard: React.FC<{ icon: React.ElementType; title: string; children: Rea
             <Icon className="h-6 w-6 text-primary-600" />
         </div>
         <div>
-            <h3 className="font-display text-xl font-bold text-coffee-900">{title}</h3>
+            <h3 className="font-display text-xl font-bold text-[#401a00]">{title}</h3>
             {children}
         </div>
     </div>
@@ -93,19 +93,19 @@ const ContactPage: React.FC = () => {
         <div className="bg-white">
             <Header />
             <main>
-                <section className="relative flex min-h-[40vh] items-center justify-center overflow-hidden bg-coffee-900 px-6 py-20 text-center text-white">
+                <section className="relative flex min-h-[40vh] items-center justify-center overflow-hidden bg-[#2C1810] px-6 py-20 text-center text-white">
                     {/* Background Image */}
                     <div className="absolute inset-0 z-0">
                         <img
                             src="https://images.unsplash.com/photo-1485182708500-e8f1f318ba72?q=80&w=2610&auto=format&fit=crop"
                             alt="Coffee shop conversation"
-                            className="h-full w-full object-cover opacity-30"
+                            className="h-full w-full object-cover opacity-20"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-b from-coffee-900/80 via-coffee-900/60 to-coffee-900/90"></div>
+                        <div className="absolute inset-0 bg-[#2C1810]/60"></div>
                     </div>
 
                     <div className="relative z-10 mx-auto max-w-3xl">
-                        <span className="mb-4 inline-block rounded-full bg-primary-500/20 px-4 py-1.5 text-sm font-medium text-primary-300 backdrop-blur-sm">
+                        <span className="mb-4 inline-block text-sm font-medium text-primary-300">
                             We'd Love to Hear From You
                         </span>
                         <h1 className="animate-fade-in-up font-display text-5xl font-bold md:text-6xl" style={{ animationDelay: '100ms', opacity: 0 }}>
@@ -122,7 +122,7 @@ const ContactPage: React.FC = () => {
                         <div className="overflow-hidden rounded-3xl bg-white shadow-2xl lg:grid lg:grid-cols-5">
                             {/* Left: Form (3 cols) */}
                             <div className="p-8 lg:col-span-3 lg:p-12">
-                                <h2 className="font-display text-3xl font-bold text-coffee-900">Send us a Message</h2>
+                                <h2 className="font-display text-3xl font-bold text-[#401a00]">Send us a Message</h2>
                                 {isSuccess && (
                                     <motion.div
                                         initial={{ opacity: 0, scale: 0.95 }}
@@ -216,7 +216,7 @@ const ContactPage: React.FC = () => {
                             </div>
 
                             {/* Right: Info (2 cols) - Dark Theme */}
-                            <div className="bg-coffee-900 p-8 text-white lg:col-span-2 lg:p-12">
+                            <div className="bg-[#773e20] p-8 text-white lg:col-span-2 lg:p-12">
                                 <h3 className="mb-8 font-display text-2xl font-bold">Contact Information</h3>
                                 <div className="space-y-8">
                                     <div className="flex items-start gap-4">
@@ -285,7 +285,7 @@ const ContactPage: React.FC = () => {
 
                 <section className="bg-gray-50 px-6 py-20">
                     <div className="container mx-auto max-w-4xl">
-                        <h2 className="text-center font-display text-3xl font-bold text-coffee-900 md:text-4xl">Frequently Asked Questions</h2>
+                        <h2 className="text-center font-display text-3xl font-bold text-[#401a00] md:text-4xl">Frequently Asked Questions</h2>
                         <div className="mt-8">
                             {faqData.map((faq, index) => (
                                 <AccordionItem key={index} {...faq} isOpen={openFaqIndex === index} onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)} />
@@ -296,7 +296,7 @@ const ContactPage: React.FC = () => {
 
                 <section className="bg-gray-50 px-6 pb-24 pt-12">
                     <div className="container mx-auto max-w-6xl text-center">
-                        <h2 className="mb-2 font-display text-3xl font-bold text-coffee-900 md:text-4xl">Find Your Way to Us</h2>
+                        <h2 className="mb-2 font-display text-3xl font-bold text-[#401a00] md:text-4xl">Find Your Way to Us</h2>
                         <p className="mb-8 text-gray-600">Come visit our cozy spot in the heart of the city.</p>
 
                         <div className="h-96 w-full overflow-hidden rounded-3xl shadow-xl">

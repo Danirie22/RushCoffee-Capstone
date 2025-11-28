@@ -355,7 +355,7 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                <section className="relative overflow-hidden bg-coffee-900 px-6 py-24 text-center text-white">
+                <section className="relative overflow-hidden bg-[#773e20] px-6 py-24 text-center text-white">
                     {/* Background Pattern/Image */}
                     <div className="absolute inset-0 z-0">
                         <img
@@ -363,7 +363,7 @@ const HomePage: React.FC = () => {
                             alt="Coffee shop atmosphere"
                             className="h-full w-full object-cover opacity-20"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-coffee-900/90 via-coffee-800/90 to-coffee-900/90"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#773e20]/90 via-[#914f2b]/90 to-[#773e20]/90"></div>
                     </div>
 
                     <div className="absolute -left-1/4 -top-1/4 opacity-5"><RushCoffeeLogo className="h-96 w-96 animate-float text-white" /></div>

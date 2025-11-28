@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import RushCoffeeLogo from '../layout/RushCoffeeLogo';
 
 interface LoginFormProps {
-    onForgotPassword: () => void;
+    onForgotPassword: (email: string) => void;
     onRegister: () => void;
     onSuccess: (role?: string) => void;
     onVerificationNeeded: (email: string, userId: string, role?: string) => void;
@@ -65,7 +65,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
                 onSuccess(result.role);
             }
         } catch (err: any) {
-            setError(err.message || 'Failed to login');
+            console.error("Login error:", err);
+            if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+                setError('Incorrect email or password.');
+            } else {
+                setError('Failed to login. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -182,7 +187,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
                     </label>
                     <button
                         type="button"
-                        onClick={onForgotPassword}
+                        onClick={() => onForgotPassword(email)}
                         className="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
                     >
                         Forgot your password?

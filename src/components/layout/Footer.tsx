@@ -6,7 +6,7 @@ import RushCoffeeLogo from './RushCoffeeLogo';
 
 const Footer: React.FC = () => {
     return (
-        <footer className="relative bg-coffee-900 text-coffee-200">
+        <footer className="relative bg-[#401a00] text-primary-100">
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
@@ -21,7 +21,7 @@ const Footer: React.FC = () => {
                         </span>
                     </Link>
                     <p className="font-medium text-white">Premium coffee, no waiting.</p>
-                    <p className="text-sm leading-relaxed text-coffee-200/80">
+                    <p className="text-sm leading-relaxed text-primary-200/80">
                         Join the digital queue and get your coffee fix faster than ever. Experience the future of coffee ordering.
                     </p>
                 </div>
@@ -80,7 +80,7 @@ const Footer: React.FC = () => {
 
             {/* Bottom Bar */}
             <div className="relative z-10 border-t border-white/10 bg-black/20">
-                <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-6 py-6 text-center text-sm text-coffee-300 sm:flex-row">
+                <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-6 py-6 text-center text-sm text-primary-300 sm:flex-row">
                     <p>&copy; 2023 Rush Coffee. All rights reserved.</p>
                     <p className="flex items-center gap-1">
                         Made with <span className="text-red-500">❤️</span> and <span className="text-amber-500">☕</span>
