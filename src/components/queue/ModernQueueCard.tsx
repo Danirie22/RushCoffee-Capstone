@@ -106,6 +106,7 @@ const ModernQueueCard: React.FC<ModernQueueCardProps> = ({ order, onDismiss }) =
     const [isUpdating, setIsUpdating] = useState(false);
     const [rating, setRating] = useState(0);
     const [hoveredRating, setHoveredRating] = useState(0);
+    const [comment, setComment] = useState('');
     const [isReceiptOpen, setIsReceiptOpen] = useState(false);
     const navigate = useNavigate();
 
@@ -276,6 +277,17 @@ const ModernQueueCard: React.FC<ModernQueueCardProps> = ({ order, onDismiss }) =
                                             </motion.button>
                                         ))}
                                     </div>
+
+                                    {/* Comment Input */}
+                                    <div className="mt-4">
+                                        <textarea
+                                            value={comment}
+                                            onChange={(e) => setComment(e.target.value)}
+                                            placeholder="Tell us more... (optional)"
+                                            className="w-full rounded-xl border-gray-200 bg-gray-50 p-3 text-sm text-gray-700 placeholder-gray-400 focus:border-primary-500 focus:bg-white focus:ring-primary-500 transition-all resize-none"
+                                            rows={3}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
@@ -295,7 +307,25 @@ const ModernQueueCard: React.FC<ModernQueueCardProps> = ({ order, onDismiss }) =
                                         <Button
                                             size="lg"
                                             className="w-full rounded-xl bg-primary-600 text-white hover:bg-primary-700 shadow-lg hover:shadow-primary-600/30 transition-all font-bold py-3.5 text-base"
-                                            onClick={() => {
+                                            onClick={async () => {
+                                                if (rating > 0) {
+                                                    try {
+                                                        await db.collection('feedback').add({
+                                                            userId: order.userId,
+                                                            orderId: order.id,
+                                                            rating: rating,
+                                                            category: 'food',
+                                                            comment: comment,
+                                                            status: 'pending',
+                                                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                                            type: 'review'
+                                                        });
+                                                        showToast('Thank you for your feedback!');
+                                                    } catch (error) {
+                                                        console.error("Error submitting feedback:", error);
+                                                    }
+                                                }
                                                 navigate('/queue');
                                                 if (onDismiss) onDismiss();
                                             }}

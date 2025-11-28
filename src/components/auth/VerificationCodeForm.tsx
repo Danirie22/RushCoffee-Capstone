@@ -83,7 +83,7 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({ email, onVe
         <form onSubmit={handleSubmit} className="space-y-8">
             <div className="text-center">
                 {/* Logo and Header */}
-                <RushCoffeeLogo className="mx-auto h-16 w-16 text-coffee-600 mb-4" />
+                <RushCoffeeLogo className="mx-auto h-16 w-16 text-primary-600 mb-4" />
                 <h2 className="font-display text-3xl font-bold text-gray-900 mb-2">
                     Verify Your Email
                 </h2>
@@ -91,7 +91,7 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({ email, onVe
                 <p className="text-gray-600 mb-2">
                     We've sent a verification code to
                 </p>
-                <p className="text-lg font-bold text-coffee-700">{email}</p>
+                <p className="text-lg font-bold text-primary-700">{email}</p>
             </div>
 
             <div className="flex justify-center gap-3">
@@ -105,7 +105,7 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({ email, onVe
                         onChange={(e) => handleChange(index, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(index, e)}
                         onPaste={handlePaste}
-                        className="w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold bg-coffee-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 transition-all placeholder:text-gray-300"
+                        className="w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all placeholder:text-gray-300"
                         placeholder="•"
                     />
                 ))}
@@ -121,7 +121,7 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({ email, onVe
             <button
                 type="submit"
                 disabled={isLoading || code.join('').length !== 6}
-                className="w-full bg-coffee-600 hover:bg-coffee-700 text-white font-semibold py-4 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
+                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-4 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
             >
                 {isLoading ? (
                     <span className="flex items-center justify-center gap-2">
@@ -149,7 +149,7 @@ const VerificationCodeForm: React.FC<VerificationCodeFormProps> = ({ email, onVe
                     disabled={timeLeft > 0}
                     className={`flex items-center gap-2 font-medium transition-colors ${timeLeft > 0
                         ? 'text-gray-400 cursor-not-allowed'
-                        : 'text-coffee-600 hover:text-coffee-700'
+                        : 'text-primary-600 hover:text-primary-700'
                         }`}
                 >
                     <RefreshCw className={`h-4 w-4 ${timeLeft > 0 ? 'animate-spin' : ''}`} />

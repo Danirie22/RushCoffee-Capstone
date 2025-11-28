@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, Clock, Gift, Wallet, Users, Bell, ArrowRight, Quote, ChevronsDown } from 'lucide-react';
-import { collection, query, where, orderBy, limit, getDocs, doc, getDoc } from 'firebase/firestore';
+import { Menu, Clock, Gift, Wallet, Users, Bell, ArrowRight, Quote } from 'lucide-react';
+import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
 import Card from '../components/ui/Card';
@@ -97,28 +97,14 @@ const defaultTestimonials = [
     }
 ];
 
-
 const HomePage: React.FC = () => {
     const { currentUser } = useAuth();
-
-    let orderNowPath = '/auth/register';
-    if (currentUser) {
-        if (currentUser.role === 'admin') {
-            orderNowPath = '/admin';
-        } else if (currentUser.role === 'employee') {
-            orderNowPath = '/employee';
-        } else {
-            orderNowPath = '/menu';
-        }
-    }
-
     const [testimonials, setTestimonials] = React.useState(defaultTestimonials);
 
+    // Fetch reviews
     React.useEffect(() => {
         const fetchReviews = async () => {
             try {
-                // Fetch reviews that are marked as 'reviewed' (approved)
-                // Simplified query to avoid needing a custom Firestore index
                 const q = query(
                     collection(db, 'feedback'),
                     where('status', '==', 'reviewed')
@@ -127,7 +113,6 @@ const HomePage: React.FC = () => {
                 const snapshot = await getDocs(q);
 
                 if (!snapshot.empty) {
-                    // Filter and sort client-side to avoid index issues
                     const allReviews = snapshot.docs.map(doc => doc.data());
                     const topReviews = allReviews
                         .filter((data: any) => data.rating >= 4)
@@ -177,32 +162,39 @@ const HomePage: React.FC = () => {
                 }
             } catch (error) {
                 console.error("Error fetching reviews:", error);
-                // Fallback to default testimonials is already set in initial state
             }
         };
 
         fetchReviews();
     }, []);
 
+    let orderNowPath = '/auth/register';
+    if (currentUser) {
+        if (currentUser.role === 'admin') {
+            orderNowPath = '/admin';
+        } else if (currentUser.role === 'employee') {
+            orderNowPath = '/employee';
+        } else {
+            orderNowPath = '/menu';
+        }
+    }
+
     return (
         <div className="bg-white">
             <Header />
             <main>
                 <section className="relative flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-gray-900">
-                    {/* Background Image with Overlay */}
                     <div className="absolute inset-0 z-0">
                         <img
                             src={heroBgFull}
                             alt="Coffee Shop Atmosphere"
                             className="h-full w-full object-cover object-left brightness-110"
                         />
-                        {/* Gradient overlay: Dark on left for text, transparent on right for products */}
                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent"></div>
                     </div>
 
                     <div className="container relative z-10 mx-auto max-w-7xl px-6 py-16 md:py-20">
                         <div className="grid grid-cols-1 items-center gap-12 xl:grid-cols-2">
-
                             <div className="animate-fade-in-up text-center xl:text-left">
                                 <h1 className="font-display text-4xl font-bold text-white md:text-6xl lg:text-7xl leading-tight">
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 200ms forwards', opacity: 0 }}>Skip the Line,</span>
@@ -232,7 +224,6 @@ const HomePage: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Right column is empty as the image is now the background */}
                             <div className="hidden lg:block"></div>
                         </div>
                     </div>
@@ -335,18 +326,14 @@ const HomePage: React.FC = () => {
                                     <div className="my-3 text-sm text-yellow-400 md:my-4 md:text-base">
                                         {'⭐'.repeat(Math.round(testimonial.rating || 5))}
                                     </div>
-                                    <p className="flex-grow font-sans italic text-sm text-gray-700 md:text-base">
-                                        "{testimonial.quote}"
-                                    </p>
+                                    <p className="flex-grow font-sans italic text-sm text-gray-700 md:text-base">"{testimonial.quote}"</p>
                                     <div className="mt-4 flex items-center gap-3 md:gap-4">
                                         <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-bold text-sm md:h-12 md:w-12 md:text-base ${testimonial.avatarBg} ${testimonial.avatarText}`}>
                                             {testimonial.initial}
                                         </div>
                                         <div>
                                             <p className="text-sm font-semibold text-coffee-900 md:text-base">{testimonial.name}</p>
-                                            <Badge className="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 md:text-xs md:px-2">
-                                                {testimonial.title}
-                                            </Badge>
+                                            <Badge className="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 md:text-xs md:px-2">{testimonial.title}</Badge>
                                         </div>
                                     </div>
                                 </Card>
@@ -356,7 +343,6 @@ const HomePage: React.FC = () => {
                 </section>
 
                 <section className="relative overflow-hidden bg-[#773e20] px-6 py-24 text-center text-white">
-                    {/* Background Pattern/Image */}
                     <div className="absolute inset-0 z-0">
                         <img
                             src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070&auto=format&fit=crop"
@@ -379,23 +365,15 @@ const HomePage: React.FC = () => {
                             </div>
                         </div>
 
-                        <h2 className="font-display text-4xl font-bold md:text-5xl lg:text-6xl">
-                            Ready to Rush Through Your Day?
-                        </h2>
+                        <h2 className="font-display text-4xl font-bold md:text-5xl lg:text-6xl">Ready to Rush Through Your Day?</h2>
                         <p className="mx-auto mb-8 mt-6 max-w-2xl text-xl text-gray-300">
                             Join 4,000+ customers who've already skipped the line. Experience the future of coffee ordering.
                         </p>
 
                         <div className="mb-10 flex flex-wrap justify-center gap-3">
-                            <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">
-                                5,000+ Orders Completed
-                            </span>
-                            <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">
-                                4.9★ Average Rating
-                            </span>
-                            <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">
-                                &lt; 5 min Average Wait
-                            </span>
+                            <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">5,000+ Orders Completed</span>
+                            <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">4.9★ Average Rating</span>
+                            <span className="rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-sm border border-white/10">&lt; 5 min Average Wait</span>
                         </div>
 
                         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -416,9 +394,7 @@ const HomePage: React.FC = () => {
 
                         <p className="mt-8 text-sm text-gray-400">
                             Already have an account?{' '}
-                            <Link to="/auth/login" className="font-medium text-primary-400 hover:text-primary-300 hover:underline">
-                                Log in here
-                            </Link>
+                            <Link to="/auth/login" className="font-medium text-primary-400 hover:text-primary-300 hover:underline">Log in here</Link>
                         </p>
                     </div>
                 </section>

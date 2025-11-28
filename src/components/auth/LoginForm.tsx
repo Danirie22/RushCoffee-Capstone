@@ -56,14 +56,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
         try {
             const result = await login(email, password, rememberMe);
 
-            // Whitelist for test accounts to bypass verification
-            const whitelistedEmails = ['sa@gmail.com', 'admin@rushcoffee.com', 'test@gmail.com', 'danirie@gmail.com', 'de@gmail.com', 'admin@rushcoffee.ph'];
+            // Skip verification modal - go directly to success
+            // Clear any 2FA flags
+            sessionStorage.removeItem('requires2FA');
 
-            if (result.needsVerification && result.userId && !whitelistedEmails.includes(email)) {
-                onVerificationNeeded(email, result.userId, result.role);
-            } else {
-                onSuccess(result.role);
-            }
+            // Call onSuccess with the user's role
+            onSuccess(result.role);
         } catch (err: any) {
             console.error("Login error:", err);
             if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
