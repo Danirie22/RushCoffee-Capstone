@@ -75,7 +75,8 @@ const defaultTestimonials = [
         initial: "S",
         avatarBg: "bg-primary-100",
         avatarText: "text-primary-600",
-        rating: 5
+        rating: 5,
+        photoURL: null
     },
     {
         quote: "The queue system is genius. I can track exactly when my coffee will be ready. Plus, earning rewards with every purchase is a nice bonus!",
@@ -84,7 +85,8 @@ const defaultTestimonials = [
         initial: "M",
         avatarBg: "bg-blue-100",
         avatarText: "text-blue-600",
-        rating: 5
+        rating: 5,
+        photoURL: null
     },
     {
         quote: "Best coffee experience in Manila. Fast, convenient, and the coffee is always perfect. The mobile app makes everything so easy!",
@@ -93,7 +95,8 @@ const defaultTestimonials = [
         initial: "A",
         avatarBg: "bg-green-100",
         avatarText: "text-green-600",
-        rating: 5
+        rating: 5,
+        photoURL: null
     }
 ];
 
@@ -107,7 +110,7 @@ const HomePage: React.FC = () => {
             try {
                 const q = query(
                     collection(db, 'feedback'),
-                    where('status', '==', 'reviewed')
+                    where('status', '==', 'published')
                 );
 
                 const snapshot = await getDocs(q);
@@ -123,6 +126,7 @@ const HomePage: React.FC = () => {
                         const reviewsData = await Promise.all(topReviews.map(async (data: any) => {
                             let name = "Rush Customer";
                             let initial = "R";
+                            let photoURL = null;
 
                             if (data.userId) {
                                 try {
@@ -131,6 +135,7 @@ const HomePage: React.FC = () => {
                                         const userData = userDoc.data();
                                         name = `${userData.firstName} ${userData.lastName.charAt(0)}.`;
                                         initial = userData.firstName.charAt(0);
+                                        photoURL = userData.photoURL || null;
                                     }
                                 } catch (e) {
                                     console.error("Error fetching user for review", e);
@@ -153,7 +158,8 @@ const HomePage: React.FC = () => {
                                 initial: initial,
                                 avatarBg: randomColor.bg,
                                 avatarText: randomColor.text,
-                                rating: data.rating
+                                rating: data.rating,
+                                photoURL: photoURL
                             };
                         }));
 
@@ -328,9 +334,17 @@ const HomePage: React.FC = () => {
                                     </div>
                                     <p className="flex-grow font-sans italic text-sm text-gray-700 md:text-base">"{testimonial.quote}"</p>
                                     <div className="mt-4 flex items-center gap-3 md:gap-4">
-                                        <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-bold text-sm md:h-12 md:w-12 md:text-base ${testimonial.avatarBg} ${testimonial.avatarText}`}>
-                                            {testimonial.initial}
-                                        </div>
+                                        {testimonial.photoURL ? (
+                                            <img
+                                                src={testimonial.photoURL}
+                                                alt={testimonial.name}
+                                                className="h-10 w-10 flex-shrink-0 rounded-full object-cover md:h-12 md:w-12"
+                                            />
+                                        ) : (
+                                            <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-bold text-sm md:h-12 md:w-12 md:text-base ${testimonial.avatarBg} ${testimonial.avatarText}`}>
+                                                {testimonial.initial}
+                                            </div>
+                                        )}
                                         <div>
                                             <p className="text-sm font-semibold text-coffee-900 md:text-base">{testimonial.name}</p>
                                             <Badge className="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 md:text-xs md:px-2">{testimonial.title}</Badge>

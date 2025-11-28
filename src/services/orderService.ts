@@ -21,7 +21,8 @@ export interface OrderItem {
 export interface OrderData {
     orderNumber: string;
     orderItems: OrderItem[];
-    subtotal: number;
+    totalAmount?: number; // Added to match Firestore data
+    subtotal?: number;
     paymentMethod: 'cash' | 'gcash';
     paymentDetails: {
         amountReceived: number;
@@ -147,11 +148,14 @@ export const updateOrderStatus = async (
                             date: new Date()
                         };
 
+                        // Use totalAmount if available, otherwise fallback to subtotal
+                        const amountToIncrement = orderData.totalAmount || orderData.subtotal || 0;
+
                         await userRef.update({
                             currentPoints: firebase.firestore.FieldValue.increment(pointsEarned),
                             lifetimePoints: firebase.firestore.FieldValue.increment(pointsEarned),
                             totalOrders: firebase.firestore.FieldValue.increment(1),
-                            totalSpent: firebase.firestore.FieldValue.increment(orderData.subtotal),
+                            totalSpent: firebase.firestore.FieldValue.increment(amountToIncrement),
                             rewardsHistory: firebase.firestore.FieldValue.arrayUnion(rewardHistoryEntry)
                         });
                     }

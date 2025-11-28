@@ -179,6 +179,8 @@ const ModernQueueCard: React.FC<ModernQueueCardProps> = ({ order, onDismiss }) =
                 const updateData: any = {
                     totalOrders: firebase.firestore.FieldValue.increment(1),
                 };
+                // Always update totalSpent
+                updateData.totalSpent = firebase.firestore.FieldValue.increment(order.totalAmount || order.orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0));
 
                 if (loyaltyPoints > 0) {
                     updateData.currentPoints = firebase.firestore.FieldValue.increment(loyaltyPoints);

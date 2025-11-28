@@ -133,10 +133,23 @@ const AdminQueuePage: React.FC = () => {
                                 date: new Date(),
                             };
 
+                            let amountToAdd = orderData.totalAmount || orderData.subtotal || 0;
+
+                            // Fallback: Calculate from items if total is missing
+                            if (!amountToAdd && items.length > 0) {
+                                amountToAdd = items.reduce((sum: number, item: any) => {
+                                    return sum + (item.price * item.quantity);
+                                }, 0);
+                                console.log(`⚠️ Calculated total from items: ${amountToAdd}`);
+                            }
+
+                            console.log(`💰 Updating totalSpent for user ${orderData.userId} by adding ${amountToAdd}`);
+
                             await db.collection('users').doc(orderData.userId).update({
                                 totalOrders: firebase.firestore.FieldValue.increment(1),
                                 currentPoints: firebase.firestore.FieldValue.increment(loyaltyPoints),
                                 loyaltyPoints: firebase.firestore.FieldValue.increment(loyaltyPoints),
+                                totalSpent: firebase.firestore.FieldValue.increment(amountToAdd),
                                 rewardsHistory: firebase.firestore.FieldValue.arrayUnion(historyEntry)
                             });
 
