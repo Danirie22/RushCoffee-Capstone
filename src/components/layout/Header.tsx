@@ -159,21 +159,51 @@ const Header: React.FC = () => {
         const mobileButtonClass = "block w-full text-center py-3 text-base";
         const desktopButtonClass = "px-6 py-2";
 
-        if (showLoggedInState) {
+        if (showLoggedInState && currentUser) {
+            const initials = `${currentUser.firstName?.charAt(0) || ''}${currentUser.lastName?.charAt(0) || ''}`.toUpperCase();
+
             return (
                 <div className={`relative ${isMobile ? 'w-full' : ''}`} ref={userMenuRef}>
                     <button
                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                        className={`flex w-full items-center justify-center gap-2 rounded-full border border-primary-600 px-4 py-2 text-sm font-semibold text-primary-600 transition-colors hover:bg-primary-50 ${isMobile ? 'text-base' : ''}`}
+                        className={`flex items-center justify-center transition-colors focus:outline-none ${isMobile
+                            ? 'w-full gap-3 rounded-xl border border-gray-200 p-3 hover:bg-gray-50'
+                            : `h-10 w-10 rounded-full ${!currentUser.photoURL ? 'bg-primary-600 text-white hover:bg-primary-700' : 'ring-2 ring-primary-100'} shadow-sm overflow-hidden`
+                            }`}
+                        aria-label="User menu"
                         aria-haspopup="true"
                         aria-expanded={isUserMenuOpen}
                     >
-                        <span>Welcome, {currentUser.firstName}!</span>
-                        <ChevronDown className={`h-4 w-4 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                        {isMobile ? (
+                            <>
+                                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${!currentUser.photoURL ? 'bg-primary-600 text-white' : ''} overflow-hidden`}>
+                                    {currentUser.photoURL ? (
+                                        <img src={currentUser.photoURL} alt="Profile" className="h-full w-full object-cover" />
+                                    ) : (
+                                        <span className="text-sm font-bold">{initials}</span>
+                                    )}
+                                </div>
+                                <div className="flex flex-col items-start">
+                                    <span className="text-sm font-bold text-gray-900">{currentUser.firstName} {currentUser.lastName}</span>
+                                    <span className="text-xs text-gray-500">{currentUser.email}</span>
+                                </div>
+                                <ChevronDown className={`ml-auto h-4 w-4 text-gray-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} />
+                            </>
+                        ) : (
+                            currentUser.photoURL ? (
+                                <img src={currentUser.photoURL} alt="Profile" className="h-full w-full object-cover" />
+                            ) : (
+                                <span className="text-sm font-bold">{initials}</span>
+                            )
+                        )}
                     </button>
                     {isUserMenuOpen && !isMobile && (
                         <div className="absolute right-0 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none animate-fade-in-up">
                             <div className="py-1" role="menu" aria-orientation="vertical">
+                                <div className="px-4 py-3 border-b border-gray-100">
+                                    <p className="text-sm font-medium text-gray-900">{currentUser.firstName} {currentUser.lastName}</p>
+                                    <p className="text-xs text-gray-500 truncate">{currentUser.email}</p>
+                                </div>
                                 {userDropdownLinks.map(link => (
                                     <NavLink
                                         key={link.label}

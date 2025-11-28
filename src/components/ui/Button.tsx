@@ -33,7 +33,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({
 
   const variantClasses: Record<ButtonVariant, string> = {
     primary: 'bg-primary-600 text-white shadow-lg hover:bg-primary-700 hover:shadow-xl focus:ring-primary-500/30 active:bg-primary-800',
-    secondary: 'bg-coffee-600 text-white shadow-lg hover:bg-coffee-700 hover:shadow-xl focus:ring-coffee-500/30 active:bg-coffee-800',
+    secondary: 'bg-primary-600 text-white shadow-lg hover:bg-primary-700 hover:shadow-xl focus:ring-primary-500/30 active:bg-primary-800',
     outline: 'border-2 border-primary-600 bg-transparent text-primary-600 hover:bg-primary-50 focus:ring-primary-500/20 active:bg-primary-100',
     ghost: 'bg-transparent text-gray-700 hover:bg-gray-100 focus:ring-gray-500/20 active:bg-gray-200',
     danger: 'bg-red-600 text-white shadow-lg hover:bg-red-700 hover:shadow-xl focus:ring-red-500/30 active:bg-red-800',

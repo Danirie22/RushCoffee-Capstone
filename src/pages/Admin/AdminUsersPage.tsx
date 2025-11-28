@@ -76,7 +76,7 @@ const UserDetailModal = ({ user, onClose }: { user: UserProfile, onClose: () => 
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
                 {/* Header with Cover & Profile */}
-                <div className="relative h-32 bg-gradient-to-r from-coffee-600 to-coffee-800 flex-shrink-0">
+                <div className="relative h-32 bg-gradient-to-r from-primary-600 to-primary-800 flex-shrink-0">
                     <button
                         onClick={onClose}
                         className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full transition-colors backdrop-blur-md z-10"
@@ -85,7 +85,7 @@ const UserDetailModal = ({ user, onClose }: { user: UserProfile, onClose: () => 
                     </button>
                     <div className="absolute -bottom-12 left-8">
                         <div className="w-24 h-24 rounded-full bg-white p-1 shadow-lg">
-                            <div className="w-full h-full rounded-full bg-gradient-to-br from-coffee-400 to-coffee-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
+                            <div className="w-full h-full rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-2xl font-bold overflow-hidden">
                                 {user.photoURL ? (
                                     <img src={user.photoURL} alt={user.firstName} className="w-full h-full object-cover" />
                                 ) : (
@@ -109,7 +109,7 @@ const UserDetailModal = ({ user, onClose }: { user: UserProfile, onClose: () => 
                         <div className="text-right">
                             <div className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Customer Since</div>
                             <div className="text-sm font-medium text-gray-900 flex items-center justify-end gap-1">
-                                <Calendar className="w-4 h-4 text-coffee-500" />
+                                <Calendar className="w-4 h-4 text-primary-500" />
                                 {formatDate(user.createdAt)}
                             </div>
                         </div>
@@ -122,7 +122,7 @@ const UserDetailModal = ({ user, onClose }: { user: UserProfile, onClose: () => 
                         </div>
                         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <div className="text-sm text-gray-500 mb-1">Total Spent</div>
-                            <div className="text-2xl font-bold text-coffee-700">₱{user.totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                            <div className="text-2xl font-bold text-primary-700">₱{user.totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
                         </div>
                         <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
                             <div className="text-sm text-gray-500 mb-1">Loyalty Points</div>
@@ -146,7 +146,7 @@ const UserDetailModal = ({ user, onClose }: { user: UserProfile, onClose: () => 
                                         e.stopPropagation();
                                         copyToClipboard(user.email || '');
                                     }}
-                                    className="p-2 text-gray-400 hover:text-coffee-600 transition-colors"
+                                    className="p-2 text-gray-400 hover:text-primary-600 transition-colors"
                                 >
                                     <Copy className="w-4 h-4" />
                                 </button>
@@ -341,7 +341,7 @@ const AdminUsersPage: React.FC = () => {
             className="flex items-center gap-1 hover:text-gray-700 transition-colors group"
         >
             {children}
-            <ArrowUpDown className={`w-3.5 h-3.5 transition-opacity ${sortField === field ? 'opacity-100 text-coffee-600' : 'opacity-0 group-hover:opacity-50'
+            <ArrowUpDown className={`w-3.5 h-3.5 transition-opacity ${sortField === field ? 'opacity-100 text-primary-600' : 'opacity-0 group-hover:opacity-50'
                 }`} />
         </button>
     );
@@ -385,7 +385,7 @@ const AdminUsersPage: React.FC = () => {
                             placeholder="Search by name, email, or phone..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-coffee-500 focus:border-transparent outline-none transition-all shadow-sm"
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all shadow-sm"
                         />
                     </div>
                     <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -393,7 +393,7 @@ const AdminUsersPage: React.FC = () => {
                             <select
                                 value={filterRole}
                                 onChange={(e) => setFilterRole(e.target.value)}
-                                className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 px-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-coffee-500 cursor-pointer font-medium text-sm shadow-sm"
+                                className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 px-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer font-medium text-sm shadow-sm"
                             >
                                 <option value="all">All Roles</option>
                                 <option value="customer">Customers</option>
@@ -457,11 +457,11 @@ const AdminUsersPage: React.FC = () => {
                                     <tr
                                         key={user.uid}
                                         onClick={() => setSelectedUser(user)}
-                                        className="group hover:bg-gradient-to-r hover:from-coffee-50/30 hover:to-transparent transition-all duration-200 cursor-pointer"
+                                        className="group hover:bg-gradient-to-r hover:from-primary-50/30 hover:to-transparent transition-all duration-200 cursor-pointer"
                                     >
                                         <td className="px-6 py-4 align-top">
                                             <div className="flex items-start gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-coffee-400 to-coffee-600 flex items-center justify-center text-white font-bold shadow-sm overflow-hidden flex-shrink-0 ring-2 ring-white group-hover:ring-coffee-200 transition-all">
+                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold shadow-sm overflow-hidden flex-shrink-0 ring-2 ring-white group-hover:ring-primary-200 transition-all">
                                                     {user.photoURL ? (
                                                         <img src={user.photoURL} alt={user.firstName} className="w-full h-full object-cover" />
                                                     ) : (
@@ -526,7 +526,7 @@ const AdminUsersPage: React.FC = () => {
                                                 </div>
                                                 <div className="flex items-center justify-between text-sm">
                                                     <span className="text-gray-500 text-xs uppercase font-medium">Spent</span>
-                                                    <span className="font-medium text-coffee-700">₱{user.totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                    <span className="font-medium text-primary-700">₱{user.totalSpent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                                 </div>
                                                 <div className="flex items-center justify-between text-sm">
                                                     <span className="text-gray-500 text-xs uppercase font-medium">Points</span>
@@ -534,65 +534,42 @@ const AdminUsersPage: React.FC = () => {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 align-top pt-5">
-                                            <div className="flex items-center gap-2 text-sm text-gray-500">
-                                                <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                                                {formatDate(user.createdAt)}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right align-top pt-4 relative action-menu">
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setActiveDropdown(activeDropdown === user.uid ? null : user.uid);
-                                                }}
-                                                className={`p-2 rounded-lg transition-all ${activeDropdown === user.uid ? 'bg-coffee-50 text-coffee-600 ring-1 ring-coffee-200' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
-                                            >
-                                                <MoreVertical className="w-5 h-5" />
-                                            </button>
-
-                                            {activeDropdown === user.uid && (
-                                                <div
-                                                    className="absolute right-8 top-8 w-56 bg-white rounded-xl shadow-xl border border-gray-100 z-50 animate-in fade-in zoom-in-95 duration-100 origin-top-right"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <div className="p-1.5">
-                                                        <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                                                            Change Role
-                                                        </div>
-                                                        <button
-                                                            onClick={() => handleRoleUpdate(user.uid, 'admin')}
-                                                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${user.role === 'admin' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-                                                        >
-                                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${user.role === 'admin' ? 'bg-purple-100' : 'bg-gray-100'}`}>
-                                                                <Shield className="w-3.5 h-3.5" />
-                                                            </div>
-                                                            Admin
-                                                            {user.role === 'admin' && <CheckCircle className="w-4 h-4 ml-auto text-purple-600" />}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleRoleUpdate(user.uid, 'employee')}
-                                                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${user.role === 'employee' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-                                                        >
-                                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${user.role === 'employee' ? 'bg-blue-100' : 'bg-gray-100'}`}>
-                                                                <Briefcase className="w-3.5 h-3.5" />
-                                                            </div>
-                                                            Employee
-                                                            {user.role === 'employee' && <CheckCircle className="w-4 h-4 ml-auto text-blue-600" />}
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleRoleUpdate(user.uid, 'customer')}
-                                                            className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${(!user.role || user.role === 'customer') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
-                                                        >
-                                                            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${(!user.role || user.role === 'customer') ? 'bg-green-100' : 'bg-gray-100'}`}>
-                                                                <User className="w-3.5 h-3.5" />
-                                                            </div>
-                                                            Customer
-                                                            {(!user.role || user.role === 'customer') && <CheckCircle className="w-4 h-4 ml-auto text-green-600" />}
-                                                        </button>
-                                                    </div>
+                                        <td className="px-6 py-4 align-top text-right">
+                                            <div className="p-1.5">
+                                                <div className="px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                                                    Change Role
                                                 </div>
-                                            )}
+                                                <button
+                                                    onClick={() => handleRoleUpdate(user.uid, 'admin')}
+                                                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${user.role === 'admin' ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                                                >
+                                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${user.role === 'admin' ? 'bg-purple-100' : 'bg-gray-100'}`}>
+                                                        <Shield className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    Admin
+                                                    {user.role === 'admin' && <CheckCircle className="w-4 h-4 ml-auto text-purple-600" />}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRoleUpdate(user.uid, 'employee')}
+                                                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${user.role === 'employee' ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                                                >
+                                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${user.role === 'employee' ? 'bg-blue-100' : 'bg-gray-100'}`}>
+                                                        <Briefcase className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    Employee
+                                                    {user.role === 'employee' && <CheckCircle className="w-4 h-4 ml-auto text-blue-600" />}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleRoleUpdate(user.uid, 'customer')}
+                                                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${(!user.role || user.role === 'customer') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}`}
+                                                >
+                                                    <div className={`w-6 h-6 rounded-full flex items-center justify-center ${(!user.role || user.role === 'customer') ? 'bg-green-100' : 'bg-gray-100'}`}>
+                                                        <User className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    Customer
+                                                    {(!user.role || user.role === 'customer') && <CheckCircle className="w-4 h-4 ml-auto text-green-600" />}
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -628,7 +605,7 @@ const AdminUsersPage: React.FC = () => {
                                 className="bg-white border border-gray-200 p-4 rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer"
                             >
                                 <div className="flex items-start gap-3 mb-3">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-coffee-400 to-coffee-600 flex items-center justify-center text-white font-bold shadow-sm overflow-hidden flex-shrink-0 ring-2 ring-white">
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold shadow-sm overflow-hidden flex-shrink-0 ring-2 ring-white">
                                         {user.photoURL ? (
                                             <img src={user.photoURL} alt={user.firstName} className="w-full h-full object-cover" />
                                         ) : (
@@ -658,7 +635,7 @@ const AdminUsersPage: React.FC = () => {
                                     </div>
                                     <div className="text-center">
                                         <div className="text-xs text-gray-500">Spent</div>
-                                        <div className="font-semibold text-coffee-700 text-sm">₱{user.totalSpent.toFixed(0)}</div>
+                                        <div className="font-semibold text-primary-700 text-sm">₱{user.totalSpent.toFixed(0)}</div>
                                     </div>
                                     <div className="text-center">
                                         <div className="text-xs text-gray-500">Points</div>
@@ -685,21 +662,25 @@ const AdminUsersPage: React.FC = () => {
                 </div>
 
                 {/* Footer */}
-                {!loading && filteredUsers.length > 0 && (
-                    <div className="px-6 py-4 border-t border-gray-100 flex justify-between items-center text-sm text-gray-600 bg-gray-50">
-                        <span className="font-medium">Showing <span className="text-gray-900">{filteredUsers.length}</span> of <span className="text-gray-900">{users.length}</span> users</span>
-                        <div className="flex items-center gap-2 text-xs">
-                            <span className="text-gray-500">Sorted by: <span className="font-medium text-gray-700">{sortField}</span> ({sortDirection})</span>
+                {
+                    !loading && filteredUsers.length > 0 && (
+                        <div className="px-6 py-4 border-t border-gray-100 flex justify-between items-center text-sm text-gray-600 bg-gray-50">
+                            <span className="font-medium">Showing <span className="text-gray-900">{filteredUsers.length}</span> of <span className="text-gray-900">{users.length}</span> users</span>
+                            <div className="flex items-center gap-2 text-xs">
+                                <span className="text-gray-500">Sorted by: <span className="font-medium text-gray-700">{sortField}</span> ({sortDirection})</span>
+                            </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    )
+                }
+            </div >
 
             {/* User Detail Modal */}
-            {selectedUser && (
-                <UserDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} />
-            )}
-        </div>
+            {
+                selectedUser && (
+                    <UserDetailModal user={selectedUser} onClose={() => setSelectedUser(null)} />
+                )
+            }
+        </div >
     );
 };
 

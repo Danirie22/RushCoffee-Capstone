@@ -51,7 +51,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onBuyNo
       onKeyDown={handleKeyDown}
       className={`w-full text-left rounded-2xl overflow-hidden bg-white shadow-sm border transition-all ${isOutOfStock
         ? 'opacity-60 cursor-not-allowed'
-        : 'cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-gray-200 hover:border-coffee-300'
+        : 'cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-gray-200 hover:border-primary-300'
         }`}
     >
       {/* Image */}
@@ -86,9 +86,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onBuyNo
 
         {/* Price & Action */}
         <div className="flex items-center justify-between">
-          <span className="text-lg md:text-xl font-bold text-coffee-700">₱{selectedSize.price.toFixed(2)}</span>
+          <span className="text-lg md:text-xl font-bold text-primary-700">₱{selectedSize.price.toFixed(2)}</span>
           {!isOutOfStock && isLoggedIn && (
-            <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-coffee-600 flex items-center justify-center text-white shadow-md">
+            <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary-600 flex items-center justify-center text-white shadow-md transition-all hover:bg-primary-700 hover:shadow-lg active:scale-95">
               <ShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
             </div>
           )}
@@ -98,7 +98,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onBuyNo
                 e.stopPropagation();
                 navigate('/auth/login');
               }}
-              className="text-xs md:text-sm font-bold text-coffee-600 hover:text-coffee-700 underline"
+              className="text-xs md:text-sm font-bold text-primary-600 hover:text-primary-700 underline"
             >
               Login
             </button>

@@ -35,6 +35,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
             return;
         }
 
+        if (!formData.email.endsWith('@gmail.com')) {
+            setError('Only @gmail.com addresses are allowed');
+            return;
+        }
+
         setIsLoading(true);
         try {
             await executeRecaptcha();
@@ -51,7 +56,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
         <div className="w-full max-w-2xl mx-auto">
             {/* Logo and Header */}
             <div className="text-center mb-6">
-                <RushCoffeeLogo className="mx-auto h-16 w-16 text-coffee-600 mb-4" />
+                <RushCoffeeLogo className="mx-auto h-16 w-16 text-primary-600 mb-4" />
                 <h2 className="font-display text-4xl font-bold text-gray-900">
                     Join Rush Coffee
                 </h2>
@@ -78,7 +83,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                                 required
                                 value={formData.firstName}
                                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                className="w-full pl-12 pr-4 py-3.5 bg-coffee-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 focus:bg-white transition-all placeholder:text-gray-400"
+                                className="w-full pl-12 pr-4 py-3.5 bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all placeholder:text-gray-400"
                                 placeholder="Enter first name"
                             />
                         </div>
@@ -92,7 +97,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                                 required
                                 value={formData.lastName}
                                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-                                className="w-full pl-12 pr-4 py-3.5 bg-coffee-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 focus:bg-white transition-all placeholder:text-gray-400"
+                                className="w-full pl-12 pr-4 py-3.5 bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all placeholder:text-gray-400"
                                 placeholder="Enter last name"
                             />
                         </div>
@@ -107,9 +112,17 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                             type="email"
                             required
                             value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            className="w-full pl-12 pr-4 py-3.5 bg-coffee-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 focus:bg-white transition-all placeholder:text-gray-400"
-                            placeholder="name@example.com"
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                setFormData({ ...formData, email: val });
+                                if (val && !val.endsWith('@gmail.com')) {
+                                    setError('Only @gmail.com addresses are allowed');
+                                } else {
+                                    setError(null);
+                                }
+                            }}
+                            className="w-full pl-12 pr-4 py-3.5 bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all placeholder:text-gray-400"
+                            placeholder="name@gmail.com"
                         />
                     </div>
                 </div>
@@ -122,7 +135,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                             type="tel"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full pl-12 pr-4 py-3.5 bg-coffee-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 focus:bg-white transition-all placeholder:text-gray-400"
+                            className="w-full pl-12 pr-4 py-3.5 bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all placeholder:text-gray-400"
                             placeholder="09xxxxxxxxx"
                         />
                     </div>
@@ -137,7 +150,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                             required
                             value={formData.password}
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                            className="w-full pl-12 pr-12 py-3.5 bg-coffee-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 focus:bg-white transition-all placeholder:text-gray-400"
+                            className="w-full pl-12 pr-12 py-3.5 bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all placeholder:text-gray-400"
                             placeholder="Create a password"
                         />
                         <button
@@ -159,7 +172,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                             required
                             value={formData.confirmPassword}
                             onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                            className="w-full pl-12 pr-4 py-3.5 bg-coffee-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 focus:bg-white transition-all placeholder:text-gray-400"
+                            className="w-full pl-12 pr-4 py-3.5 bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all placeholder:text-gray-400"
                             placeholder="Confirm your password"
                         />
                     </div>
@@ -168,7 +181,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-coffee-600 hover:bg-coffee-700 text-white font-semibold py-3.5 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
+                    className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3.5 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
                 >
                     {isLoading ? (
                         <span className="flex items-center justify-center gap-2">
@@ -185,7 +198,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                     <button
                         type="button"
                         onClick={onLogin}
-                        className="text-coffee-600 font-semibold hover:text-coffee-700 transition-colors"
+                        className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
                     >
                         Login
                     </button>

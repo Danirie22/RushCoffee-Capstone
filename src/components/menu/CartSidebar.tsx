@@ -117,7 +117,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                     type="checkbox"
                     checked={allSelected}
                     onChange={handleSelectAllToggle}
-                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-gray-300 bg-white transition-all checked:border-coffee-600 checked:bg-coffee-600 hover:border-coffee-500 focus:ring-2 focus:ring-coffee-500/20"
+                    className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-gray-300 bg-white transition-all checked:border-primary-600 checked:bg-primary-600 hover:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                   />
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity duration-200">
                     {someSelected && !allSelected ? (
@@ -127,11 +127,11 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                     )}
                   </div>
                 </div>
-                <span className="text-sm font-semibold text-gray-700 group-hover:text-coffee-700 transition-colors">
+                <span className="text-sm font-semibold text-gray-700 group-hover:text-primary-700 transition-colors">
                   {allSelected ? 'Deselect All' : 'Select All'}
                 </span>
                 {selectedItemIds.length > 0 && (
-                  <span className="ml-auto text-xs font-medium text-coffee-600 bg-coffee-50 px-2 py-1 rounded-full">
+                  <span className="ml-auto text-xs font-medium text-primary-600 bg-primary-50 px-2 py-1 rounded-full">
                     {selectedItemIds.length} selected
                   </span>
                 )}
@@ -147,7 +147,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
               <p className="text-gray-500">Looks like you haven't added anything yet.</p>
               <button
                 onClick={handleStartOrdering}
-                className="mt-4 rounded-full bg-coffee-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-coffee-700"
+                className="mt-4 rounded-full bg-primary-600 px-6 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700"
               >
                 Start Ordering
               </button>
@@ -180,7 +180,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => onToggleItemSelection(item.id)}
-                          className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-gray-300 bg-white transition-all checked:border-coffee-600 checked:bg-coffee-600 hover:border-coffee-500 focus:ring-2 focus:ring-coffee-500/20"
+                          className="peer h-5 w-5 cursor-pointer appearance-none rounded-md border-2 border-gray-300 bg-white transition-all checked:border-primary-600 checked:bg-primary-600 hover:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
                         />
                         <Check
                           className="absolute h-3.5 w-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-200 pointer-events-none"
@@ -191,7 +191,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                       {/* Product Image - Clickable */}
                       <button
                         onClick={() => onEditItem(item)}
-                        className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 shadow-sm hover:border-coffee-300 transition-colors cursor-pointer"
+                        className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border border-gray-100 shadow-sm hover:border-primary-300 transition-colors cursor-pointer"
                       >
                         <img src={displayImageUrl} alt={displayName} className="h-full w-full object-cover object-center" />
                       </button>
@@ -300,7 +300,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
                 <button
                   onClick={onCheckout}
                   disabled={selectedItemIds.length === 0}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-coffee-600 to-coffee-700 px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-coffee-600/20 transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 disabled:shadow-none disabled:scale-100"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary-600 px-6 py-3.5 text-base font-bold text-white shadow-lg shadow-primary-600/20 transition-all hover:bg-primary-700 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-50 disabled:shadow-none disabled:scale-100"
                 >
                   Proceed to Checkout
                   <ArrowRight className="h-5 w-5" />

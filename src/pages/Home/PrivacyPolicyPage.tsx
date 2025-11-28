@@ -159,7 +159,7 @@ const PrivacyPolicyPage: React.FC = () => {
       <Header />
       <main>
         {/* Hero Section */}
-        <section className="relative flex min-h-[400px] items-center justify-center overflow-hidden bg-gradient-to-br from-green-600 via-emerald-600 to-green-700 px-6 py-16 text-white">
+        <section className="relative flex min-h-[400px] items-center justify-center overflow-hidden bg-gradient-to-br from-primary-600 via-primary-600 to-primary-700 px-6 py-16 text-white">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-10 left-10 h-32 w-32 rounded-full bg-white blur-3xl"></div>
             <div className="absolute bottom-20 right-10 h-40 w-40 rounded-full bg-white blur-3xl"></div>
@@ -169,7 +169,7 @@ const PrivacyPolicyPage: React.FC = () => {
               <Shield className="h-10 w-10" />
             </div>
             <h1 className="font-display text-5xl font-bold md:text-6xl">Privacy Policy</h1>
-            <p className="mt-4 text-xl text-green-100">Your privacy is important to us</p>
+            <p className="mt-4 text-xl text-primary-100">Your privacy is important to us</p>
             <p className="mt-2 text-sm text-white/80">Last updated: November 22, 2023</p>
           </div>
         </section>
@@ -179,24 +179,24 @@ const PrivacyPolicyPage: React.FC = () => {
           <div className="container mx-auto max-w-6xl">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
               <div className="text-center">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
-                  <Lock className="h-7 w-7 text-green-600" />
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary-100">
+                  <Lock className="h-7 w-7 text-primary-600" />
                 </div>
-                <h3 className="mb-2 font-display text-lg font-semibold text-coffee-900">Secure & Encrypted</h3>
+                <h3 className="mb-2 font-display text-lg font-semibold text-primary-900">Secure & Encrypted</h3>
                 <p className="text-sm text-gray-600">Your data is protected with industry-standard encryption</p>
               </div>
               <div className="text-center">
                 <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-blue-100">
                   <UserCheck className="h-7 w-7 text-blue-600" />
                 </div>
-                <h3 className="mb-2 font-display text-lg font-semibold text-coffee-900">You're in Control</h3>
+                <h3 className="mb-2 font-display text-lg font-semibold text-primary-900">You're in Control</h3>
                 <p className="text-sm text-gray-600">Manage your data and privacy settings anytime</p>
               </div>
               <div className="text-center">
                 <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-purple-100">
                   <Shield className="h-7 w-7 text-purple-600" />
                 </div>
-                <h3 className="mb-2 font-display text-lg font-semibold text-coffee-900">Never Sold</h3>
+                <h3 className="mb-2 font-display text-lg font-semibold text-primary-900">Never Sold</h3>
                 <p className="text-sm text-gray-600">We never sell your personal information to third parties</p>
               </div>
             </div>
@@ -214,8 +214,8 @@ const PrivacyPolicyPage: React.FC = () => {
                     href={`#${section.id}`}
                     onClick={(e) => handleScrollTo(e, section.id)}
                     className={`flex-shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-all ${activeSection === section.id
-                      ? 'bg-green-600 border-green-600 text-white shadow-md'
-                      : 'border-gray-300 bg-white text-gray-700 hover:bg-green-50 hover:border-green-300 hover:text-green-700'
+                      ? 'bg-primary-600 border-primary-600 text-white shadow-md'
+                      : 'border-gray-300 bg-white text-gray-700 hover:bg-primary-50 hover:border-primary-300 hover:text-primary-700'
                       }`}
                   >
                     {section.title.split('. ')[1]}
@@ -234,12 +234,12 @@ const PrivacyPolicyPage: React.FC = () => {
                 <Card>
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-green-100 to-emerald-100">
-                        <section.icon className="h-6 w-6 text-green-600" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-100 to-primary-100">
+                        <section.icon className="h-6 w-6 text-primary-600" />
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h2 className="mb-4 font-display text-2xl font-bold text-coffee-900">
+                      <h2 className="mb-4 font-display text-2xl font-bold text-primary-900">
                         {section.title}
                       </h2>
                       <p className="mb-4 text-gray-700 leading-relaxed">{section.content}</p>
@@ -248,12 +248,12 @@ const PrivacyPolicyPage: React.FC = () => {
                         <div className="space-y-4 mt-4">
                           {section.subsections.map((subsection, idx) => (
                             <div key={idx} className="rounded-lg bg-gray-50 p-4">
-                              <h3 className="mb-3 font-semibold text-coffee-900">{subsection.subtitle}</h3>
+                              <h3 className="mb-3 font-semibold text-primary-900">{subsection.subtitle}</h3>
                               {subsection.items && (
                                 <ul className="space-y-2 ml-4">
                                   {subsection.items.map((item, itemIdx) => (
                                     <li key={itemIdx} className="flex items-start gap-2 text-gray-700 text-sm">
-                                      <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-600"></span>
+                                      <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary-600"></span>
                                       <span>{item}</span>
                                     </li>
                                   ))}
@@ -268,7 +268,7 @@ const PrivacyPolicyPage: React.FC = () => {
                         <ul className="space-y-2 ml-4">
                           {section.bullets.map((bullet, idx) => (
                             <li key={idx} className="flex items-start gap-2 text-gray-700">
-                              <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-green-600"></span>
+                              <span className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-primary-600"></span>
                               <span>{bullet}</span>
                             </li>
                           ))}
@@ -278,19 +278,19 @@ const PrivacyPolicyPage: React.FC = () => {
                       {section.contact && (
                         <div className="mt-4 space-y-2 rounded-lg bg-gray-50 p-4">
                           <p className="flex items-center gap-2 text-gray-700">
-                            <Mail className="h-4 w-4 text-green-600" />
-                            <a href={`mailto:${section.contact.email}`} className="text-green-600 hover:underline">
+                            <Mail className="h-4 w-4 text-primary-600" />
+                            <a href={`mailto:${section.contact.email}`} className="text-primary-600 hover:underline">
                               {section.contact.email}
                             </a>
                           </p>
                           <p className="flex items-center gap-2 text-gray-700">
-                            <span className="h-4 w-4 text-green-600">📞</span>
-                            <a href={`tel:${section.contact.phone}`} className="text-green-600 hover:underline">
+                            <span className="h-4 w-4 text-primary-600">📞</span>
+                            <a href={`tel:${section.contact.phone}`} className="text-primary-600 hover:underline">
                               {section.contact.phone}
                             </a>
                           </p>
                           <p className="flex items-start gap-2 text-gray-700">
-                            <span className="mt-0.5 h-4 w-4 text-green-600">📍</span>
+                            <span className="mt-0.5 h-4 w-4 text-primary-600">📍</span>
                             <span>{section.contact.address}</span>
                           </p>
                         </div>
@@ -302,11 +302,11 @@ const PrivacyPolicyPage: React.FC = () => {
             ))}
 
             {/* Privacy Commitment */}
-            <Card className="border-l-4 border-green-500 bg-green-50">
+            <Card className="border-l-4 border-primary-500 bg-primary-50">
               <div className="flex items-start gap-4">
-                <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-green-600" />
+                <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-primary-600" />
                 <div>
-                  <h3 className="mb-2 font-display text-lg font-bold text-coffee-900">Our Privacy Commitment</h3>
+                  <h3 className="mb-2 font-display text-lg font-bold text-primary-900">Our Privacy Commitment</h3>
                   <p className="text-gray-700 leading-relaxed">
                     At Rush Coffee, we are committed to protecting your privacy and handling your personal information with care. If you have any questions or concerns about how we handle your data, please don't hesitate to contact us.
                   </p>

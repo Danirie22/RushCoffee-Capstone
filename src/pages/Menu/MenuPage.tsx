@@ -132,11 +132,11 @@ const MenuPage: React.FC = () => {
             <Header />
             <main>
                 {/* Hero Section */}
-                <section className="relative flex min-h-[40vh] items-center justify-center bg-coffee-900 px-6 py-16 text-center text-white">
+                <section className="relative flex min-h-[40vh] items-center justify-center bg-primary-900 px-6 py-16 text-center text-white">
                     <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1509042239860-f550ce710b93?q=80&w=2574&auto=format&fit=crop')] bg-cover bg-center opacity-20"></div>
-                    <div className="absolute inset-0 bg-gradient-to-b from-coffee-900/80 to-coffee-900/90"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-primary-900/80 to-primary-900/90"></div>
 
-                    <div className="container relative z-40 mx-auto max-w-4xl">
+                    <div className="container relative z-40 mx-auto max-w-4xl animate-fade-in-up">
                         <h1 className="font-display text-4xl font-bold md:text-5xl">Our Menu</h1>
                         <p className="mt-2 text-lg text-gray-200">Discover your perfect cup ☕</p>
 

@@ -123,7 +123,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
 
     const formatTime = (timestamp: any) => {
         if (!timestamp) return '';
-        const date = timestamp.toDate();
+        // Handle Firestore Timestamp or standard Date object
+        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
         return date.toLocaleString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -151,11 +152,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
             <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
                 {/* Header */}
-                <div className="p-6 border-b bg-gradient-to-r from-coffee-600 to-coffee-800 text-white">
+                <div className="p-6 border-b bg-gradient-to-r from-primary-600 to-primary-800 text-white">
                     <div className="flex items-start justify-between">
                         <div>
                             <h2 className="text-2xl font-bold mb-2">{order.orderNumber}</h2>
-                            <div className="flex items-center gap-3 text-coffee-100">
+                            <div className="flex items-center gap-3 text-primary-100">
                                 <div className="flex items-center gap-1.5">
                                     <Clock className="h-4 w-4" />
                                     <span className="text-sm">{formatTime(order.timestamp)}</span>
@@ -177,11 +178,11 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                     {/* Order Items */}
                     <div>
                         <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                            <Package className="h-5 w-5 text-coffee-600" />
+                            <Package className="h-5 w-5 text-primary-600" />
                             Order Items
                         </h3>
                         <div className="space-y-2">
-                            {(order.orderItems || order.items || []).map((item: OrderItem, idx: number) => {
+                            {(order.orderItems || []).map((item: OrderItem, idx: number) => {
                                 // Calculate topping prices
                                 let toppingTotal = 0;
                                 if (item.customizations?.toppings) {
@@ -241,9 +242,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                         </div>
 
                         {/* Total Breakdown */}
-                        <div className="mt-4 p-4 bg-coffee-50 rounded-lg border-2 border-coffee-200 space-y-2">
+                        <div className="mt-4 p-4 bg-primary-50 rounded-lg border-2 border-primary-200 space-y-2">
                             {(() => {
-                                const itemsTotal = (order.orderItems || order.items || []).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                                const itemsTotal = (order.orderItems || []).reduce((sum, item) => sum + (item.price * item.quantity), 0);
                                 const additionalFees = order.subtotal - itemsTotal;
 
                                 return (
@@ -258,9 +259,9 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                                                 <span className="font-medium text-gray-900">₱{additionalFees.toFixed(2)}</span>
                                             </div>
                                         )}
-                                        <div className="pt-2 border-t border-coffee-300 flex justify-between items-center">
+                                        <div className="pt-2 border-t border-primary-300 flex justify-between items-center">
                                             <span className="font-bold text-gray-900 text-lg">Total</span>
-                                            <span className="font-bold text-coffee-700 text-2xl">₱{order.subtotal.toFixed(2)}</span>
+                                            <span className="font-bold text-primary-700 text-2xl">₱{order.subtotal.toFixed(2)}</span>
                                         </div>
                                     </>
                                 );

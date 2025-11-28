@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
-import { Coffee, Check, X, RefreshCw, ShoppingBag } from 'lucide-react';
+import { Coffee, Check, X, RefreshCw, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
 import { QueueItem } from '../../context/OrderContext';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
@@ -103,7 +103,7 @@ const OrderCard: React.FC<{ order: QueueItem }> = ({ order }) => {
   };
 
   return (
-    <Card hover className="transition-shadow duration-300">
+    <Card className="transition-shadow duration-300">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-grow">
           <div className="flex items-center justify-between">
@@ -136,8 +136,52 @@ const OrderCard: React.FC<{ order: QueueItem }> = ({ order }) => {
 };
 
 const OrderHistory: React.FC<OrderHistoryProps> = ({ orders, limit, showViewAll, onViewAll }) => {
-  const sortedOrders = [...orders].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-  const displayOrders = limit ? sortedOrders.slice(0, limit) : sortedOrders;
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const sortedOrders = useMemo(() => {
+    return [...orders].sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }, [orders]);
+
+  // Calculate pagination
+  const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
+
+  // If limit is provided (e.g. for dashboard widget), use it. Otherwise use pagination.
+  const displayOrders = useMemo(() => {
+    if (limit) {
+      return sortedOrders.slice(0, limit);
+    }
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return sortedOrders.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedOrders, limit, currentPage]);
+
+  // Group orders by date
+  const groupedOrders = useMemo(() => {
+    const groups: { [key: string]: QueueItem[] } = {};
+    displayOrders.forEach(order => {
+      const dateKey = format(order.timestamp, 'MMMM dd, yyyy');
+      if (!groups[dateKey]) {
+        groups[dateKey] = [];
+      }
+      groups[dateKey].push(order);
+    });
+    return groups;
+  }, [displayOrders]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    if (containerRef.current) {
+      const headerOffset = 100; // Approx header height
+      const elementPosition = containerRef.current.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
+  };
 
   if (orders.length === 0) {
     return (
@@ -151,19 +195,70 @@ const OrderHistory: React.FC<OrderHistoryProps> = ({ orders, limit, showViewAll,
   }
 
   return (
-    <div>
+    <div ref={containerRef}>
       <motion.div
-        className="space-y-4"
+        className="space-y-8"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        {displayOrders.map(order => (
-          <motion.div key={order.id} variants={itemVariants} layout>
-            <OrderCard order={order} />
-          </motion.div>
+        {Object.entries(groupedOrders).map(([date, groupOrders]) => (
+          <div key={date}>
+            <h3 className="text-lg font-bold text-gray-700 mb-4 sticky top-0 bg-gray-50/95 backdrop-blur py-2 z-10">
+              {date}
+            </h3>
+            <div className="space-y-4">
+              {groupOrders.map(order => (
+                <motion.div key={order.id} variants={itemVariants} layout>
+                  <OrderCard order={order} />
+                </motion.div>
+              ))}
+            </div>
+          </div>
         ))}
       </motion.div>
+
+      {/* Pagination Controls - Only show if not in widget mode (no limit) and multiple pages exist */}
+      {!limit && totalPages > 1 && (
+        <div className="mt-8 flex justify-center items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => handlePageChange(page)}
+                className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${currentPage === page
+                    ? 'bg-primary-600 text-white'
+                    : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="p-2"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {/* Show 'View All' if in widget mode (limit prop exists) */}
       {showViewAll && sortedOrders.length > (limit || 0) && (
         <div className="mt-6 text-center">
           <Button variant="ghost" onClick={onViewAll}>

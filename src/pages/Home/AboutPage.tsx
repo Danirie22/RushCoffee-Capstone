@@ -67,7 +67,7 @@ const StatCard: React.FC<{ icon: React.ElementType; value: number; label: string
   return (
     <div className="flex flex-col items-center text-center">
       <Icon className="mb-2 h-10 w-10 text-primary-600" />
-      <span ref={ref} className="font-display text-4xl font-bold text-coffee-900">
+      <span ref={ref} className="font-display text-4xl font-bold text-primary-900">
         {Number(count).toLocaleString(undefined, {
           minimumFractionDigits: hasDecimals ? 1 : 0,
           maximumFractionDigits: hasDecimals ? 1 : 0,
@@ -85,7 +85,7 @@ const AboutPage: React.FC = () => {
       <main>
         {/* Hero Section */}
         {/* Hero Section */}
-        <section className="relative flex min-h-[40vh] items-center justify-center overflow-hidden bg-coffee-900 px-6 py-24 text-center text-white">
+        <section className="relative flex min-h-[40vh] items-center justify-center overflow-hidden bg-primary-900 px-6 py-24 text-center text-white">
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
             <img
@@ -93,7 +93,7 @@ const AboutPage: React.FC = () => {
               alt="Coffee beans close up"
               className="h-full w-full object-cover opacity-40"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-coffee-900/60 via-coffee-900/40 to-coffee-900/90"></div>
+            <div className="absolute inset-0 bg-gradient-to-b from-primary-900/60 via-primary-900/40 to-primary-900/90"></div>
           </div>
 
           {/* Content */}
@@ -124,7 +124,7 @@ const AboutPage: React.FC = () => {
         <section id="our-story" className="px-6 py-32">
           <div className="container mx-auto grid max-w-7xl items-center gap-12 md:grid-cols-2">
             <div className="animate-fade-in-up">
-              <h2 className="font-display text-3xl font-bold text-coffee-900 md:text-4xl">Our Story</h2>
+              <h2 className="font-display text-3xl font-bold text-primary-900 md:text-4xl">Our Story</h2>
               <p className="mt-4 text-lg text-gray-600">
                 Founded in 2023 by a group of passionate coffee aficionados and tech enthusiasts, Rush Coffee was born from a simple yet powerful idea: your coffee break should be a moment of joy, not a test of patience.
               </p>
@@ -146,16 +146,16 @@ const AboutPage: React.FC = () => {
         <section className="bg-gray-50 px-6 py-32">
           <div className="container mx-auto max-w-7xl">
             <div className="text-center">
-              <h2 className="font-display text-3xl font-bold text-coffee-900 md:text-4xl">What We Stand For</h2>
+              <h2 className="font-display text-3xl font-bold text-primary-900 md:text-4xl">What We Stand For</h2>
               <p className="mx-auto mt-4 max-w-2xl text-gray-600">
                 Our core values guide every bean we roast and every line of code we write.
               </p>
             </div>
             <div className="mt-12 grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
-              <Card hover className="text-center"><Coffee className="mx-auto mb-4 h-12 w-12 text-primary-600" /><h3 className="font-display text-xl font-semibold text-coffee-900">Quality</h3><p className="mt-2 text-gray-600">From ethically sourced, premium beans to the perfect extraction, excellence is in every cup.</p></Card>
-              <Card hover className="text-center"><Zap className="mx-auto mb-4 h-12 w-12 text-primary-600" /><h3 className="font-display text-xl font-semibold text-coffee-900">Speed</h3><p className="mt-2 text-gray-600">Our digital queue system ensures your order is ready when you are. Fast, efficient, and always fresh.</p></Card>
-              <Card hover className="text-center"><Users className="mx-auto mb-4 h-12 w-12 text-primary-600" /><h3 className="font-display text-xl font-semibold text-coffee-900">Community</h3><p className="mt-2 text-gray-600">We're more than a coffee shop; we're a hub for connection, creativity, and caffeine lovers.</p></Card>
-              <Card hover className="text-center"><Lightbulb className="mx-auto mb-4 h-12 w-12 text-primary-600" /><h3 className="font-display text-xl font-semibold text-coffee-900">Innovation</h3><p className="mt-2 text-gray-600">Continuously improving your experience by thoughtfully integrating technology with tradition.</p></Card>
+              <Card hover className="text-center"><Coffee className="mx-auto mb-4 h-12 w-12 text-primary-600" /><h3 className="font-display text-xl font-semibold text-primary-900">Quality</h3><p className="mt-2 text-gray-600">From ethically sourced, premium beans to the perfect extraction, excellence is in every cup.</p></Card>
+              <Card hover className="text-center"><Zap className="mx-auto mb-4 h-12 w-12 text-primary-600" /><h3 className="font-display text-xl font-semibold text-primary-900">Speed</h3><p className="mt-2 text-gray-600">Our digital queue system ensures your order is ready when you are. Fast, efficient, and always fresh.</p></Card>
+              <Card hover className="text-center"><Users className="mx-auto mb-4 h-12 w-12 text-primary-600" /><h3 className="font-display text-xl font-semibold text-primary-900">Community</h3><p className="mt-2 text-gray-600">We're more than a coffee shop; we're a hub for connection, creativity, and caffeine lovers.</p></Card>
+              <Card hover className="text-center"><Lightbulb className="mx-auto mb-4 h-12 w-12 text-primary-600" /><h3 className="font-display text-xl font-semibold text-primary-900">Innovation</h3><p className="mt-2 text-gray-600">Continuously improving your experience by thoughtfully integrating technology with tradition.</p></Card>
             </div>
           </div>
         </section>
@@ -164,12 +164,12 @@ const AboutPage: React.FC = () => {
         <section className="bg-gray-50 px-6 py-20">
           <div className="container mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2">
             <div>
-              <h2 className="font-display text-3xl font-bold text-coffee-900 md:text-4xl">Visit Us</h2>
+              <h2 className="font-display text-3xl font-bold text-primary-900 md:text-4xl">Visit Us</h2>
               <p className="mt-4 text-gray-600">Experience the Rush Coffee difference in person. We're ready to serve you.</p>
               <ul className="mt-6 space-y-4">
-                <li className="flex items-start gap-4"><MapPin className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-coffee-900">Address</h4><p className="text-gray-600">11 Visayan Ave. St. Galas, Quezon City, Philippines</p></div></li>
-                <li className="flex items-start gap-4"><Clock className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-coffee-900">Operating Hours</h4><p className="text-gray-600">Monday - Sunday 12pm - 10pm</p></div></li>
-                <li className="flex items-start gap-4"><Phone className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-coffee-900">Contact</h4><a href="tel:09304641022" className="text-primary-600 transition hover:text-primary-700">0930 464 1022</a></div></li>
+                <li className="flex items-start gap-4"><MapPin className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-primary-900">Address</h4><p className="text-gray-600">11 Visayan Ave. St. Galas, Quezon City, Philippines</p></div></li>
+                <li className="flex items-start gap-4"><Clock className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-primary-900">Operating Hours</h4><p className="text-gray-600">Monday - Sunday 12pm - 10pm</p></div></li>
+                <li className="flex items-start gap-4"><Phone className="mt-1 h-6 w-6 flex-shrink-0 text-primary-600" /><div><h4 className="font-semibold text-primary-900">Contact</h4><a href="tel:09304641022" className="text-primary-600 transition hover:text-primary-700">0930 464 1022</a></div></li>
               </ul>
               <Button size="lg" className="mt-8">Get Directions</Button>
             </div>
@@ -190,7 +190,7 @@ const AboutPage: React.FC = () => {
 
         {/* CTA Section */}
         {/* CTA Section */}
-        <section className="relative overflow-hidden bg-coffee-900 px-6 py-24 text-center text-white">
+        <section className="relative overflow-hidden bg-primary-900 px-6 py-24 text-center text-white">
           {/* Background Pattern/Image */}
           <div className="absolute inset-0 z-0">
             <img
@@ -198,7 +198,7 @@ const AboutPage: React.FC = () => {
               alt="Coffee shop atmosphere"
               className="h-full w-full object-cover opacity-20"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-coffee-900/90 via-coffee-800/90 to-coffee-900/90"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-900/90 via-primary-800/90 to-primary-900/90"></div>
           </div>
 
           <div className="absolute -left-1/4 -top-1/4 opacity-5"><RushCoffeeLogo className="h-96 w-96 animate-float text-white" /></div>

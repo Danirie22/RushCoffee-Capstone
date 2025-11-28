@@ -194,32 +194,32 @@ const HomePage: React.FC = () => {
                         <img
                             src={heroBgFull}
                             alt="Coffee Shop Atmosphere"
-                            className="h-full w-full object-cover brightness-110"
+                            className="h-full w-full object-cover object-left brightness-110"
                         />
                         {/* Gradient overlay: Dark on left for text, transparent on right for products */}
                         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent"></div>
                     </div>
 
-                    <div className="container relative z-10 mx-auto max-w-7xl px-6 py-20">
-                        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-2">
+                    <div className="container relative z-10 mx-auto max-w-7xl px-6 py-16 md:py-20">
+                        <div className="grid grid-cols-1 items-center gap-12 xl:grid-cols-2">
 
-                            <div className="animate-fade-in-up text-center lg:text-left">
-                                <h1 className="font-display text-5xl font-bold text-white md:text-6xl lg:text-7xl leading-tight">
+                            <div className="animate-fade-in-up text-center xl:text-left">
+                                <h1 className="font-display text-4xl font-bold text-white md:text-6xl lg:text-7xl leading-tight">
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 200ms forwards', opacity: 0 }}>Skip the Line,</span>
                                     <span className="block text-[#8B5E3C]" style={{ animation: 'fade-in-up 0.8s ease-out 300ms forwards', opacity: 0 }}>Get Your Coffee</span>
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 400ms forwards', opacity: 0 }}>Faster.</span>
                                 </h1>
-                                <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-200 md:text-xl lg:mx-0 shadow-black drop-shadow-md" style={{ animation: 'fade-in-up 0.8s ease-out 500ms forwards', opacity: 0 }}>
+                                <p className="mx-auto mt-5 md:mt-6 max-w-2xl text-base md:text-lg text-gray-200 md:text-xl xl:mx-0 shadow-black drop-shadow-md leading-relaxed" style={{ animation: 'fade-in-up 0.8s ease-out 500ms forwards', opacity: 0 }}>
                                     Join our digital queue system. Order ahead, track your position in real-time, and breeze through pickup. Your perfect cup awaits—without the wait.
                                 </p>
 
-                                <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 600ms forwards', opacity: 0 }}>
+                                <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2.5 md:gap-3 xl:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 600ms forwards', opacity: 0 }}>
                                     <Badge className="bg-[#3E2723]/90 text-[#D7CCC8] border border-[#5D4037] backdrop-blur-sm px-4 py-2">⚡ Real-Time Queue</Badge>
                                     <Badge className="bg-[#3E2723]/90 text-[#D7CCC8] border border-[#5D4037] backdrop-blur-sm px-4 py-2">📱 Mobile Ordering</Badge>
                                     <Badge className="bg-[#3E2723]/90 text-[#D7CCC8] border border-[#5D4037] backdrop-blur-sm px-4 py-2">🎁 Rewards Program</Badge>
                                 </div>
 
-                                <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center lg:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 700ms forwards', opacity: 0 }}>
+                                <div className="mt-8 md:mt-10 flex flex-col items-center gap-3 md:gap-4 sm:flex-row sm:justify-center xl:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 700ms forwards', opacity: 0 }}>
                                     <Link to={orderNowPath}>
                                         <Button
                                             variant="primary"

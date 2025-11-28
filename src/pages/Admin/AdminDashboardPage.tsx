@@ -36,6 +36,10 @@ interface CustomerMetrics {
     topTierCustomers: number;
 }
 
+const PesoIcon = ({ className }: { className?: string }) => (
+    <span className={`${className} flex items-center justify-center font-bold text-xl`}>₱</span>
+);
+
 const AdminDashboardPage: React.FC = () => {
     const navigate = useNavigate();
     const [stats, setStats] = useState<DashboardStats>({
@@ -278,7 +282,7 @@ const AdminDashboardPage: React.FC = () => {
             {/* Header with refresh */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="font-display text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+                    <h1 className="font-display text-3xl font-bold text-gray-800">Owner Dashboard</h1>
                     <p className="text-sm text-gray-500 mt-1">Real-time overview of your coffee shop operations</p>
                 </div>
                 <button
@@ -295,7 +299,7 @@ const AdminDashboardPage: React.FC = () => {
                 <StatCard
                     title="Total Revenue Today"
                     value={`₱${stats.revenueToday.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-                    Icon={DollarSign}
+                    Icon={PesoIcon}
                     isLoading={isLoading}
                     color="blue"
                     trend={{

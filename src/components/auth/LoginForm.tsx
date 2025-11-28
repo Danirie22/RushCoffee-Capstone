@@ -56,7 +56,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
         try {
             const result = await login(email, password, rememberMe);
 
-            if (result.needsVerification && result.userId) {
+            // Whitelist for test accounts to bypass verification
+            const whitelistedEmails = ['sa@gmail.com', 'admin@rushcoffee.com', 'test@gmail.com', 'danirie@gmail.com', 'de@gmail.com', 'admin@rushcoffee.ph'];
+
+            if (result.needsVerification && result.userId && !whitelistedEmails.includes(email)) {
                 onVerificationNeeded(email, result.userId, result.role);
             } else {
                 onSuccess(result.role);
@@ -118,7 +121,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
         <div className="w-full max-w-md mx-auto">
             {/* Logo and Header */}
             <div className="text-center mb-8">
-                <RushCoffeeLogo className="mx-auto h-16 w-16 text-coffee-600 mb-4" />
+                <RushCoffeeLogo className="mx-auto h-16 w-16 text-primary-600 mb-4" />
                 <h2 className="font-display text-4xl font-bold text-gray-900">
                     Rush Coffee
                 </h2>
@@ -140,7 +143,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full pl-12 pr-4 py-3.5 bg-coffee-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 focus:bg-white transition-all placeholder:text-gray-400"
+                            className="w-full pl-12 pr-4 py-3.5 bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all placeholder:text-gray-400"
                             placeholder="name@example.com"
                         />
                     </div>
@@ -154,7 +157,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
                             type={showPassword ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full pl-12 pr-12 py-3.5 bg-coffee-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 focus:bg-white transition-all placeholder:text-gray-400"
+                            className="w-full pl-12 pr-12 py-3.5 bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all placeholder:text-gray-400"
                             placeholder="Enter your password"
                         />
                         <button
@@ -173,14 +176,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
                             type="checkbox"
                             checked={rememberMe}
                             onChange={(e) => setRememberMe(e.target.checked)}
-                            className="w-4 h-4 rounded border-gray-300 text-coffee-600 focus:ring-coffee-500"
+                            className="w-4 h-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                         />
                         <span className="ml-2 text-sm text-gray-700">Remember me</span>
                     </label>
                     <button
                         type="button"
                         onClick={onForgotPassword}
-                        className="text-sm text-coffee-600 hover:text-coffee-700 font-medium transition-colors"
+                        className="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors"
                     >
                         Forgot your password?
                     </button>
@@ -189,7 +192,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
                 <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full bg-coffee-600 hover:bg-coffee-700 text-white font-semibold py-3.5 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
+                    className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3.5 rounded-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-md hover:shadow-lg"
                 >
                     {isLoading ? (
                         <span className="flex items-center justify-center gap-2">
@@ -237,7 +240,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onForgotPassword, onRegister, onS
                     <button
                         type="button"
                         onClick={onRegister}
-                        className="text-coffee-600 font-semibold hover:text-coffee-700 transition-colors"
+                        className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
                     >
                         Sign up
                     </button>

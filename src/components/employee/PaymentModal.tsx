@@ -81,10 +81,10 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             <div className="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
 
                 {/* Header */}
-                <div className="bg-coffee-900 text-white p-6 flex items-center justify-between shrink-0">
+                <div className="bg-primary-900 text-white p-6 flex items-center justify-between shrink-0">
                     <div>
                         <h2 className="text-2xl font-bold">Payment</h2>
-                        <p className="text-coffee-200 text-sm">Select payment method</p>
+                        <p className="text-primary-200 text-sm">Select payment method</p>
                     </div>
                     <button
                         onClick={onClose}
@@ -100,7 +100,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                     {/* Total Amount Display */}
                     <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6 text-center">
                         <p className="text-gray-500 font-medium mb-1">Total Amount Due</p>
-                        <p className="text-5xl font-bold text-coffee-700">₱{totalAmount.toFixed(2)}</p>
+                        <p className="text-5xl font-bold text-primary-700">₱{totalAmount.toFixed(2)}</p>
                     </div>
 
                     {/* Payment Method Tabs */}
@@ -108,8 +108,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                         <button
                             onClick={() => setPaymentMethod('cash')}
                             className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'cash'
-                                    ? 'border-coffee-600 bg-coffee-50 text-coffee-700 shadow-md'
-                                    : 'border-gray-200 bg-white text-gray-500 hover:border-coffee-200 hover:bg-gray-50'
+                                ? 'border-primary-600 bg-primary-50 text-primary-700 shadow-md'
+                                : 'border-gray-200 bg-white text-gray-500 hover:border-primary-200 hover:bg-gray-50'
                                 }`}
                         >
                             <Banknote className="h-8 w-8" />
@@ -118,8 +118,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                         <button
                             onClick={() => setPaymentMethod('gcash')}
                             className={`p-4 rounded-xl border-2 flex flex-col items-center gap-2 transition-all ${paymentMethod === 'gcash'
-                                    ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-md'
-                                    : 'border-gray-200 bg-white text-gray-500 hover:border-blue-200 hover:bg-gray-50'
+                                ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-md'
+                                : 'border-gray-200 bg-white text-gray-500 hover:border-blue-200 hover:bg-gray-50'
                                 }`}
                         >
                             <CreditCard className="h-8 w-8" />
@@ -138,7 +138,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                                         type="number"
                                         value={amountReceived}
                                         onChange={(e) => setAmountReceived(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-4 text-3xl font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-coffee-500 focus:border-coffee-500 transition-all"
+                                        className="w-full pl-10 pr-4 py-4 text-3xl font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
                                         placeholder="0.00"
                                         autoFocus
                                     />
@@ -148,7 +148,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                                 <div className="grid grid-cols-4 gap-2 mt-4">
                                     <button
                                         onClick={handleExactAmount}
-                                        className="py-2 px-1 rounded-lg bg-coffee-100 text-coffee-700 font-bold text-sm hover:bg-coffee-200 transition-colors"
+                                        className="py-2 px-1 rounded-lg bg-primary-100 text-primary-700 font-bold text-sm hover:bg-primary-200 transition-colors"
                                     >
                                         Exact
                                     </button>
@@ -166,8 +166,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
                             {/* Change Display */}
                             <div className={`rounded-2xl p-6 border transition-all duration-300 ${change > 0
-                                    ? 'bg-green-50 border-green-200'
-                                    : 'bg-gray-50 border-gray-200 opacity-50'
+                                ? 'bg-green-50 border-green-200'
+                                : 'bg-gray-50 border-gray-200 opacity-50'
                                 }`}>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -216,7 +216,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                     <button
                         onClick={handleSubmit}
                         disabled={paymentMethod === 'cash' ? parseFloat(amountReceived || '0') < totalAmount : !referenceNumber}
-                        className="w-full py-4 bg-gradient-to-r from-coffee-600 to-coffee-800 hover:from-coffee-700 hover:to-coffee-900 text-white font-bold text-xl rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-3"
+                        className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-800 hover:from-primary-700 hover:to-primary-900 text-white font-bold text-xl rounded-2xl shadow-lg hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 transition-all flex items-center justify-center gap-3"
                     >
                         <CheckCircle2 className="h-6 w-6" />
                         Complete Payment

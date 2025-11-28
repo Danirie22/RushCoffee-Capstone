@@ -39,7 +39,7 @@ const POSDashboard: React.FC = () => {
                 snapshot.forEach(doc => {
                     const order = doc.data();
                     if (order.status === 'completed') {
-                        revenue += order.totalAmount;
+                        revenue += (Number(order.totalAmount) || 0);
                     }
                 });
 
@@ -64,8 +64,8 @@ const POSDashboard: React.FC = () => {
             title: 'New Order',
             description: 'Start processing a walk-in order',
             icon: ShoppingCart,
-            gradient: 'from-coffee-600 to-coffee-700',
-            hoverGradient: 'hover:from-coffee-700 hover:to-coffee-800',
+            gradient: 'from-primary-600 to-primary-700',
+            hoverGradient: 'hover:from-primary-700 hover:to-primary-800',
             route: '/employee/pos',
             primary: true
         },
@@ -96,23 +96,23 @@ const POSDashboard: React.FC = () => {
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-coffee-50 via-gray-50 to-primary-50">
+        <div className="min-h-screen bg-gradient-to-br from-primary-50 via-gray-50 to-primary-50">
             {/* Hero Header */}
-            <div className="bg-gradient-to-r from-coffee-600 to-coffee-700 text-white px-6 py-12 mb-8 shadow-xl">
+            <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-6 py-12 mb-8 shadow-xl">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex items-center justify-between">
                         <div>
                             <h1 className="text-4xl font-display font-bold mb-2 flex items-center gap-3">
                                 <Zap className="h-10 w-10" />
-                                Employee Portal
+                                Admin Portal
                             </h1>
-                            <p className="text-coffee-100 text-lg">
+                            <p className="text-primary-100 text-lg">
                                 Welcome back, <span className="font-semibold">{currentUser?.firstName || 'Employee'}</span>!
                                 Ready to serve some great coffee?
                             </p>
                         </div>
                         <div className="text-right">
-                            <p className="text-coffee-100 text-sm mb-1">Current Time</p>
+                            <p className="text-primary-100 text-sm mb-1">Current Time</p>
                             <p className="text-3xl font-bold">{new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
                     </div>
@@ -123,7 +123,7 @@ const POSDashboard: React.FC = () => {
                 {/* Today's Stats */}
                 <div className="mb-8">
                     <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <TrendingUp className="h-6 w-6 text-coffee-600" />
+                        <TrendingUp className="h-6 w-6 text-primary-600" />
                         Today's Performance
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -131,14 +131,14 @@ const POSDashboard: React.FC = () => {
                         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-shadow">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center">
-                                    <DollarSign className="h-6 w-6 text-green-600" />
+                                    <span className="h-6 w-6 text-green-600 flex items-center justify-center font-bold text-xl">₱</span>
                                 </div>
                             </div>
                             {isLoading ? (
                                 <div className="h-8 w-32 bg-gray-200 rounded animate-pulse"></div>
                             ) : (
                                 <p className="text-3xl font-bold text-gray-900">
-                                    ₱{stats.revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    ₱{(stats.revenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </p>
                             )}
                             <p className="text-sm text-gray-600 mt-2 font-medium">Total Revenue</p>
@@ -169,7 +169,7 @@ const POSDashboard: React.FC = () => {
                             {isLoading ? (
                                 <div className="h-8 w-24 bg-gray-200 rounded animate-pulse"></div>
                             ) : (
-                                <p className="text-3xl font-bold text-gray-900">₱{stats.avgOrderValue.toFixed(2)}</p>
+                                <p className="text-3xl font-bold text-gray-900">₱{(stats.avgOrderValue || 0).toFixed(2)}</p>
                             )}
                             <p className="text-sm text-gray-600 mt-2 font-medium">Avg Order Value</p>
                         </div>
@@ -179,7 +179,7 @@ const POSDashboard: React.FC = () => {
                 {/* Quick Actions */}
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <Zap className="h-6 w-6 text-coffee-600" />
+                        <Zap className="h-6 w-6 text-primary-600" />
                         Quick Actions
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -193,7 +193,7 @@ const POSDashboard: React.FC = () => {
                                         bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-100
                                         hover:shadow-2xl hover:scale-105 transition-all duration-300
                                         text-left group relative overflow-hidden
-                                        ${action.primary ? 'ring-2 ring-coffee-600 ring-offset-2' : ''}
+                                        ${action.primary ? 'ring-2 ring-primary-600 ring-offset-2' : ''}
                                     `}
                                 >
                                     {/* Background gradient on hover */}
@@ -205,14 +205,14 @@ const POSDashboard: React.FC = () => {
                                         </div>
                                         <h3 className="text-lg font-bold text-gray-900 mb-2 flex items-center justify-between">
                                             {action.title}
-                                            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-coffee-600 group-hover:translate-x-1 transition-all" />
+                                            <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-primary-600 group-hover:translate-x-1 transition-all" />
                                         </h3>
                                         <p className="text-sm text-gray-600">{action.description}</p>
                                     </div>
 
                                     {action.primary && (
                                         <div className="absolute top-3 right-3">
-                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-coffee-600 text-white shadow-lg animate-pulse">
+                                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-primary-600 text-white shadow-lg animate-pulse">
                                                 START HERE
                                             </span>
                                         </div>

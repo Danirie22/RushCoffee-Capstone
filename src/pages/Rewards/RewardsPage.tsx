@@ -132,7 +132,7 @@ const RewardsPage: React.FC = () => {
                 <main className="flex flex-1 items-center justify-center px-6 py-20 text-center">
                     <div className="max-w-md">
                         <Gift className="mx-auto h-24 w-24 text-gray-300 opacity-50" />
-                        <h1 className="mt-6 font-display text-3xl font-bold text-coffee-900">
+                        <h1 className="mt-6 font-display text-3xl font-bold text-primary-900">
                             Join Our Rewards Program
                         </h1>
                         <p className="mt-4 text-lg text-gray-600 leading-relaxed">
@@ -158,14 +158,14 @@ const RewardsPage: React.FC = () => {
             <Header />
             <main>
                 {/* Polished Hero Section */}
-                <section className="relative overflow-hidden bg-gradient-to-br from-coffee-900 via-coffee-800 to-primary-900 px-4 py-16 text-white shadow-2xl sm:px-6 sm:py-20 lg:py-28">
+                <section className="relative overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 px-4 py-16 text-white shadow-2xl sm:px-6 sm:py-20 lg:py-28">
                     {/* Background Textures & Effects */}
                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                     <div className="absolute -right-32 -top-32 h-[500px] w-[500px] rounded-full bg-primary-500 blur-3xl opacity-20 animate-pulse"></div>
-                    <div className="absolute -left-32 -bottom-32 h-96 w-96 rounded-full bg-coffee-500 blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+                    <div className="absolute -left-32 -bottom-32 h-96 w-96 rounded-full bg-primary-500 blur-3xl opacity-20 animate-pulse" style={{ animationDelay: '1.5s' }}></div>
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-primary-600/10 blur-2xl"></div>
 
-                    <div className="container relative mx-auto max-w-7xl">
+                    <div className="container relative mx-auto max-w-7xl animate-fade-in-up">
                         <div className="grid grid-cols-1 items-center gap-12 md:gap-16 lg:grid-cols-2">
                             {/* Left Column - Points Info */}
                             <div className="z-10 space-y-6 text-center lg:text-left">
@@ -184,14 +184,14 @@ const RewardsPage: React.FC = () => {
                                     </span>
                                 </h1>
 
-                                {/* Coffee-Themed Balance Card */}
+                                {/* Balance Card */}
                                 <div className="inline-flex w-full max-w-md flex-col gap-3 sm:flex-row sm:justify-center lg:justify-start">
                                     <button
                                         onClick={scrollToRewards}
                                         className="w-full text-left outline-none focus:ring-2 focus:ring-primary-400/50 focus:ring-offset-2 focus:ring-offset-transparent rounded-2xl transition-all"
                                     >
-                                        <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-coffee-700/80 to-coffee-800/60 p-px transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-coffee-900/50 cursor-pointer backdrop-blur-sm">
-                                            <div className="relative rounded-2xl bg-gradient-to-br from-coffee-800/90 to-coffee-900/90 backdrop-blur-md px-6 py-5 border border-coffee-600/30">
+                                        <div className="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-700/80 to-primary-800/60 p-px transition-all hover:scale-[1.02] hover:shadow-xl hover:shadow-primary-900/50 cursor-pointer backdrop-blur-sm">
+                                            <div className="relative rounded-2xl bg-gradient-to-br from-primary-800/90 to-primary-900/90 backdrop-blur-md px-6 py-5 border border-primary-600/30">
                                                 <div className="flex items-center gap-4">
                                                     {/* Icon */}
                                                     <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500/90 to-primary-600/90 shadow-md group-hover:scale-110 transition-transform">
@@ -200,13 +200,13 @@ const RewardsPage: React.FC = () => {
                                                     {/* Content */}
                                                     <div className="flex-1">
                                                         <div className="flex items-baseline gap-1.5 mb-0.5">
-                                                            <span className="text-sm font-semibold text-coffee-200/80 uppercase tracking-wider">Balance</span>
+                                                            <span className="text-sm font-semibold text-primary-200/80 uppercase tracking-wider">Balance</span>
                                                         </div>
                                                         <div className="flex items-baseline gap-2">
                                                             <span className="text-4xl font-black text-white tracking-tight">
                                                                 {currentUser.currentPoints}
                                                             </span>
-                                                            <span className="text-base font-bold text-coffee-300">pts</span>
+                                                            <span className="text-base font-bold text-primary-300">pts</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -218,7 +218,7 @@ const RewardsPage: React.FC = () => {
                                 </div>
 
                                 {/* Supporting Text */}
-                                <p className="text-coffee-100 text-base sm:text-lg leading-relaxed max-w-md mx-auto lg:mx-0">
+                                <p className="text-primary-100 text-base sm:text-lg leading-relaxed max-w-md mx-auto lg:mx-0">
                                     Earn points with every purchase and unlock exclusive rewards!
                                 </p>
                             </div>
@@ -253,7 +253,7 @@ const RewardsPage: React.FC = () => {
                                     <div className="h-1 w-12 bg-gradient-to-r from-primary-600 to-primary-400 rounded-full"></div>
                                     <span className="text-sm font-semibold text-primary-600 uppercase tracking-wider">Rewards</span>
                                 </div>
-                                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-coffee-900 mb-3">
+                                <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-primary-900 mb-3">
                                     Redeem Your Points
                                 </h2>
                                 <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
@@ -360,7 +360,6 @@ const RewardsPage: React.FC = () => {
                     </div>
                 )}
             </Modal>
-
         </div>
     );
 };

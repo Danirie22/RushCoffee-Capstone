@@ -230,7 +230,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
                         placeholder="Search by Order ID, Name, or Order #"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-coffee-500 focus:border-transparent outline-none transition-all"
+                        className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
                     />
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -239,7 +239,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
                         <select
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
-                            className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 px-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-coffee-500 cursor-pointer hover:border-gray-300 transition-colors"
+                            className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 px-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer hover:border-gray-300 transition-colors"
                         >
                             <option value="all">All Status</option>
                             <option value="completed">Completed</option>
@@ -256,7 +256,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
                         <select
                             value={filterDate}
                             onChange={(e) => setFilterDate(e.target.value)}
-                            className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 px-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-coffee-500 cursor-pointer hover:border-gray-300 transition-colors"
+                            className="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-2.5 px-4 pr-10 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer hover:border-gray-300 transition-colors"
                         >
                             <option value="all">All Dates</option>
                             <option value="today">Today</option>
@@ -272,7 +272,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 {loading ? (
                     <div className="p-12 text-center">
-                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-coffee-600 mx-auto mb-4"></div>
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600 mx-auto mb-4"></div>
                         <p className="text-gray-500">Loading orders...</p>
                     </div>
                 ) : filteredOrders.length === 0 ? (
@@ -326,7 +326,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
                                                         </div>
                                                     ))}
                                                     {(order.orderItems || []).length > 2 && (
-                                                        <div className="text-xs text-coffee-600 font-medium pl-6">
+                                                        <div className="text-xs text-primary-600 font-medium pl-6">
                                                             +{(order.orderItems || []).length - 2} more items
                                                         </div>
                                                     )}
@@ -397,7 +397,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
                                         <div className="text-sm text-gray-500">
                                             {order.paymentMethod === 'gcash' ? 'GCash' : 'Cash'}
                                         </div>
-                                        <div className="text-coffee-600 font-medium text-sm flex items-center gap-1 bg-coffee-50 px-3 py-1.5 rounded-lg">
+                                        <div className="text-primary-600 font-medium text-sm flex items-center gap-1 bg-primary-50 px-3 py-1.5 rounded-lg">
                                             View Details
                                         </div>
                                     </div>
@@ -430,13 +430,12 @@ const AdminOrdersHistoryPage: React.FC = () => {
                                                 pageNum = totalPages - 4 + i;
                                             }
                                         }
-
                                         return (
                                             <button
                                                 key={pageNum}
                                                 onClick={() => handlePageChange(pageNum)}
                                                 className={`w-8 h-8 rounded-lg text-sm font-medium transition-all ${currentPage === pageNum
-                                                    ? 'bg-coffee-600 text-white shadow-sm'
+                                                    ? 'bg-primary-600 text-white shadow-sm'
                                                     : 'text-gray-600 hover:bg-gray-100'
                                                     }`}
                                             >

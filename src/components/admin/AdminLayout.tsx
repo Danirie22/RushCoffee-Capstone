@@ -87,8 +87,8 @@ const AdminLayout: React.FC = () => {
         <>
             <div className="mb-8 flex items-center justify-between gap-2 px-2">
                 <div className="flex items-center gap-2">
-                    <RushCoffeeLogo className="h-8 w-8 text-primary-400" />
-                    <span className="text-xl font-bold text-white">Admin Panel</span>
+                    <RushCoffeeLogo className="h-8 w-8 text-primary-600" />
+                    <span className="text-xl font-bold text-white">Owner Panel</span>
                 </div>
                 {isMobile && (
                     <button

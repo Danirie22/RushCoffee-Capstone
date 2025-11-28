@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Mail, Palette, Shield, Key, Trash2, AlertTriangle, Eye, EyeOff, Loader2, Save } from 'lucide-react';
+import { Bell, Mail, Shield, Key, Trash2, AlertTriangle, Eye, EyeOff, Loader2, Save } from 'lucide-react';
 import { UserPreferences } from '../../data/mockUser';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
@@ -129,23 +129,6 @@ const SettingsSection: React.FC<SettingsSectionProps> = ({ preferences, onUpdate
           <ToggleSwitch Icon={Bell} label="Push Notifications" description="Get notified when order is ready" enabled={localPrefs.notifications.push} onChange={(val) => handlePrefChange('notifications', 'push', val)} />
           <ToggleSwitch Icon={Mail} label="Email Updates" description="Receive order updates via email" enabled={localPrefs.notifications.emailUpdates} onChange={(val) => handlePrefChange('notifications', 'emailUpdates', val)} />
           <ToggleSwitch Icon={Mail} label="Marketing Emails" description="Get news and promotions" enabled={localPrefs.notifications.marketing} onChange={(val) => handlePrefChange('notifications', 'marketing', val)} />
-        </div>
-
-        <hr className="my-6" />
-
-        {/* Appearance */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Palette className="h-5 w-5 text-gray-500" />
-            <h3 className="font-semibold text-gray-800">Appearance</h3>
-          </div>
-          <div className="flex gap-2 rounded-full bg-gray-100 p-1">
-            {(['light', 'dark', 'auto'] as const).map(theme => (
-              <button key={theme} onClick={() => handlePrefChange('theme', 'theme', theme)} className={`w-full rounded-full py-1.5 text-sm font-semibold capitalize transition-colors ${localPrefs.theme === theme ? 'bg-primary-600 text-white shadow' : 'text-gray-600 hover:bg-primary-50'}`}>
-                {theme}
-              </button>
-            ))}
-          </div>
         </div>
 
         <hr className="my-6" />

@@ -35,7 +35,7 @@ const POSProductCard: React.FC<POSProductCardProps> = ({ product, onSelect }) =>
             onKeyDown={handleKeyDown}
             className={`w-full text-left rounded-2xl overflow-hidden bg-white shadow-sm border transition-all ${isOutOfStock
                 ? 'opacity-60 cursor-not-allowed'
-                : 'cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-gray-200 hover:border-coffee-300'
+                : 'cursor-pointer hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] border-gray-200 hover:border-primary-300'
                 }`}
         >
             {/* Image */}
@@ -68,7 +68,7 @@ const POSProductCard: React.FC<POSProductCardProps> = ({ product, onSelect }) =>
                                 setSelectedSize(size);
                             }}
                             className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold transition-colors ${selectedSize.name === size.name
-                                ? 'bg-coffee-600 text-white'
+                                ? 'bg-primary-600 text-white'
                                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                 }`}
                         >
@@ -79,9 +79,9 @@ const POSProductCard: React.FC<POSProductCardProps> = ({ product, onSelect }) =>
 
                 {/* Price & Add Button */}
                 <div className="flex items-center justify-between">
-                    <span className="text-lg md:text-xl font-bold text-coffee-700">₱{selectedSize.price.toFixed(2)}</span>
+                    <span className="text-lg md:text-xl font-bold text-primary-700">₱{selectedSize.price.toFixed(2)}</span>
                     {!isOutOfStock && (
-                        <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-coffee-600 flex items-center justify-center text-white shadow-md">
+                        <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary-600 flex items-center justify-center text-white shadow-md">
                             <Plus className="h-5 w-5 md:h-6 md:w-6" />
                         </div>
                     )}

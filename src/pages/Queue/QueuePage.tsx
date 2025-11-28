@@ -1,4 +1,4 @@
-// Queue Page - Fully Polished v12 (Modernized UI)
+// QueuePage.tsx
 import * as React from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { ArrowRight, Bell, X, Clock, TrendingUp, Award, Coffee, Star, Plus, Sparkles } from 'lucide-react';
@@ -211,7 +211,7 @@ const QueuePage: React.FC = () => {
                 <main className="flex flex-1 items-center justify-center px-6 py-20 text-center">
                     <div>
                         <RushCoffeeLogo className="mx-auto h-24 w-24 text-gray-300 opacity-50" />
-                        <h1 className="mt-4 font-display text-2xl font-bold text-coffee-900">
+                        <h1 className="mt-4 font-display text-2xl font-bold text-primary-900">
                             You're not in the queue
                         </h1>
                         <p className="mt-2 text-gray-600">
@@ -239,12 +239,12 @@ const QueuePage: React.FC = () => {
             <Header />
 
             {/* Modern Hero Section */}
-            <section className="relative overflow-hidden bg-gradient-to-br from-coffee-900 via-coffee-800 to-primary-900 px-6 py-12 text-white shadow-xl sm:py-20">
+            <section className="relative overflow-hidden bg-gradient-to-br from-primary-900 via-primary-800 to-primary-900 px-6 py-12 text-white shadow-xl sm:py-20">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
                 <div className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-primary-500 blur-3xl opacity-20"></div>
-                <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-coffee-500 blur-3xl opacity-20"></div>
+                <div className="absolute -left-20 -bottom-20 h-72 w-72 rounded-full bg-primary-500 blur-3xl opacity-20"></div>
 
-                <div className="container relative mx-auto max-w-3xl text-center">
+                <div className="container relative mx-auto max-w-3xl text-center animate-fade-in-up">
                     <div className="inline-flex items-center rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-primary-100 backdrop-blur-sm ring-1 ring-white/20 mb-6">
                         <Clock className="mr-2 h-4 w-4" />
                         Live Order Tracking
@@ -252,7 +252,7 @@ const QueuePage: React.FC = () => {
                     <h1 className="font-display text-4xl font-bold leading-tight tracking-tight md:text-5xl text-white mb-4">
                         Your Queue
                     </h1>
-                    <p className="text-lg text-coffee-100 max-w-xl mx-auto">
+                    <p className="text-lg text-primary-100 max-w-xl mx-auto">
                         Track your orders in real-time and see your coffee journey stats.
                     </p>
                 </div>
@@ -324,31 +324,42 @@ const QueuePage: React.FC = () => {
                                 </>
                             ) : (
                                 <>
-                                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group">
+                                    {/* Card 1: Total Orders */}
+                                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 text-center group">
                                         <div className="flex flex-col items-center">
-                                            <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors">
-                                                <Clock className="h-6 w-6 text-blue-600" />
+                                            <div className="h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                                <Clock className="h-7 w-7 text-blue-600" />
                                             </div>
-                                            <p className="text-3xl font-bold text-coffee-900">{currentUser.totalOrders || 0}</p>
-                                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mt-1">Orders</p>
+                                            <h3 className="text-3xl font-display font-bold text-gray-900 mb-1">
+                                                {orderHistory.length}
+                                            </h3>
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Orders</p>
                                         </div>
                                     </div>
-                                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group">
+
+                                    {/* Card 2: Loyalty Points */}
+                                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 text-center group">
                                         <div className="flex flex-col items-center">
-                                            <div className="h-12 w-12 rounded-full bg-amber-50 flex items-center justify-center mb-3 group-hover:bg-amber-100 transition-colors">
-                                                <Award className="h-6 w-6 text-amber-600" />
+                                            <div className="h-14 w-14 rounded-full bg-amber-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                                <Award className="h-7 w-7 text-amber-600" />
                                             </div>
-                                            <p className="text-3xl font-bold text-coffee-900">{currentUser.currentPoints || 0}</p>
-                                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mt-1">Points</p>
+                                            <h3 className="text-3xl font-display font-bold text-gray-900 mb-1">
+                                                {currentUser.currentPoints}
+                                            </h3>
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Points</p>
                                         </div>
                                     </div>
-                                    <div className="bg-white rounded-2xl p-5 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center group">
+
+                                    {/* Card 3: Tier Status */}
+                                    <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 text-center group">
                                         <div className="flex flex-col items-center">
-                                            <div className="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center mb-3 group-hover:bg-green-100 transition-colors">
-                                                <TrendingUp className="h-6 w-6 text-green-600" />
+                                            <div className="h-14 w-14 rounded-full bg-green-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                                                <TrendingUp className="h-7 w-7 text-green-600" />
                                             </div>
-                                            <p className="text-2xl font-bold text-coffee-900 capitalize">{currentUser.tier || 'Bronze'}</p>
-                                            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mt-1">Tier</p>
+                                            <h3 className="text-3xl font-display font-bold text-gray-900 mb-1">
+                                                {currentUser.currentPoints >= 500 ? 'Gold' : currentUser.currentPoints >= 200 ? 'Silver' : 'Bronze'}
+                                            </h3>
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tier</p>
                                         </div>
                                     </div>
                                 </>
@@ -361,7 +372,7 @@ const QueuePage: React.FC = () => {
                 {recentOrders.length > 0 && (
                     <div className="w-full mb-10">
                         <div className="flex items-center justify-between mb-6 px-2">
-                            <h2 className="text-lg font-bold text-coffee-900">Recent Orders</h2>
+                            <h2 className="text-lg font-bold text-primary-900">Recent Orders</h2>
                             {orderHistory.filter(o => o.status === 'completed').length > 2 && (
                                 <Link
                                     to="/profile"
@@ -400,7 +411,7 @@ const QueuePage: React.FC = () => {
                                             {/* Order Details */}
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-start justify-between mb-1">
-                                                    <h3 className="font-bold text-coffee-900 text-lg truncate pr-4">
+                                                    <h3 className="font-bold text-primary-900 text-lg truncate pr-4">
                                                         {firstItem?.productName || 'Coffee Order'}
                                                     </h3>
                                                     <span className="text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
@@ -482,7 +493,7 @@ const QueuePage: React.FC = () => {
                                     <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                                         <button
                                             onClick={() => handleQuickAddClick(featuredProduct)}
-                                            className="w-full sm:flex-1 bg-primary-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:shadow-primary-600/40 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                                            className="w-full sm:flex-1 bg-primary-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg hover:bg-primary-700 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all flex items-center justify-center gap-2"
                                         >
                                             <Plus className="w-5 h-5" />
                                             Add to Cart

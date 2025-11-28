@@ -61,7 +61,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, initial
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-coffee-500 focus:border-transparent"
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         placeholder="admin@rushcoffee.ph"
                     />
                 </div>
@@ -70,7 +70,7 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({ onBack, initial
             <button
                 type="submit"
                 disabled={isLoading || !!successMessage}
-                className="w-full bg-coffee-600 hover:bg-coffee-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {isLoading ? (
                     <span className="flex items-center justify-center gap-2">

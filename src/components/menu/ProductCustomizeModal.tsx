@@ -101,7 +101,7 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
         <button
             onClick={handleConfirm}
             disabled={isLoading}
-            className="w-full flex items-center justify-between rounded-xl bg-gradient-to-r from-coffee-600 to-coffee-700 px-6 py-3 text-white font-bold shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-between rounded-xl bg-primary-600 px-6 py-3 text-white font-bold shadow-lg hover:bg-primary-700 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
             <span>Add to Order</span>
             <span className="text-lg tabular-nums">₱{totalPrice.toFixed(2)}</span>
@@ -162,8 +162,8 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                                         key={size.name}
                                         onClick={() => setCurrentSize(size)}
                                         className={`flex-1 min-w-[80px] rounded-lg py-2 text-sm font-semibold transition-all border ${currentSize.name === size.name
-                                            ? 'bg-coffee-600 text-white border-coffee-600 shadow-md'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:border-coffee-300 hover:bg-coffee-50'
+                                            ? 'bg-primary-600 text-white border-primary-600 shadow-md'
+                                            : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:bg-primary-50'
                                             }`}
                                     >
                                         {size.name}
@@ -184,8 +184,8 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                                             key={level.value}
                                             onClick={() => setSugarLevel(level.value)}
                                             className={`flex-1 min-w-[60px] rounded-lg py-2 text-sm font-semibold transition-all border ${sugarLevel === level.value
-                                                ? 'bg-coffee-600 text-white border-coffee-600 shadow-md'
-                                                : 'bg-white text-gray-600 border-gray-200 hover:border-coffee-300 hover:bg-coffee-50'
+                                                ? 'bg-primary-600 text-white border-primary-600 shadow-md'
+                                                : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:bg-primary-50'
                                                 }`}
                                         >
                                             {level.value}
@@ -207,8 +207,8 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                                             key={level.value}
                                             onClick={() => setIceLevel(level.value)}
                                             className={`flex-1 min-w-[60px] rounded-lg py-2 text-sm font-semibold transition-all border ${iceLevel === level.value
-                                                ? 'bg-coffee-600 text-white border-coffee-600 shadow-md'
-                                                : 'bg-white text-gray-600 border-gray-200 hover:border-coffee-300 hover:bg-coffee-50'
+                                                ? 'bg-primary-600 text-white border-primary-600 shadow-md'
+                                                : 'bg-white text-gray-600 border-gray-200 hover:border-primary-300 hover:bg-primary-50'
                                                 }`}
                                         >
                                             {level.value}
@@ -234,14 +234,14 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                                             className={`
                                                 relative px-3 py-2 rounded-lg text-sm font-medium transition-all border flex items-center gap-2
                                                 ${isSelected
-                                                    ? 'bg-coffee-50 border-coffee-600 text-coffee-700 shadow-sm ring-1 ring-coffee-600'
-                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-coffee-300 hover:bg-gray-50'
+                                                    ? 'bg-primary-50 border-primary-600 text-primary-700 shadow-sm ring-1 ring-primary-600'
+                                                    : 'bg-white border-gray-200 text-gray-600 hover:border-primary-300 hover:bg-gray-50'
                                                 }
                                             `}
                                         >
                                             <span>{topping.name}</span>
                                             {topping.price > 0 && (
-                                                <span className={`text-xs font-bold ${isSelected ? 'text-coffee-600' : 'text-gray-400'}`}>
+                                                <span className={`text-xs font-bold ${isSelected ? 'text-primary-600' : 'text-gray-400'}`}>
                                                     +₱{topping.price}
                                                 </span>
                                             )}
@@ -265,7 +265,7 @@ const ProductCustomizeModal: React.FC<ProductCustomizeModalProps> = ({
                                 <span className="w-8 text-center font-bold text-gray-900 tabular-nums">{quantity}</span>
                                 <button
                                     onClick={() => setQuantity(quantity + 1)}
-                                    className="h-8 w-8 rounded-md bg-coffee-600 shadow-sm flex items-center justify-center text-white hover:bg-coffee-700 transition-colors"
+                                    className="h-8 w-8 rounded-md bg-primary-600 shadow-sm flex items-center justify-center text-white hover:bg-primary-700 transition-colors"
                                 >
                                     <Plus className="h-4 w-4" />
                                 </button>

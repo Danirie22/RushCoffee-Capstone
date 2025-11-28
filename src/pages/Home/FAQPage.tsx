@@ -91,9 +91,9 @@ const FAQPage: React.FC = () => {
     <div className="bg-white">
       <Header />
       <main>
-        <section className="bg-gradient-to-br from-primary-50 to-coffee-50 px-6 py-16">
+        <section className="bg-gradient-to-br from-primary-50 to-primary-50 px-6 py-16">
           <div className="container mx-auto max-w-4xl text-center">
-            <h1 className="font-display text-5xl font-bold text-coffee-900 md:text-6xl">Frequently Asked Questions</h1>
+            <h1 className="font-display text-5xl font-bold text-primary-900 md:text-6xl">Frequently Asked Questions</h1>
             <p className="mt-4 text-xl text-gray-700">Everything you need to know about Rush Coffee</p>
             <div className="relative mx-auto mt-8 max-w-2xl">
               <Search className="absolute left-6 top-1/2 h-6 w-6 -translate-y-1/2 text-gray-400" />
@@ -115,8 +115,8 @@ const FAQPage: React.FC = () => {
                 key={category}
                 onClick={() => setActiveCategory(category)}
                 className={`flex-shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${activeCategory === category
-                    ? 'bg-primary-600 text-white shadow'
-                    : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
+                  ? 'bg-primary-600 text-white shadow'
+                  : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-100'
                   }`}
               >
                 {category}
@@ -154,13 +154,15 @@ const FAQPage: React.FC = () => {
         <section className="bg-gray-50 px-6 py-20">
           <div className="container mx-auto max-w-4xl">
             <Card className="text-center">
-              <HelpCircle className="mx-auto h-12 w-12 text-primary-600" />
-              <h2 className="mt-4 font-display text-3xl font-bold text-coffee-900">Still have questions?</h2>
-              <p className="mt-2 text-gray-600">If you can't find the answer you're looking for, please get in touch with our support team.</p>
-              <div className="mt-6 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <h3 className="mb-2 font-display text-xl font-bold text-primary-900">Still have questions?</h3>
+              <p className="mb-6 text-gray-600">Can't find the answer you're looking for? Please chat to our friendly team.</p>
+              <div className="flex justify-center gap-4">
                 <Link to="/contact">
-                  <Button size="lg"><MessageCircle className="mr-2 h-5 w-5" />Contact Support</Button>
+                  <Button variant="primary">Contact Us</Button>
                 </Link>
+                <a href="mailto:hello@rushcoffee.ph">
+                  <Button variant="outline">Email Support</Button>
+                </a>
               </div>
             </Card>
           </div>

@@ -121,7 +121,7 @@ const TermsPage: React.FC = () => {
       <Header />
       <main>
         {/* Hero Section */}
-        <section className="relative flex min-h-[400px] items-center justify-center overflow-hidden bg-gradient-to-br from-primary-600 via-coffee-600 to-primary-700 px-6 py-16 text-center text-white">
+        <section className="relative flex min-h-[400px] items-center justify-center overflow-hidden bg-gradient-to-br from-primary-600 via-primary-600 to-primary-700 px-6 py-16 text-center text-white">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute top-10 left-10 h-32 w-32 rounded-full bg-white blur-3xl"></div>
             <div className="absolute bottom-20 right-10 h-40 w-40 rounded-full bg-white blur-3xl"></div>
@@ -167,12 +167,12 @@ const TermsPage: React.FC = () => {
                 <Card>
                   <div className="flex items-start gap-4">
                     <div className="flex-shrink-0">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-100 to-coffee-100">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-primary-100 to-primary-100">
                         <section.icon className="h-6 w-6 text-primary-600" />
                       </div>
                     </div>
                     <div className="flex-1">
-                      <h2 className="mb-4 font-display text-2xl font-bold text-coffee-900">
+                      <h2 className="mb-4 font-display text-2xl font-bold text-primary-900">
                         {section.title}
                       </h2>
                       <p className="mb-4 text-gray-700 leading-relaxed">{section.content}</p>
@@ -223,7 +223,7 @@ const TermsPage: React.FC = () => {
               <div className="flex items-start gap-4">
                 <AlertTriangle className="h-6 w-6 flex-shrink-0 text-amber-600" />
                 <div>
-                  <h3 className="mb-2 font-display text-lg font-bold text-coffee-900">Important Notice</h3>
+                  <h3 className="mb-2 font-display text-lg font-bold text-primary-900">Important Notice</h3>
                   <p className="text-gray-700 leading-relaxed">
                     By using Rush Coffee's services, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
                   </p>

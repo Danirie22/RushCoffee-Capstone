@@ -460,7 +460,7 @@ const CheckoutPage: React.FC = () => {
                                 size="lg"
                                 fullWidth
                                 endIcon={!isProcessing ? <ArrowRight className="h-5 w-5" /> : undefined}
-                                className="mt-2 rounded-xl bg-gradient-to-r from-coffee-600 to-coffee-700 shadow-lg shadow-coffee-600/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                                className="mt-2 rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg shadow-primary-600/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                             >
                                 Place Order
                             </Button>
@@ -485,7 +485,7 @@ const CheckoutPage: React.FC = () => {
                     size="lg"
                     fullWidth
                     endIcon={!isProcessing ? <ArrowRight className="h-5 w-5" /> : undefined}
-                    className="rounded-xl bg-gradient-to-r from-coffee-600 to-coffee-700 shadow-lg shadow-coffee-600/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                    className="rounded-xl bg-gradient-to-r from-primary-600 to-primary-700 shadow-lg shadow-primary-600/20 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                 >
                     {`Place Order (₱${total.toFixed(2)})`}
                 </Button>
