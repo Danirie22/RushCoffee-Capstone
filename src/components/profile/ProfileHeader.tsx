@@ -24,8 +24,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({ user, onEditPhoto }) => {
   return (
     <div className="w-full bg-white shadow-sm">
       {/* Banner with Pattern */}
-      <div className="relative h-48 w-full overflow-hidden bg-gradient-to-r from-coffee-600 via-coffee-500 to-primary-600">
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
+      <div className="relative h-48 w-full overflow-hidden bg-primary-600">
+
       </div>
 
       {/* Profile Info */}
