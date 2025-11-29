@@ -16,8 +16,12 @@ const UpdateStockModal: React.FC<UpdateStockModalProps> = ({ ingredient, onClose
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        // Allow update if either amount is provided OR expiration date is changed
         if (typeof amount === 'number' && amount >= 0) {
             onUpdate(ingredient.id, amount, updateType, expirationDate);
+        } else if (amount === '' && expirationDate) {
+            // Update only expiration date, use 0 amount with 'add' type (no stock change)
+            onUpdate(ingredient.id, 0, 'add', expirationDate);
         }
     };
 
@@ -51,7 +55,6 @@ const UpdateStockModal: React.FC<UpdateStockModalProps> = ({ ingredient, onClose
                         onChange={(e) => setAmount(e.target.value === '' ? '' : Number(e.target.value))}
                         min="0"
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                        required
                         autoFocus
                     />
                 </div>
@@ -72,7 +75,11 @@ const UpdateStockModal: React.FC<UpdateStockModalProps> = ({ ingredient, onClose
 
                 <div className="mt-6 flex justify-end gap-3 pt-4 border-t">
                     <button type="button" onClick={onClose} className="rounded-full bg-gray-200 px-4 py-2 text-sm font-semibold text-gray-800 hover:bg-gray-300">Cancel</button>
-                    <button type="submit" className="flex items-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:bg-primary-400" disabled={amount === '' || amount < 0}>
+                    <button
+                        type="submit"
+                        className="flex items-center gap-2 rounded-full bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:bg-primary-400 disabled:cursor-not-allowed"
+                        disabled={amount === '' && !expirationDate}
+                    >
                         <Save className="h-4 w-4" />
                         Update Stock
                     </button>

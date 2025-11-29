@@ -365,20 +365,12 @@ const AdminInventoryPage: React.FC = () => {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
                 <h1 className="font-display text-2xl font-bold text-gray-800 sm:text-3xl">Inventory Management</h1>
                 {isAdmin && (
-                    <div className="flex flex-col gap-2 sm:flex-row">
-                        <button
-                            onClick={handleReseedIngredients}
-                            className="flex w-full items-center justify-center gap-2 rounded-full bg-green-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-green-700 sm:w-auto">
-                            <RefreshCw className="h-4 w-4" />
-                            <span>Re-seed Ingredients</span>
-                        </button>
-                        <button
-                            onClick={handleOpenAddModal}
-                            className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto">
-                            <Plus className="h-4 w-4" />
-                            <span>Add Ingredient</span>
-                        </button>
-                    </div>
+                    <button
+                        onClick={handleOpenAddModal}
+                        className="flex w-full items-center justify-center gap-2 rounded-full bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:w-auto">
+                        <Plus className="h-4 w-4" />
+                        <span>Add Ingredient</span>
+                    </button>
                 )}
             </div>
 
