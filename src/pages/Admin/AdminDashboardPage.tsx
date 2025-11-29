@@ -87,21 +87,28 @@ const AdminDashboardPage: React.FC = () => {
         const startOfYesterday = new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1);
 
         // ===== QUEUE MANAGEMENT LISTENER =====
+        // Using client-side filtering to avoid Firestore index issues
         const queueQuery = db.collection('orders')
-            .where('status', 'in', ['waiting', 'preparing', 'ready']);
+            .orderBy('timestamp', 'desc')
+            .limit(50); // Limit to recent orders for performance
 
         const unsubscribeQueue = queueQuery.onSnapshot(snapshot => {
+            console.log('Queue snapshot received, size:', snapshot.size);
             const orders: QueueItem[] = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
-                orders.push({
-                    id: doc.id,
-                    ...data,
-                    orderItems: data.orderItems || data.items || [], // Handle both new and old field names
-                    timestamp: data.timestamp.toDate(),
-                } as QueueItem);
+                // Filter for active statuses on client-side
+                if (['waiting', 'preparing', 'ready'].includes(data.status)) {
+                    orders.push({
+                        id: doc.id,
+                        ...data,
+                        orderItems: data.orderItems || data.items || [], // Handle both new and old field names
+                        timestamp: data.timestamp.toDate(),
+                    } as QueueItem);
+                }
             });
             orders.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+            console.log('Filtered queue orders:', orders.length);
             setQueueOrders(orders);
             setQueueLoading(false);
         }, err => {

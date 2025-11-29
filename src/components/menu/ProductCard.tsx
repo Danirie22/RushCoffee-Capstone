@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingCart, Star, Sparkles } from 'lucide-react';
+import { Star, Sparkles } from 'lucide-react';
 
 import { Product, ProductSize } from '../../data/mockProducts';
 
@@ -87,11 +87,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onBuyNo
         {/* Price & Action */}
         <div className="flex items-center justify-between">
           <span className="text-lg md:text-xl font-bold text-primary-700">₱{selectedSize.price.toFixed(2)}</span>
-          {!isOutOfStock && isLoggedIn && (
-            <div className="h-9 w-9 md:h-10 md:w-10 rounded-full bg-primary-600 flex items-center justify-center text-white shadow-md transition-all hover:bg-primary-700 hover:shadow-lg active:scale-95">
-              <ShoppingCart className="h-5 w-5 md:h-6 md:w-6" />
-            </div>
-          )}
           {!isOutOfStock && !isLoggedIn && (
             <button
               onClick={(e) => {
