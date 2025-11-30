@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
+import { useSpeech } from '../../hooks/useSpeech';
 
 interface VoiceSearchProps {
     onSearch: (term: string) => void;
@@ -18,6 +19,7 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearch, onCommand, language
     const [isListening, setIsListening] = useState(false);
     const [isSupported, setIsSupported] = useState(true);
     const recognitionRef = useRef<any>(null);
+    const { speak } = useSpeech();
 
     const [error, setError] = useState<string | null>(null);
 
@@ -36,6 +38,7 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearch, onCommand, language
         recognitionRef.current.onstart = () => {
             setIsListening(true);
             setError(null);
+
         };
 
         recognitionRef.current.onend = () => {
@@ -54,15 +57,20 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearch, onCommand, language
             if (event.error === 'network') {
                 if (language === 'tl-PH') {
                     setError('Tagalog mode requires internet.');
+                    speak("Please check your internet connection.");
                 } else {
                     setError('Network error. Check internet or permissions.');
+                    speak("Please check your internet connection.");
                 }
             } else if (event.error === 'not-allowed') {
                 setError('Mic access denied.');
+                speak("Please enable microphone access.");
             } else if (event.error === 'no-speech') {
                 setError('No speech detected.');
+                // Don't speak here to avoid annoyance if they just clicked and didn't say anything
             } else {
                 setError('Voice error. Try again.');
+                speak("Sorry, I didn't catch that.");
             }
         };
 

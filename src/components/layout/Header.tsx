@@ -1,27 +1,31 @@
 import * as React from 'react';
 import { NavLink, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone, Shield } from 'lucide-react';
+import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone, Shield, TrendingUp, Dices } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import RushCoffeeLogo from './RushCoffeeLogo';
 import AuthModal from '../auth/AuthModal';
 import VerificationModal from '../auth/VerificationModal';
+import PlinkoModal from '../gamification/PlinkoModal';
 
 const loggedOutNavLinks = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/menu', label: 'Menu' },
+    { href: '/drink-lab', label: 'Drink Lab' },
     { href: '/contact', label: 'Contact' },
 ];
 
 const loggedInNavLinks = [
     { href: '/menu', label: 'Menu' },
+    { href: '/drink-lab', label: 'Drink Lab' },
     { href: '/queue', label: 'Queue' },
     { href: '/rewards', label: 'Rewards' },
 ]
 
 const userDropdownLinks = [
     { href: '/profile', label: 'My Profile', Icon: User },
+    { href: '/flavor-profile', label: 'My Flavor Profile', Icon: TrendingUp },
     { href: '/rewards', label: 'My Rewards', Icon: Gift },
     { href: '/about', label: 'About', Icon: Info },
     { href: '/contact', label: 'Contact', Icon: Phone },
@@ -40,6 +44,9 @@ const Header: React.FC = () => {
     const [isVerifyModalOpen, setIsVerifyModalOpen] = React.useState(false);
     const [verifyEmail, setVerifyEmail] = React.useState('');
     const [verifyUserId, setVerifyUserId] = React.useState('');
+
+    // Plinko Modal State
+    const [isPlinkoOpen, setIsPlinkoOpen] = React.useState(false);
 
     const { currentUser, logout } = useAuth();
     const { totalCartItems, openCart } = useCart();
@@ -320,12 +327,37 @@ const Header: React.FC = () => {
                     {/* Desktop Auth Controls - Right side */}
                     <div className="hidden items-center justify-end gap-4 md:flex md:justify-self-end">
                         {renderAuthControls()}
-                        {showLoggedInState && <CartButton />}
+                        {showLoggedInState && (
+                            <>
+                                <button
+                                    onClick={() => setIsPlinkoOpen(true)}
+                                    className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 transition-all hover:scale-110 shadow-lg"
+                                    aria-label="Coffee Plinko"
+                                    title="Drop for rewards!"
+                                >
+                                    <Dices className="h-5 w-5" />
+                                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse"></span>
+                                </button>
+                                <CartButton />
+                            </>
+                        )}
                     </div>
 
                     {/* Mobile Cart & Menu - Right side */}
                     <div className="flex items-center justify-end gap-2 md:hidden">
-                        {showLoggedInState && <CartButton />}
+                        {showLoggedInState && (
+                            <>
+                                <button
+                                    onClick={() => setIsPlinkoOpen(true)}
+                                    className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 transition-all hover:scale-110 shadow-lg"
+                                    aria-label="Coffee Plinko"
+                                >
+                                    <Dices className="h-5 w-5" />
+                                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse"></span>
+                                </button>
+                                <CartButton />
+                            </>
+                        )}
                         <button
                             onClick={toggleMobileMenu}
                             className="rounded-md p-2 text-gray-700 transition hover:bg-gray-100"
@@ -475,6 +507,12 @@ const Header: React.FC = () => {
                 userId={verifyUserId}
                 onSuccess={() => handleVerificationSuccess()}
                 onBackToLogin={handleBackToLogin}
+            />
+
+            {/* Plinko Modal */}
+            <PlinkoModal
+                isOpen={isPlinkoOpen}
+                onClose={() => setIsPlinkoOpen(false)}
             />
         </>
     );

@@ -28,12 +28,14 @@ const CheckoutPage = React.lazy(() => import('./pages/Checkout/CheckoutPage'));
 const QueuePage = React.lazy(() => import('./pages/Queue/QueuePage'));
 const RewardsPage = React.lazy(() => import('./pages/Rewards/RewardsPage'));
 const ProfilePage = React.lazy(() => import('./pages/Profile/ProfilePage'));
+const FlavorProfilePage = React.lazy(() => import('./pages/Profile/FlavorProfilePage'));
 const AboutPage = React.lazy(() => import('./pages/Home/AboutPage'));
 const ContactPage = React.lazy(() => import('./pages/ContactPage'));
 const FAQPage = React.lazy(() => import('./pages/Home/FAQPage'));
 const TermsPage = React.lazy(() => import('./pages/Home/TermsPage'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/Home/PrivacyPolicyPage'));
 const CookiePolicyPage = React.lazy(() => import('./pages/Home/CookiePolicyPage'));
+const DrinkLabPage = React.lazy(() => import('./pages/DrinkLab/DrinkLabPage'));
 
 // Admin Pages
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
@@ -144,6 +146,7 @@ const AppContent: React.FC = () => {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/menu" element={<MenuPage />} />
+                    <Route path="/drink-lab" element={<DrinkLabPage />} />
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/auth/login" element={<LoginPage />} />
                     <Route path="/auth/register" element={<RegisterPage />} />
@@ -152,6 +155,7 @@ const AppContent: React.FC = () => {
                     <Route path="/queue" element={<QueuePage />} />
                     <Route path="/rewards" element={<RewardsPage />} />
                     <Route path="/profile" element={<ProfilePage />} />
+                    <Route path="/flavor-profile" element={<FlavorProfilePage />} />
                     <Route path="/faq" element={<FAQPage />} />
                     <Route path="/terms" element={<TermsPage />} />
                     <Route path="/privacy" element={<PrivacyPolicyPage />} />

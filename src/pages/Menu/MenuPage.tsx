@@ -13,6 +13,7 @@ import ProductCustomizeModal from '../../components/menu/ProductCustomizeModal';
 import { Product, ProductSize } from '../../data/mockProducts';
 import { Customizations } from '../../context/CartContext';
 import VoiceSearch from '../../components/common/VoiceSearch';
+import { useSpeech } from '../../hooks/useSpeech';
 
 const sortOptionsList = [
     { value: 'default', label: 'Default' },
@@ -48,10 +49,12 @@ const MenuPage: React.FC = () => {
 
     const { addToCart } = useCart();
     const { currentUser } = useAuth();
+    const { speak } = useSpeech();
 
     const [isCustomizeModalOpen, setIsCustomizeModalOpen] = React.useState(false);
     const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
     const [selectedSize, setSelectedSize] = React.useState<ProductSize | null>(null);
+    const [initialQuantity, setInitialQuantity] = React.useState(1);
 
     const handleAddToCart = (product: Product, size: ProductSize) => {
         // Check if product is a drink (customizable)
@@ -73,6 +76,83 @@ const MenuPage: React.FC = () => {
                 addToCart(selectedProduct, finalSize, customizations, quantity);
             }
         }
+    };
+
+    // Helper to parse voice term for quantity, size, and product
+    const parseOrderTerm = (term: string) => {
+        let lowerTerm = term.toLowerCase();
+        let quantity = 1;
+        let targetSizeName = '';
+
+        // 1. Parse Quantity
+        const numberMap: { [key: string]: number } = {
+            'one': 1, 'isa': 1, 'isang': 1,
+            'two': 2, 'dalawa': 2, 'dalawang': 2,
+            'three': 3, 'tatlo': 3, 'tatlong': 3,
+            'four': 4, 'apat': 4, 'apat na': 4,
+            'five': 5, 'lima': 5, 'limang': 5,
+            'six': 6, 'anim': 6, 'anim na': 6,
+            'seven': 7, 'pito': 7, 'pitong': 7,
+            'eight': 8, 'walo': 8, 'walong': 8,
+            'nine': 9, 'siyam': 9, 'siyam na': 9,
+            'ten': 10, 'sampu': 10, 'sampung': 10,
+        };
+
+        const digitMatch = lowerTerm.match(/(\d+)/);
+        if (digitMatch) {
+            quantity = parseInt(digitMatch[0]);
+            lowerTerm = lowerTerm.replace(digitMatch[0], '').trim();
+        } else {
+            for (const [word, val] of Object.entries(numberMap)) {
+                const regex = new RegExp(`\\b${word}\\b`, 'i');
+                if (regex.test(lowerTerm)) {
+                    quantity = val;
+                    lowerTerm = lowerTerm.replace(regex, '').trim();
+                    break;
+                }
+            }
+        }
+
+        // 2. Parse Size
+        if (lowerTerm.match(/\b(venti|large|malaki|22oz|big)\b/)) {
+            targetSizeName = 'Venti';
+            lowerTerm = lowerTerm.replace(/\b(venti|large|malaki|22oz|big)\b/g, '').trim();
+        } else if (lowerTerm.match(/\b(grande|medium|regular|16oz|small|maliit)\b/)) {
+            targetSizeName = 'Grande';
+            lowerTerm = lowerTerm.replace(/\b(grande|medium|regular|16oz|small|maliit)\b/g, '').trim();
+        } else if (lowerTerm.match(/\b(combo|meal|with drink)\b/)) {
+            targetSizeName = 'Combo Meal';
+            lowerTerm = lowerTerm.replace(/\b(combo|meal|with drink)\b/g, '').trim();
+        } else if (lowerTerm.match(/\b(ala carte|solo|fries only)\b/)) {
+            targetSizeName = 'Ala Carte';
+            lowerTerm = lowerTerm.replace(/\b(ala carte|solo|fries only)\b/g, '').trim();
+        }
+
+        // Clean up
+        lowerTerm = lowerTerm.replace(/\s+/g, ' ').trim();
+        const fillers = ['please', 'paki', 'ng', 'sa', 'ang', 'yung', 'po', 'order', 'want', 'get', 'have', 'ko'];
+        const words = lowerTerm.split(' ');
+        const filteredWords = words.filter(w => !fillers.includes(w));
+        const cleanTerm = filteredWords.join(' ');
+
+        // 3. Find Product
+        let foundProduct = products.find(p => p.name.toLowerCase() === cleanTerm);
+
+        if (!foundProduct) {
+            foundProduct = products.find(p =>
+                p.name.toLowerCase().includes(cleanTerm) ||
+                p.aliases?.some(alias => alias.toLowerCase().includes(cleanTerm))
+            );
+        }
+
+        if (!foundProduct && cleanTerm !== lowerTerm) {
+            foundProduct = products.find(p =>
+                p.name.toLowerCase().includes(lowerTerm) ||
+                p.aliases?.some(alias => alias.toLowerCase().includes(lowerTerm))
+            );
+        }
+
+        return { foundProduct, quantity, targetSizeName, cleanTerm };
     };
 
     // Shared Category Map
@@ -105,34 +185,41 @@ const MenuPage: React.FC = () => {
     const handleVoiceSearch = (term: string) => {
         const lowerTerm = term.toLowerCase();
 
-        // 1. Check for Category Switching (Exact or Partial Match)
-        // We check if any category key is present in the sentence
-        // Sort keys by length (longest first) to match more specific terms first
+        // 1. Check for Category Switching
         const sortedKeys = Object.keys(categoryMap).sort((a, b) => b.length - a.length);
         const matchedCategoryKey = sortedKeys.find(key => lowerTerm.includes(key));
         if (matchedCategoryKey) {
-            setSelectedCategory(categoryMap[matchedCategoryKey]);
+            const categoryName = categoryMap[matchedCategoryKey];
+            setSelectedCategory(categoryName);
             setSearchQuery('');
             productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            speak(`Showing ${categoryName} menu.`);
             return;
         }
 
-        // 2. Check for Product Match (Smart Matching)
-        // Check if any product name or alias is present in the sentence
-        const foundProduct = products.find(p =>
-            lowerTerm.includes(p.name.toLowerCase()) ||
-            p.aliases?.some(alias => lowerTerm.includes(alias.toLowerCase()))
-        );
+        // 2. Smart Product Matching with Quantity/Size
+        const { foundProduct, quantity, targetSizeName } = parseOrderTerm(term);
 
         if (foundProduct) {
             setSelectedProduct(foundProduct);
-            setSelectedSize(foundProduct.sizes[0]);
+
+            // Determine size
+            let sizeToUse = foundProduct.sizes[0];
+            if (targetSizeName) {
+                const matchedSize = foundProduct.sizes.find(s => s.name === targetSizeName);
+                if (matchedSize) sizeToUse = matchedSize;
+            }
+
+            setSelectedSize(sizeToUse);
+            setInitialQuantity(quantity);
             setIsCustomizeModalOpen(true);
             setSearchQuery('');
+            speak(`I found ${foundProduct.name}. How would you like that?`);
             return;
         }
 
         // 3. Fallback to Standard Search
+        speak(`Searching for ${term}`);
         setSearchQuery(term);
         productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -141,37 +228,43 @@ const MenuPage: React.FC = () => {
         const lowerTerm = term.toLowerCase();
         console.log('Voice command received:', command, 'Term:', lowerTerm);
 
-        // Check for Category Switching using sorted keys (longest first)
+        // Check for Category Switching
         const sortedKeys = Object.keys(categoryMap).sort((a, b) => b.length - a.length);
         const matchedKey = sortedKeys.find(key => lowerTerm === key || lowerTerm.includes(key));
 
         if (matchedKey) {
-            console.log('Matched category key:', matchedKey, '-> Category:', categoryMap[matchedKey]);
-            setSelectedCategory(categoryMap[matchedKey]);
+            const categoryName = categoryMap[matchedKey];
+            setSelectedCategory(categoryName);
             setSearchQuery('');
             productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            speak(`Here is our ${categoryName} menu.`);
             return;
         }
 
         if (command === 'order') {
-            // Find the product
-            const foundProduct = products.find(p =>
-                p.name.toLowerCase().includes(lowerTerm) ||
-                p.aliases?.some(alias => alias.toLowerCase().includes(lowerTerm))
-            );
+            const { foundProduct, quantity, targetSizeName } = parseOrderTerm(term);
 
             if (foundProduct) {
-                // Use handleAddToCart logic to determine if we should open modal or add directly
-                // Default size to first available size if adding directly
-                handleAddToCart(foundProduct, foundProduct.sizes[0]);
-                setSearchQuery(''); // Clear search
+                // Determine size
+                let sizeToUse = foundProduct.sizes[0];
+                if (targetSizeName) {
+                    const matchedSize = foundProduct.sizes.find(s => s.name === targetSizeName);
+                    if (matchedSize) sizeToUse = matchedSize;
+                }
+
+                // For customizable items, open modal with pre-filled values
+                setSelectedProduct(foundProduct);
+                setSelectedSize(sizeToUse);
+                setInitialQuantity(quantity);
+                setIsCustomizeModalOpen(true);
+                setSearchQuery('');
+                speak(`I've selected ${quantity} ${foundProduct.name}. You can customize it now.`);
             } else {
-                // If not found, just search for it
+                speak(`Sorry, I couldn't find ${term} on the menu.`);
                 setSearchQuery(term);
                 productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
             }
         } else {
-            // Default search behavior if not an explicit "order" command but passed here
             setSearchQuery(term);
             productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
@@ -391,6 +484,7 @@ const MenuPage: React.FC = () => {
                     isOpen={isCustomizeModalOpen}
                     onClose={() => setIsCustomizeModalOpen(false)}
                     onConfirm={handleConfirmCustomization}
+                    initialQuantity={initialQuantity}
                 />
             )}
         </div>

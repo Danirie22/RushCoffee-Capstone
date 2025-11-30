@@ -13,6 +13,7 @@ import Modal from '../../components/ui/Modal';
 import RewardsTierBadge from '../../components/rewards/RewardsTierBadge';
 import RewardCard from '../../components/rewards/RewardCard';
 import RewardsHistory from '../../components/rewards/RewardsHistory';
+import CoffeeGarden from '../../components/rewards/CoffeeGarden';
 import ProductCardSkeleton from '../../components/menu/ProductCardSkeleton';
 import { tierThresholds, AvailableReward } from '../../data/mockRewards';
 import { mockAvailableRewards } from '../../data/mockAvailableRewards';
@@ -238,6 +239,20 @@ const RewardsPage: React.FC = () => {
                                         />
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Coffee Garden Section */}
+                        <div className="mt-12 max-w-2xl mx-auto">
+                            <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20">
+                                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                    <Sparkles className="w-5 h-5 text-yellow-300" />
+                                    Your Coffee Garden
+                                </h3>
+                                <CoffeeGarden points={currentUser.currentPoints} />
+                                <p className="text-center text-primary-100 text-sm mt-4">
+                                    Grow your plant by earning points! Harvest cherries for special rewards.
+                                </p>
                             </div>
                         </div>
                     </div>
