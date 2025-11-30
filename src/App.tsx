@@ -16,6 +16,7 @@ import RushCoffeeLogo from './components/layout/RushCoffeeLogo';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import PageLoader from './components/ui/PageLoader';
 import { ReCaptchaProvider } from './context/ReCaptchaContext';
+import ChatBot from './components/common/ChatBot';
 
 // Lazy load pages
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -217,6 +218,7 @@ const AppContent: React.FC = () => {
                     {toastMessage}
                 </div>
             )}
+            <ChatBot />
         </>
     );
 };

@@ -17,6 +17,7 @@ export interface Product {
   popular?: boolean;
   new?: boolean;
   displayOrder: number;
+  aliases?: string[]; // New field for search aliases
   recipe?: Array<{
     ingredientId: string;
     quantity: number;
@@ -65,6 +66,7 @@ export const mockProducts: Product[] = [
     stock: 99,
     popular: true,
     displayOrder: 2,
+    aliases: ['rush coffee', 'house blend'],
     recipe: [
       { ingredientId: 'coffee-beans', quantity: 18 },
       { ingredientId: 'hot-water', quantity: 200 },
@@ -179,6 +181,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 8,
+    aliases: ['reese', "reese's", 'reeses'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 160 },
@@ -218,6 +221,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 10,
+    aliases: ['ice latte', 'ice coffee', 'iced coffee', 'iced latte'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 180 },
@@ -471,6 +475,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 23,
+    aliases: ['flamingo', 'flamango', 'overload'],
     recipe: [
       { ingredientId: 'mango-puree', quantity: 100 },
       { ingredientId: 'strawberry-puree', quantity: 50 },
@@ -491,6 +496,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 24,
+    aliases: ['mango berry'],
     recipe: [
       { ingredientId: 'mango-puree', quantity: 80 },
       { ingredientId: 'mixed-berries', quantity: 50 },
@@ -588,6 +594,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 29,
+    aliases: ['blueberry soda'],
     recipe: [
       { ingredientId: 'blueberry-puree', quantity: 60 },
       { ingredientId: 'soda-water', quantity: 200 },
@@ -607,6 +614,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 30,
+    aliases: ['strawberry soda'],
     recipe: [
       { ingredientId: 'strawberry-puree', quantity: 60 },
       { ingredientId: 'soda-water', quantity: 200 },
@@ -626,6 +634,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 31,
+    aliases: ['green apple soda'],
     recipe: [
       { ingredientId: 'green-apple-puree', quantity: 60 },
       { ingredientId: 'soda-water', quantity: 200 },
@@ -645,6 +654,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 32,
+    aliases: ['lemon soda'],
     recipe: [
       { ingredientId: 'lemon-juice', quantity: 60 },
       { ingredientId: 'soda-water', quantity: 200 },
@@ -664,6 +674,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 33,
+    aliases: ['lychee soda'],
     recipe: [
       { ingredientId: 'lychee-syrup', quantity: 60 },
       { ingredientId: 'soda-water', quantity: 200 },
@@ -683,6 +694,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 34,
+    aliases: ['mango soda'],
     recipe: [
       { ingredientId: 'mango-puree', quantity: 60 },
       { ingredientId: 'soda-water', quantity: 200 },
@@ -705,6 +717,7 @@ export const mockProducts: Product[] = [
     stock: 99,
     popular: true,
     displayOrder: 35,
+    aliases: ['bacon'],
     recipe: [
       { ingredientId: 'bacon-strips', quantity: 0.15 },
       { ingredientId: 'bread-crumbs', quantity: 50 },
@@ -729,6 +742,7 @@ export const mockProducts: Product[] = [
     stock: 99,
     popular: true,
     displayOrder: 36,
+    aliases: ['porkchop', 'pork chop'],
     recipe: [
       { ingredientId: 'porkchop', quantity: 0.2 },
       { ingredientId: 'bread-crumbs', quantity: 60 },
@@ -752,6 +766,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 37,
+    aliases: ['chicken', 'chicken fillet'],
     recipe: [
       { ingredientId: 'chicken-fillet', quantity: 0.2 },
       { ingredientId: 'bread-crumbs', quantity: 55 },

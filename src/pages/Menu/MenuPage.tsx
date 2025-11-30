@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Search, ArrowUpDown, Check, AlertCircle } from 'lucide-react';
+import { Search, ArrowUpDown, Check, AlertCircle, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import Header from '../../components/layout/Header';
@@ -12,6 +12,7 @@ import { useProduct } from '../../context/ProductContext';
 import ProductCustomizeModal from '../../components/menu/ProductCustomizeModal';
 import { Product, ProductSize } from '../../data/mockProducts';
 import { Customizations } from '../../context/CartContext';
+import VoiceSearch from '../../components/common/VoiceSearch';
 
 const sortOptionsList = [
     { value: 'default', label: 'Default' },
@@ -33,10 +34,7 @@ const containerVariants = {
 
 const itemVariants = {
     hidden: { y: 20, opacity: 0 },
-    visible: {
-        y: 0,
-        opacity: 1,
-    },
+    visible: { y: 0, opacity: 1 },
 };
 
 const MenuPage: React.FC = () => {
@@ -77,6 +75,108 @@ const MenuPage: React.FC = () => {
         }
     };
 
+    // Shared Category Map
+    const categoryMap: { [key: string]: string } = {
+        'all': 'All',
+        'lahat': 'All', // Tagalog
+        'everything': 'All',
+        'coffee': 'Coffee Based',
+        'coffee based': 'Coffee Based',
+        'kape': 'Coffee Based', // Tagalog
+        'non coffee': 'Non-Coffee Based',
+        'non-coffee': 'Non-Coffee Based',
+        'non coffee based': 'Non-Coffee Based',
+        'noncoffee': 'Non-Coffee Based',
+        'hindi kape': 'Non-Coffee Based', // Tagalog
+        'matcha': 'Matcha Series',
+        'matcha series': 'Matcha Series',
+        'refreshment': 'Refreshments',
+        'refreshments': 'Refreshments',
+        'inumin': 'Refreshments', // Tagalog
+        'pampalamig': 'Refreshments', // Tagalog
+        'meal': 'Meals',
+        'meals': 'Meals',
+        'food': 'Meals',
+        'snack': 'Meals',
+        'pagkain': 'Meals', // Tagalog
+        'meryenda': 'Meals', // Tagalog
+    };
+
+    const handleVoiceSearch = (term: string) => {
+        const lowerTerm = term.toLowerCase();
+
+        // 1. Check for Category Switching (Exact or Partial Match)
+        // We check if any category key is present in the sentence
+        // Sort keys by length (longest first) to match more specific terms first
+        const sortedKeys = Object.keys(categoryMap).sort((a, b) => b.length - a.length);
+        const matchedCategoryKey = sortedKeys.find(key => lowerTerm.includes(key));
+        if (matchedCategoryKey) {
+            setSelectedCategory(categoryMap[matchedCategoryKey]);
+            setSearchQuery('');
+            productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            return;
+        }
+
+        // 2. Check for Product Match (Smart Matching)
+        // Check if any product name or alias is present in the sentence
+        const foundProduct = products.find(p =>
+            lowerTerm.includes(p.name.toLowerCase()) ||
+            p.aliases?.some(alias => lowerTerm.includes(alias.toLowerCase()))
+        );
+
+        if (foundProduct) {
+            setSelectedProduct(foundProduct);
+            setSelectedSize(foundProduct.sizes[0]);
+            setIsCustomizeModalOpen(true);
+            setSearchQuery('');
+            return;
+        }
+
+        // 3. Fallback to Standard Search
+        setSearchQuery(term);
+        productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const handleVoiceCommand = (command: string, term: string) => {
+        const lowerTerm = term.toLowerCase();
+        console.log('Voice command received:', command, 'Term:', lowerTerm);
+
+        // Check for Category Switching using sorted keys (longest first)
+        const sortedKeys = Object.keys(categoryMap).sort((a, b) => b.length - a.length);
+        const matchedKey = sortedKeys.find(key => lowerTerm === key || lowerTerm.includes(key));
+
+        if (matchedKey) {
+            console.log('Matched category key:', matchedKey, '-> Category:', categoryMap[matchedKey]);
+            setSelectedCategory(categoryMap[matchedKey]);
+            setSearchQuery('');
+            productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            return;
+        }
+
+        if (command === 'order') {
+            // Find the product
+            const foundProduct = products.find(p =>
+                p.name.toLowerCase().includes(lowerTerm) ||
+                p.aliases?.some(alias => alias.toLowerCase().includes(lowerTerm))
+            );
+
+            if (foundProduct) {
+                // Use handleAddToCart logic to determine if we should open modal or add directly
+                // Default size to first available size if adding directly
+                handleAddToCart(foundProduct, foundProduct.sizes[0]);
+                setSearchQuery(''); // Clear search
+            } else {
+                // If not found, just search for it
+                setSearchQuery(term);
+                productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+            }
+        } else {
+            // Default search behavior if not an explicit "order" command but passed here
+            setSearchQuery(term);
+            productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
+
     const categories = React.useMemo(() => {
         if (products.length === 0) return ['All'];
         const uniqueCategories = [...new Set(products.map(p => p.category))];
@@ -102,7 +202,8 @@ const MenuPage: React.FC = () => {
             const matchesSearch =
                 searchQuery.trim() === '' ||
                 product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                product.description.toLowerCase().includes(searchQuery.toLowerCase());
+                product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                product.aliases?.some(alias => alias.toLowerCase().includes(searchQuery.toLowerCase()));
             return matchesCategory && matchesSearch;
         });
 
@@ -140,7 +241,7 @@ const MenuPage: React.FC = () => {
                         <h1 className="font-display text-4xl font-bold md:text-5xl">Our Menu</h1>
                         <p className="mt-2 text-lg text-gray-200">Discover your perfect cup ☕</p>
 
-                        <div className="mx-auto mt-8 flex max-w-2xl gap-3">
+                        <div className="mx-auto mt-8 flex max-w-2xl gap-3 items-center">
                             <div className="relative flex-grow">
                                 <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                                 <input
@@ -148,9 +249,24 @@ const MenuPage: React.FC = () => {
                                     value={searchQuery}
                                     onChange={e => setSearchQuery(e.target.value)}
                                     placeholder="Search for coffee, matcha..."
-                                    className="w-full rounded-full border-0 bg-white/10 py-3 pl-12 pr-4 text-white placeholder:text-gray-400 ring-1 ring-white/20 transition focus:bg-white/20 focus:ring-2 focus:ring-primary-500"
+                                    className="w-full rounded-full border-0 bg-white/10 py-3 pl-12 pr-10 text-white placeholder:text-gray-400 ring-1 ring-white/20 transition focus:bg-white/20 focus:ring-2 focus:ring-primary-500"
                                 />
+                                {searchQuery && (
+                                    <button
+                                        onClick={() => setSearchQuery('')}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-400 hover:bg-white/10 hover:text-white"
+                                        title="Clear search"
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                )}
                             </div>
+
+                            {/* Voice Search */}
+                            <VoiceSearch
+                                onSearch={handleVoiceSearch}
+                                onCommand={handleVoiceCommand}
+                            />
 
                             {/* Sort Dropdown */}
                             <div className="relative shrink-0" ref={sortMenuRef}>
