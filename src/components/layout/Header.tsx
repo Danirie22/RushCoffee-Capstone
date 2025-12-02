@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { NavLink, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone, Shield, TrendingUp, Dices } from 'lucide-react';
+import { Menu, X, LogOut, ShoppingCart, ChevronDown, User, Gift, Info, Phone, Shield, TrendingUp, Zap } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import RushCoffeeLogo from './RushCoffeeLogo';
 import AuthModal from '../auth/AuthModal';
 import VerificationModal from '../auth/VerificationModal';
-import PlinkoModal from '../gamification/PlinkoModal';
+import SpinWheelModal from '../gamification/SpinWheelModal';
 
 const loggedOutNavLinks = [
     { href: '/', label: 'Home' },
@@ -45,8 +45,8 @@ const Header: React.FC = () => {
     const [verifyEmail, setVerifyEmail] = React.useState('');
     const [verifyUserId, setVerifyUserId] = React.useState('');
 
-    // Plinko Modal State
-    const [isPlinkoOpen, setIsPlinkoOpen] = React.useState(false);
+    // Spin Wheel Modal State
+    const [isSpinWheelOpen, setIsSpinWheelOpen] = React.useState(false);
 
     const { currentUser, logout } = useAuth();
     const { totalCartItems, openCart } = useCart();
@@ -330,13 +330,13 @@ const Header: React.FC = () => {
                         {showLoggedInState && (
                             <>
                                 <button
-                                    onClick={() => setIsPlinkoOpen(true)}
-                                    className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 transition-all hover:scale-110 shadow-lg"
-                                    aria-label="Coffee Plinko"
-                                    title="Drop for rewards!"
+                                    onClick={() => setIsSpinWheelOpen(true)}
+                                    className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-yellow-500 to-red-600 text-white hover:from-yellow-600 hover:to-red-700 transition-all hover:scale-110 shadow-lg"
+                                    aria-label="Spin Wheel"
+                                    title="Spin to win!"
                                 >
-                                    <Dices className="h-5 w-5" />
-                                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse"></span>
+                                    <Zap className="h-5 w-5" />
+                                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-blue-500 rounded-full animate-pulse"></span>
                                 </button>
                                 <CartButton />
                             </>
@@ -348,12 +348,12 @@ const Header: React.FC = () => {
                         {showLoggedInState && (
                             <>
                                 <button
-                                    onClick={() => setIsPlinkoOpen(true)}
-                                    className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-yellow-400 to-orange-500 text-white hover:from-yellow-500 hover:to-orange-600 transition-all hover:scale-110 shadow-lg"
-                                    aria-label="Coffee Plinko"
+                                    onClick={() => setIsSpinWheelOpen(true)}
+                                    className="relative flex items-center justify-center h-10 w-10 rounded-full bg-gradient-to-r from-yellow-500 to-red-600 text-white hover:from-yellow-600 hover:to-red-700 transition-all hover:scale-110 shadow-lg"
+                                    aria-label="Spin Wheel"
                                 >
-                                    <Dices className="h-5 w-5" />
-                                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse"></span>
+                                    <Zap className="h-5 w-5" />
+                                    <span className="absolute -top-1 -right-1 h-3 w-3 bg-blue-500 rounded-full animate-pulse"></span>
                                 </button>
                                 <CartButton />
                             </>
@@ -509,10 +509,10 @@ const Header: React.FC = () => {
                 onBackToLogin={handleBackToLogin}
             />
 
-            {/* Plinko Modal */}
-            <PlinkoModal
-                isOpen={isPlinkoOpen}
-                onClose={() => setIsPlinkoOpen(false)}
+            {/* Spin Wheel Modal */}
+            <SpinWheelModal
+                isOpen={isSpinWheelOpen}
+                onClose={() => setIsSpinWheelOpen(false)}
             />
         </>
     );

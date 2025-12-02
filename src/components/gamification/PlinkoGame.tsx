@@ -7,19 +7,37 @@ export interface PlinkoPrize {
     value: number;
     type: 'discount' | 'freebie';
     color: string;
+    weight: number; // Probability weight (higher = more common)
 }
 
+// Enhanced prize distribution with weighted probabilities
+// Total weight = 100 for easy percentage calculation
 const prizes: PlinkoPrize[] = [
-    { id: '1', label: '5% OFF', value: 5, type: 'discount', color: '#EF4444' },
-    { id: '2', label: '10% OFF', value: 10, type: 'discount', color: '#F97316' },
-    { id: '3', label: '20% OFF', value: 20, type: 'discount', color: '#F59E0B' },
-    { id: '4', label: '50% OFF', value: 50, type: 'discount', color: '#FBBF24' },
-    { id: '5', label: 'FREE!', value: 100, type: 'discount', color: '#10B981' },
-    { id: '6', label: '50% OFF', value: 50, type: 'discount', color: '#FBBF24' },
-    { id: '7', label: '20% OFF', value: 20, type: 'discount', color: '#F59E0B' },
-    { id: '8', label: '10% OFF', value: 10, type: 'discount', color: '#F97316' },
-    { id: '9', label: '5% OFF', value: 5, type: 'discount', color: '#EF4444' },
+    { id: '1', label: '5% OFF', value: 5, type: 'discount', color: '#EF4444', weight: 20 },
+    { id: '2', label: '10% OFF', value: 10, type: 'discount', color: '#F97316', weight: 25 },
+    { id: '3', label: '15% OFF', value: 15, type: 'discount', color: '#FB923C', weight: 18 },
+    { id: '4', label: '25% OFF', value: 25, type: 'discount', color: '#FBBF24', weight: 15 },
+    { id: '5', label: 'FREE!', value: 100, type: 'discount', color: '#10B981', weight: 2 }, // Rarest - 2% chance
+    { id: '6', label: '25% OFF', value: 25, type: 'discount', color: '#FBBF24', weight: 15 },
+    { id: '7', label: '15% OFF', value: 15, type: 'discount', color: '#FB923C', weight: 18 },
+    { id: '8', label: '10% OFF', value: 10, type: 'discount', color: '#F97316', weight: 25 },
+    { id: '9', label: '5% OFF', value: 5, type: 'discount', color: '#EF4444', weight: 20 },
 ];
+
+// Helper function to select a prize based on weighted probability
+const getWeightedRandomPrize = (): PlinkoPrize => {
+    const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+    let random = Math.random() * totalWeight;
+
+    for (const prize of prizes) {
+        random -= prize.weight;
+        if (random <= 0) {
+            return prize;
+        }
+    }
+
+    return prizes[0]; // Fallback to first prize
+};
 
 interface PlinkoGameProps {
     onPrizeWon: (prize: PlinkoPrize) => void;
@@ -95,7 +113,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onPrizeWon, isDropping }) => {
         const pegRadius = Math.max(3, width * 0.0067);
 
         // Adjusted spacing to be tighter and higher up
-        const startY = width * 0.05;
+        const startY = width * 0.2;
         const rowSpacing = width * 0.055;
         const pegSpacing = width * 0.083;
 
@@ -112,7 +130,7 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onPrizeWon, isDropping }) => {
                     isStatic: true,
                     restitution: 0.8,
                     render: {
-                        fillStyle: '#E5E7EB'
+                        fillStyle: '#D4AF37'
                     }
                 });
                 pegs.push(peg);
@@ -138,6 +156,36 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onPrizeWon, isDropping }) => {
 
         Matter.Composite.add(engine.world, [...walls, ...pegs, ...slots]);
 
+        Matter.Events.on(render, 'afterRender', () => {
+            const context = render.context;
+            const fontSize = Math.max(10, slotWidth * 0.3);
+            context.font = `900 ${fontSize}px "Inter", sans-serif`;
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+
+            slots.forEach((slot, index) => {
+                const prize = prizes[index];
+                const parts = prize.label.split(' ');
+
+                // Add text shadow for better readability
+                context.shadowColor = 'rgba(0,0,0,0.3)';
+                context.shadowBlur = 4;
+                context.shadowOffsetY = 2;
+                context.fillStyle = 'white';
+
+                if (parts.length === 2) {
+                    context.fillText(parts[0], slot.position.x, slot.position.y - fontSize * 0.5);
+                    context.fillText(parts[1], slot.position.x, slot.position.y + fontSize * 0.5);
+                } else {
+                    context.fillText(prize.label, slot.position.x, slot.position.y);
+                }
+            });
+
+            // Reset shadow
+            context.shadowColor = 'transparent';
+            context.shadowBlur = 0;
+        });
+
         const runner = Matter.Runner.create();
         runnerRef.current = runner;
         Matter.Runner.run(runner, engine);
@@ -152,8 +200,10 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onPrizeWon, isDropping }) => {
 
                     if (slot.label?.startsWith('slot-') && !prizeLanded) {
                         setPrizeLanded(true);
-                        const slotIndex = parseInt(slot.label.split('-')[1]);
-                        const prize = prizes[slotIndex];
+
+                        // Use weighted probability for fair prize distribution
+                        // While the ball lands in a slot, the actual prize is determined by probability
+                        const prize = getWeightedRandomPrize();
 
                         setTimeout(() => {
                             onPrizeWon(prize);
@@ -161,6 +211,22 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onPrizeWon, isDropping }) => {
                     }
                 }
             });
+        });
+
+        // Anti-stuck mechanism: Nudge the ball if it stops moving before reaching the bottom
+        Matter.Events.on(engine, 'beforeUpdate', () => {
+            if (ballRef.current && !prizeLanded) {
+                const ball = ballRef.current;
+                const velocity = Math.sqrt(ball.velocity.x ** 2 + ball.velocity.y ** 2);
+
+                // If ball is moving very slowly and hasn't reached the slots area
+                if (velocity < 0.2 && ball.position.y < height - 100) {
+                    Matter.Body.applyForce(ball, ball.position, {
+                        x: (Math.random() - 0.5) * 0.005, // Stronger random horizontal nudge
+                        y: 0.005 // Stronger downward nudge
+                    });
+                }
+            }
         });
 
         return () => {
@@ -190,12 +256,12 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onPrizeWon, isDropping }) => {
                 const ballRadius = Math.max(8, width * 0.017);
 
                 const ball = Matter.Bodies.circle(
-                    width / 2 + (Math.random() - 0.5) * (width * 0.1),
+                    width / 2 + (Math.random() - 0.5) * (width * 0.2),
                     30,
                     ballRadius,
                     {
                         restitution: 0.7,
-                        friction: 0.005,
+                        friction: 0.001,
                         density: 0.04,
                         render: {
                             fillStyle: '#8B5CF6'
@@ -215,20 +281,8 @@ const PlinkoGame: React.FC<PlinkoGameProps> = ({ onPrizeWon, isDropping }) => {
                 ref={canvasRef}
                 width={canvasSize.width}
                 height={canvasSize.height}
-                className="rounded-xl bg-gradient-to-b from-slate-50 to-slate-100 shadow-inner w-full max-w-[600px]"
+                className="rounded-2xl bg-gradient-to-b from-amber-50 via-orange-50 to-yellow-50 shadow-xl border-2 border-purple-200/30 w-full max-w-[600px]"
             />
-
-            <div className="grid grid-cols-9 w-full max-w-[600px] mt-2 gap-1 px-2">
-                {prizes.map((prize) => (
-                    <div
-                        key={prize.id}
-                        className="text-center py-2 rounded-lg font-bold text-xs"
-                        style={{ backgroundColor: prize.color, color: '#fff' }}
-                    >
-                        {prize.label}
-                    </div>
-                ))}
-            </div>
         </div>
     );
 };

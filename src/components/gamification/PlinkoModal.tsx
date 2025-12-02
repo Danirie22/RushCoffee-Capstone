@@ -73,16 +73,28 @@ const PlinkoModal: React.FC<PlinkoModalProps> = ({ isOpen, onClose }) => {
         setPrize(wonPrize);
         setIsDropping(false);
 
-        // Show confetti for big wins
-        if (wonPrize.value >= 50) {
+        // Show confetti for good wins (25% or better)
+        if (wonPrize.value >= 25) {
             setShowConfetti(true);
             setTimeout(() => setShowConfetti(false), 5000);
         }
 
-        // Save to database (still saving for tracking)
+        // Save to database and update statistics
         if (currentUser) {
             try {
-                await db.collection('users').doc(currentUser.uid).update({
+                const userRef = db.collection('users').doc(currentUser.uid);
+                const userDoc = await userRef.get();
+                const userData = userDoc.data();
+
+                // Track game statistics
+                const plinkoStats = userData?.plinkoStats || {
+                    totalPlays: 0,
+                    totalDiscountWon: 0,
+                    biggestWin: 0,
+                    lastWinValue: 0
+                };
+
+                await userRef.update({
                     lastDropDate: firebase.firestore.FieldValue.serverTimestamp(),
                     activeDiscount: {
                         type: wonPrize.type,
@@ -90,8 +102,16 @@ const PlinkoModal: React.FC<PlinkoModalProps> = ({ isOpen, onClose }) => {
                         label: wonPrize.label,
                         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
                     },
+                    plinkoStats: {
+                        totalPlays: plinkoStats.totalPlays + 1,
+                        totalDiscountWon: plinkoStats.totalDiscountWon + wonPrize.value,
+                        biggestWin: Math.max(plinkoStats.biggestWin, wonPrize.value),
+                        lastWinValue: wonPrize.value,
+                        lastWinDate: firebase.firestore.FieldValue.serverTimestamp()
+                    }
                 });
-                // TESTING: Don't block further drops
+
+                // TESTING MODE: Don't block further drops
                 // setCanDrop(false);
             } catch (error) {
                 console.error('Error saving drop result:', error);
@@ -172,8 +192,8 @@ const PlinkoModal: React.FC<PlinkoModalProps> = ({ isOpen, onClose }) => {
                                             onClick={handleDrop}
                                             disabled={isDropping}
                                             className={`w-full max-w-md mx-auto block px-8 py-4 rounded-full font-bold text-lg transition-all shadow-lg ${isDropping
-                                                    ? 'bg-gray-400 cursor-not-allowed'
-                                                    : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white hover:scale-105'
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white hover:scale-105'
                                                 }`}
                                         >
                                             {isDropping ? 'DROPPING...' : 'DROP BALL!'}
@@ -229,11 +249,16 @@ const PlinkoModal: React.FC<PlinkoModalProps> = ({ isOpen, onClose }) => {
                             </>
                         )}
 
-                        {/* Fine Print */}
+                        {/* Game Info */}
                         {!prize && (
-                            <p className="text-xs text-gray-400 text-center mt-6">
-                                TESTING MODE: Unlimited drops enabled. Prizes expire after 24 hours.
-                            </p>
+                            <div className="text-center mt-6 space-y-1">
+                                <p className="text-xs text-gray-500 font-medium">
+                                    🎮 TESTING MODE: Unlimited drops enabled
+                                </p>
+                                <p className="text-xs text-gray-400">
+                                    Weighted probability • Prizes expire after 24 hours • Stats tracking enabled
+                                </p>
+                            </div>
                         )}
                     </motion.div>
                 </motion.div>
