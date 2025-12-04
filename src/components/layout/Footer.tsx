@@ -2,8 +2,23 @@ import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, MapPin, Phone, Mail } from 'lucide-react';
 import RushCoffeeLogo from './RushCoffeeLogo';
+import { useAuth } from '../../context/AuthContext';
+import { UserRole } from '../../types';
 
 const Footer: React.FC = () => {
+    const { currentUser } = useAuth();
+
+    let homePath = '/';
+    if (currentUser) {
+        if (currentUser.role === UserRole.ADMIN) {
+            homePath = '/admin';
+        } else if (currentUser.role === UserRole.EMPLOYEE) {
+            homePath = '/employee';
+        } else {
+            homePath = '/menu';
+        }
+    }
+
     return (
         <footer className="relative bg-primary-900 text-primary-100">
             {/* Background Pattern */}
@@ -29,7 +44,7 @@ const Footer: React.FC = () => {
                 <div>
                     <h3 className="mb-6 font-display text-lg font-bold text-white">Quick Links</h3>
                     <ul className="space-y-3">
-                        <li><Link to="/" className="transition-colors hover:text-primary-400 hover:underline">Home</Link></li>
+                        <li><Link to={homePath} className="transition-colors hover:text-primary-400 hover:underline">Home</Link></li>
                         <li><Link to="/about" className="transition-colors hover:text-primary-400 hover:underline">About Us</Link></li>
                         <li><Link to="/menu" className="transition-colors hover:text-primary-400 hover:underline">Menu</Link></li>
                         <li><Link to="/faq" className="transition-colors hover:text-primary-400 hover:underline">FAQ</Link></li>

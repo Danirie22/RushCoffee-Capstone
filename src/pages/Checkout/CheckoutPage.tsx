@@ -456,7 +456,7 @@ const CheckoutPage: React.FC = () => {
 
                         {/* Payment Method */}
                         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                            <PaymentMethodSelector selectedMethod={selectedPaymentMethod} onSelectMethod={setSelectedPaymentMethod} />
+                            <PaymentMethodSelector selectedMethod={selectedPaymentMethod} onSelectMethod={setSelectedPaymentMethod} totalAmount={total} />
                             {errors.payment && <p className="mt-2 text-xs text-red-500">{errors.payment}</p>}
                             {selectedPaymentMethod === 'gcash' && (
                                 <div className="mt-6 border-t pt-6">

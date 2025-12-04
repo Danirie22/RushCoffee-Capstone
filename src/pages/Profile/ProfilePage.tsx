@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { format } from 'date-fns';
-import { User, ShoppingBag, Settings, Edit, Mail, Phone, Calendar, Star, Loader2, Upload, MessageSquare } from 'lucide-react';
+import { User, ShoppingBag, Settings, Edit, Mail, Phone, Calendar, Star, Loader2, Upload, MessageSquare, TrendingUp } from 'lucide-react';
 
 import Header from '../../components/layout/Header';
 import Footer from '../../components/layout/Footer';
@@ -13,7 +13,7 @@ import OrderHistory from '../../components/profile/OrderHistory';
 import SettingsSection from '../../components/profile/SettingsSection';
 import FeedbackSection from '../../components/profile/FeedbackSection';
 import OrderHistoryCardSkeleton from '../../components/profile/OrderHistoryCardSkeleton';
-import { UserProfile } from '../../context/AuthContext';
+import { UserProfile } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { useOrder } from '../../context/OrderContext';
 import { mockProducts } from '../../data/mockProducts';
@@ -145,6 +145,28 @@ const ProfilePage: React.FC = () => {
         return (
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             <div className="space-y-8 lg:col-span-2">
+              {/* Flavor Profile Teaser Card */}
+              <Card className="bg-gradient-to-r from-primary-900 to-primary-800 text-white border-none shadow-lg overflow-hidden relative group cursor-pointer" onClick={() => window.location.hash = '#/flavor-profile'}>
+                <div className="absolute top-0 right-0 -mt-8 -mr-8 h-32 w-32 rounded-full bg-white opacity-10 blur-2xl transition-transform group-hover:scale-150 duration-700"></div>
+                <div className="relative z-10 flex items-center justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingUp className="h-5 w-5 text-yellow-400" />
+                      <span className="text-yellow-400 font-bold text-sm uppercase tracking-wider">New Feature</span>
+                    </div>
+                    <h3 className="font-display text-2xl font-bold mb-2">Your Flavor Profile</h3>
+                    <p className="text-primary-100 max-w-md">
+                      Discover your unique coffee personality! See your caffeine stats, favorite flavors, and get personalized recommendations.
+                    </p>
+                    <Button variant="secondary" className="mt-4 bg-white text-primary-900 hover:bg-primary-50 border-none">
+                      View My Profile
+                    </Button>
+                  </div>
+                  <div className="hidden sm:block">
+                    <TrendingUp className="h-24 w-24 text-white opacity-20" />
+                  </div>
+                </div>
+              </Card>
               {isEditing ? (
                 <EditProfileForm user={user} onSave={handleSaveProfile} onCancel={() => setIsEditing(false)} />
               ) : (
@@ -197,7 +219,7 @@ const ProfilePage: React.FC = () => {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <h3 className="font-display text-xl font-bold text-gray-900">Recent Orders</h3>
-                    <Button variant="link" onClick={() => setActiveTab('orders')} className="text-primary-600">View All</Button>
+                    <Button variant="ghost" onClick={() => setActiveTab('orders')} className="text-primary-600">View All</Button>
                   </div>
                   <OrderHistory orders={orderHistory} limit={3} showViewAll={false} />
                 </div>
@@ -205,8 +227,8 @@ const ProfilePage: React.FC = () => {
             </div>
             <div className="space-y-8 lg:col-span-1">
               <Card className={`border-none shadow-md text-white overflow-hidden relative ${user.tier === 'gold' ? 'bg-gradient-to-br from-yellow-500 to-yellow-700' :
-                  user.tier === 'silver' ? 'bg-gradient-to-br from-gray-400 to-gray-600' :
-                    'bg-gradient-to-br from-orange-400 to-orange-600'
+                user.tier === 'silver' ? 'bg-gradient-to-br from-gray-400 to-gray-600' :
+                  'bg-gradient-to-br from-orange-400 to-orange-600'
                 }`}>
                 <div className="absolute top-0 right-0 -mt-4 -mr-4 h-24 w-24 rounded-full bg-white opacity-10 blur-xl"></div>
                 <div className="absolute bottom-0 left-0 -mb-4 -ml-4 h-24 w-24 rounded-full bg-black opacity-10 blur-xl"></div>
@@ -283,8 +305,8 @@ const ProfilePage: React.FC = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as Tab)}
                   className={`group inline-flex shrink-0 items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${activeTab === tab.id
-                      ? 'bg-primary-600 text-white shadow-md'
-                      : 'bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-900'
+                    ? 'bg-primary-600 text-white shadow-md'
+                    : 'bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-900'
                     }`}
                 >
                   <tab.Icon className={`h-4 w-4 ${activeTab === tab.id ? 'text-white' : 'text-gray-400 group-hover:text-gray-600'}`} />
