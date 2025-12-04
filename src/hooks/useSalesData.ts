@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebaseConfig';
+import { Order } from '../types';
 
 export interface SalesDataPoint {
     date: string;
@@ -58,7 +59,7 @@ export const useSalesData = (timeRange: TimeRange = 'today') => {
                         timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : (data.timestamp ? new Date(data.timestamp) : new Date()),
                         totalAmount: data.totalAmount || data.subtotal || 0,
                     };
-                });
+                }) as Order[];
 
                 // Process sales data by date
                 const salesByDate = processSalesByDate(orders, timeRange);
@@ -120,11 +121,11 @@ function getDateRange(timeRange: TimeRange) {
     return { startDate, endDate };
 }
 
-function processSalesByDate(orders: any[], timeRange: TimeRange): SalesDataPoint[] {
+function processSalesByDate(orders: Order[], timeRange: TimeRange): SalesDataPoint[] {
     const salesMap = new Map<string, { revenue: number; orders: number }>();
 
     orders.forEach(order => {
-        const timestamp = order.timestamp?.toDate ? order.timestamp.toDate() : new Date(order.timestamp);
+        const timestamp = new Date(order.timestamp);
         let dateKey: string;
 
         switch (timeRange) {
@@ -171,11 +172,11 @@ function processSalesByDate(orders: any[], timeRange: TimeRange): SalesDataPoint
         });
 }
 
-function processTopProducts(orders: any[]): TopProduct[] {
+function processTopProducts(orders: Order[]): TopProduct[] {
     const productMap = new Map<string, { name: string; quantity: number; revenue: number }>();
 
     orders.forEach(order => {
-        order.orderItems?.forEach((item: any) => {
+        order.orderItems?.forEach((item) => {
             const existing = productMap.get(item.productId) || {
                 name: item.productName,
                 quantity: 0,
@@ -200,11 +201,11 @@ function processTopProducts(orders: any[]): TopProduct[] {
         .slice(0, 10); // Top 10 products
 }
 
-function processCategorySales(orders: any[]): CategorySales[] {
+function processCategorySales(orders: Order[]): CategorySales[] {
     const categoryMap = new Map<string, { revenue: number; orders: Set<string> }>();
 
     orders.forEach(order => {
-        order.orderItems?.forEach((item: any) => {
+        order.orderItems?.forEach((item) => {
             // You might want to fetch product category from products collection
             // For now, we'll extract from product name or use a default
             const category = extractCategory(item.productName);
@@ -225,7 +226,7 @@ function processCategorySales(orders: any[]): CategorySales[] {
         .sort((a, b) => b.revenue - a.revenue);
 }
 
-function processPeakHours(orders: any[]): PeakHour[] {
+function processPeakHours(orders: Order[]): PeakHour[] {
     const hourMap = new Map<number, { orders: number; revenue: number }>();
 
     // Initialize all hours
@@ -234,7 +235,7 @@ function processPeakHours(orders: any[]): PeakHour[] {
     }
 
     orders.forEach(order => {
-        const timestamp = order.timestamp?.toDate ? order.timestamp.toDate() : new Date(order.timestamp);
+        const timestamp = new Date(order.timestamp);
         const hour = timestamp.getHours();
         const existing = hourMap.get(hour) || { orders: 0, revenue: 0 };
         hourMap.set(hour, {

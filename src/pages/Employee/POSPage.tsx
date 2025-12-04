@@ -7,14 +7,15 @@ import { Product, ProductSize } from '../../data/mockProducts';
 import ProductCustomizeModal from '../../components/menu/ProductCustomizeModal';
 import POSProductCard from '../../components/employee/POSProductCard';
 import PaymentModal from '../../components/employee/PaymentModal';
-import { saveOrder, generateOrderNumber, OrderItem } from '../../services/orderService';
+import { saveOrder, generateOrderNumber } from '../../services/orderService';
+import { PaymentDetails, Customizations, OrderItem } from '../../types';
 
 interface CartItem {
     id: string;
     product: Product;
     size: ProductSize;
     quantity: number;
-    customizations?: any;
+    customizations?: Customizations;
     finalPrice?: number;
 }
 
@@ -47,7 +48,7 @@ const POSPage: React.FC = () => {
         return result;
     }, [products, selectedCategory, searchQuery]);
 
-    const addToCart = (product: Product, size: ProductSize, customizations?: any, quantity: number = 1, finalPrice?: number) => {
+    const addToCart = (product: Product, size: ProductSize, customizations?: Customizations, quantity: number = 1, finalPrice?: number) => {
         const itemPrice = finalPrice || size.price; // Use calculated price or base price
 
         setCart(prev => {
@@ -112,7 +113,7 @@ const POSPage: React.FC = () => {
     const discountAmount = subtotal * discountPercentage;
     const totalAmount = subtotal - discountAmount;
 
-    const handleConfirmCustomization = (customizations: any, quantity: number, totalPrice?: number) => {
+    const handleConfirmCustomization = (customizations: Customizations, quantity: number, totalPrice?: number) => {
         if (selectedProduct) {
             // If we have a selected size (from edit or new), use it. Otherwise default to first size.
             const sizeToUse = selectedSize || selectedProduct.sizes[0];
@@ -123,12 +124,18 @@ const POSPage: React.FC = () => {
 
     const handleCheckout = () => { if (cart.length > 0) setPaymentModalOpen(true); };
 
-    const handlePaymentComplete = async (paymentDetails: any) => {
+    const handlePaymentComplete = async (paymentDetails: PaymentDetails) => {
         setIsSavingOrder(true);
         try {
             const orderNumber = await generateOrderNumber();
             await saveOrder({
                 orderNumber,
+                userId: 'walk-in',
+                customerName: 'Walk-in Customer',
+                position: 0,
+                totalAmount: totalAmount,
+                paymentStatus: 'paid',
+                estimatedTime: 15,
                 orderItems: cart.map(item => ({
                     productId: item.product.id,
                     productName: item.product.name,

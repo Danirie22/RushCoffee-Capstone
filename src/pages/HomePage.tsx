@@ -9,9 +9,11 @@ import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Header from '../components/layout/Header';
 import Footer from '../components/layout/Footer';
+import TestimonialSkeleton from '../components/home/TestimonialSkeleton';
 import { useAuth } from '../context/AuthContext';
 import RushCoffeeLogo from '../components/layout/RushCoffeeLogo';
 import heroBgFull from '../assets/rushb.webp';
+import { UserRole, Review, Testimonial } from '../types';
 
 const features = [
     {
@@ -50,7 +52,6 @@ const steps = [
         Icon: Menu,
         title: 'Browse & Customize',
         description: 'Explore our menu of premium coffee drinks and customize your order exactly how you like it.',
-        hasAnimation: true,
     },
     {
         number: 2,
@@ -67,7 +68,7 @@ const steps = [
     },
 ];
 
-const defaultTestimonials = [
+const defaultTestimonials: Testimonial[] = [
     {
         quote: "Rush Coffee changed my morning routine! No more waiting in long lines. I order on my way and pick up when it's ready. Absolutely love it!",
         name: "Sarah M.",
@@ -102,7 +103,8 @@ const defaultTestimonials = [
 
 const HomePage: React.FC = () => {
     const { currentUser } = useAuth();
-    const [testimonials, setTestimonials] = React.useState(defaultTestimonials);
+    const [testimonials, setTestimonials] = React.useState<Testimonial[]>([]);
+    const [isLoadingReviews, setIsLoadingReviews] = React.useState(true);
 
     // Fetch reviews
     React.useEffect(() => {
@@ -116,14 +118,14 @@ const HomePage: React.FC = () => {
                 const snapshot = await getDocs(q);
 
                 if (!snapshot.empty) {
-                    const allReviews = snapshot.docs.map(doc => doc.data());
+                    const allReviews = snapshot.docs.map(doc => doc.data() as Review);
                     const topReviews = allReviews
-                        .filter((data: any) => data.rating >= 4)
-                        .sort((a: any, b: any) => b.rating - a.rating)
+                        .filter((data) => data.rating >= 4)
+                        .sort((a, b) => b.rating - a.rating)
                         .slice(0, 3);
 
                     if (topReviews.length > 0) {
-                        const reviewsData = await Promise.all(topReviews.map(async (data: any) => {
+                        const reviewsData = await Promise.all(topReviews.map(async (data) => {
                             let name = "Rush Customer";
                             let initial = "R";
                             let photoURL = null;
@@ -164,10 +166,17 @@ const HomePage: React.FC = () => {
                         }));
 
                         setTestimonials(reviewsData);
+                    } else {
+                        setTestimonials(defaultTestimonials);
                     }
+                } else {
+                    setTestimonials(defaultTestimonials);
                 }
             } catch (error) {
                 console.error("Error fetching reviews:", error);
+                setTestimonials(defaultTestimonials);
+            } finally {
+                setIsLoadingReviews(false);
             }
         };
 
@@ -176,9 +185,9 @@ const HomePage: React.FC = () => {
 
     let orderNowPath = '/auth/register';
     if (currentUser) {
-        if (currentUser.role === 'admin') {
+        if (currentUser.role === UserRole.ADMIN) {
             orderNowPath = '/admin';
-        } else if (currentUser.role === 'employee') {
+        } else if (currentUser.role === UserRole.EMPLOYEE) {
             orderNowPath = '/employee';
         } else {
             orderNowPath = '/menu';
@@ -204,7 +213,7 @@ const HomePage: React.FC = () => {
                             <div className="animate-fade-in-up text-center xl:text-left">
                                 <h1 className="font-display text-4xl font-bold text-white md:text-6xl lg:text-7xl leading-tight">
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 200ms forwards', opacity: 0 }}>Skip the Line,</span>
-                                    <span className="block text-[#8B5E3C]" style={{ animation: 'fade-in-up 0.8s ease-out 300ms forwards', opacity: 0 }}>Get Your Coffee</span>
+                                    <span className="block text-primary-400" style={{ animation: 'fade-in-up 0.8s ease-out 300ms forwards', opacity: 0 }}>Get Your Coffee</span>
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 400ms forwards', opacity: 0 }}>Faster.</span>
                                 </h1>
                                 <p className="mx-auto mt-5 md:mt-6 max-w-2xl text-base md:text-lg text-gray-200 md:text-xl xl:mx-0 shadow-black drop-shadow-md leading-relaxed" style={{ animation: 'fade-in-up 0.8s ease-out 500ms forwards', opacity: 0 }}>
@@ -212,9 +221,9 @@ const HomePage: React.FC = () => {
                                 </p>
 
                                 <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2.5 md:gap-3 xl:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 600ms forwards', opacity: 0 }}>
-                                    <Badge className="bg-[#3E2723]/90 text-[#D7CCC8] border border-[#5D4037] backdrop-blur-sm px-4 py-2">⚡ Real-Time Queue</Badge>
-                                    <Badge className="bg-[#3E2723]/90 text-[#D7CCC8] border border-[#5D4037] backdrop-blur-sm px-4 py-2">📱 Mobile Ordering</Badge>
-                                    <Badge className="bg-[#3E2723]/90 text-[#D7CCC8] border border-[#5D4037] backdrop-blur-sm px-4 py-2">🎁 Rewards Program</Badge>
+                                    <Badge className="bg-primary-900/90 !text-white border border-primary-700 backdrop-blur-sm px-4 py-2">⚡ Real-Time Queue</Badge>
+                                    <Badge className="bg-primary-900/90 !text-white border border-primary-700 backdrop-blur-sm px-4 py-2">📱 Mobile Ordering</Badge>
+                                    <Badge className="bg-primary-900/90 !text-white border border-primary-700 backdrop-blur-sm px-4 py-2">🎁 Rewards Program</Badge>
                                 </div>
 
                                 <div className="mt-8 md:mt-10 flex flex-col items-center gap-3 md:gap-4 sm:flex-row sm:justify-center xl:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 700ms forwards', opacity: 0 }}>
@@ -223,6 +232,7 @@ const HomePage: React.FC = () => {
                                             variant="primary"
                                             size="lg"
                                             startIcon={<RushCoffeeLogo className="h-5 w-5" />}
+                                            className="!bg-primary-600 !hover:bg-primary-700 !shadow-sm"
                                         >
                                             Order Now
                                         </Button>
@@ -321,49 +331,55 @@ const HomePage: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {testimonials.map((testimonial, index) => (
-                                <Card
-                                    key={index}
-                                    hover
-                                    padding="sm"
-                                    className={`flex flex-col border-l-4 border-primary-400 transition-transform duration-300 hover:scale-105 ${index === 2 ? 'md:col-span-2 lg:col-span-1 md:w-[calc(50%-0.5rem)] md:mx-auto lg:w-full' : ''}`}
-                                >
-                                    <Quote className="h-6 w-6 text-primary-200 md:h-8 md:w-8" />
-                                    <div className="my-3 text-sm text-yellow-400 md:my-4 md:text-base">
-                                        {'⭐'.repeat(Math.round(testimonial.rating || 5))}
-                                    </div>
-                                    <p className="flex-grow font-sans italic text-sm text-gray-700 md:text-base">"{testimonial.quote}"</p>
-                                    <div className="mt-4 flex items-center gap-3 md:gap-4">
-                                        {testimonial.photoURL ? (
-                                            <img
-                                                src={testimonial.photoURL}
-                                                alt={testimonial.name}
-                                                className="h-10 w-10 flex-shrink-0 rounded-full object-cover md:h-12 md:w-12"
-                                            />
-                                        ) : (
-                                            <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-bold text-sm md:h-12 md:w-12 md:text-base ${testimonial.avatarBg} ${testimonial.avatarText}`}>
-                                                {testimonial.initial}
-                                            </div>
-                                        )}
-                                        <div>
-                                            <p className="text-sm font-semibold text-coffee-900 md:text-base">{testimonial.name}</p>
-                                            <Badge className="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 md:text-xs md:px-2">{testimonial.title}</Badge>
+                            {isLoadingReviews ? (
+                                Array.from({ length: 3 }).map((_, index) => (
+                                    <TestimonialSkeleton key={index} />
+                                ))
+                            ) : (
+                                testimonials.map((testimonial, index) => (
+                                    <Card
+                                        key={index}
+                                        hover
+                                        padding="sm"
+                                        className={`flex flex-col border-l-4 border-primary-400 transition-transform duration-300 hover:scale-105 ${index === 2 ? 'md:col-span-2 lg:col-span-1 md:w-[calc(50%-0.5rem)] md:mx-auto lg:w-full' : ''}`}
+                                    >
+                                        <Quote className="h-6 w-6 text-primary-200 md:h-8 md:w-8" />
+                                        <div className="my-3 text-sm text-yellow-400 md:my-4 md:text-base">
+                                            {'⭐'.repeat(Math.round(testimonial.rating || 5))}
                                         </div>
-                                    </div>
-                                </Card>
-                            ))}
+                                        <p className="flex-grow font-sans italic text-sm text-gray-700 md:text-base">"{testimonial.quote}"</p>
+                                        <div className="mt-4 flex items-center gap-3 md:gap-4">
+                                            {testimonial.photoURL ? (
+                                                <img
+                                                    src={testimonial.photoURL}
+                                                    alt={testimonial.name}
+                                                    className="h-10 w-10 flex-shrink-0 rounded-full object-cover md:h-12 md:w-12"
+                                                />
+                                            ) : (
+                                                <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full font-bold text-sm md:h-12 md:w-12 md:text-base ${testimonial.avatarBg} ${testimonial.avatarText}`}>
+                                                    {testimonial.initial}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <p className="text-sm font-semibold text-coffee-900 md:text-base">{testimonial.name}</p>
+                                                <Badge className="bg-gray-100 text-gray-600 text-[10px] px-1.5 py-0.5 md:text-xs md:px-2">{testimonial.title}</Badge>
+                                            </div>
+                                        </div>
+                                    </Card>
+                                ))
+                            )}
                         </div>
                     </div>
                 </section>
 
-                <section className="relative overflow-hidden bg-[#773e20] px-6 py-24 text-center text-white">
+                <section className="relative overflow-hidden bg-primary-600 px-6 py-24 text-center text-white">
                     <div className="absolute inset-0 z-0">
                         <img
                             src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070&auto=format&fit=crop"
                             alt="Coffee shop atmosphere"
                             className="h-full w-full object-cover opacity-20"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#773e20]/90 via-[#914f2b]/90 to-[#773e20]/90"></div>
+                        <div className="absolute inset-0 bg-gradient-to-r from-primary-600/90 via-primary-500/90 to-primary-600/90"></div>
                     </div>
 
                     <div className="absolute -left-1/4 -top-1/4 opacity-5"><RushCoffeeLogo className="h-96 w-96 animate-float text-white" /></div>

@@ -2,52 +2,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 import { db } from '../firebaseConfig';
 import { deductInventoryForOrder } from '../utils/inventoryDeduction';
-
-export interface OrderItem {
-    productId: string;
-    productName: string;
-    category: string;
-    size: string;
-    sizeLabel: string;
-    price: number;
-    quantity: number;
-    customizations?: {
-        sugarLevel?: string;
-        iceLevel?: string;
-        toppings?: string[];
-    };
-}
-
-export interface OrderData {
-    orderNumber: string;
-    orderItems: OrderItem[];
-    totalAmount?: number; // Added to match Firestore data
-    subtotal?: number;
-    paymentMethod: 'cash' | 'gcash';
-    paymentDetails: {
-        amountReceived: number;
-        change: number;
-        referenceNumber?: string;
-    };
-    discount?: {
-        type: 'senior' | 'pwd' | 'none';
-        amount: number;
-        percentage: number;
-        cardId?: string;
-    } | null;
-    status: 'waiting' | 'preparing' | 'ready' | 'completed' | 'cancelled';
-    customerId?: string;
-    customerName?: string;
-    employeeId: string;
-    employeeName: string;
-    timestamp: any;
-    completedAt?: any;
-    orderType?: 'online' | 'walk-in';
-    inventoryDeducted?: boolean;
-    receiptUrl?: string;
-    paymentAccountName?: string;
-    paymentReference?: string;
-}
+import { Order, OrderItem } from '../types';
 
 /**
  * Generate a unique order number
@@ -63,7 +18,7 @@ export const generateOrderNumber = async (): Promise<string> => {
 /**
  * Save a new order to Firestore
  */
-export const saveOrder = async (orderData: Omit<OrderData, 'timestamp'>): Promise<string> => {
+export const saveOrder = async (orderData: Omit<Order, 'id' | 'timestamp'>): Promise<string> => {
     try {
         // Deduct inventory immediately for POS orders
         try {
@@ -95,7 +50,7 @@ export const updateOrderStatus = async (
 ): Promise<void> => {
     try {
         console.log(`🛠️ updateOrderStatus called for ${orderId} -> ${status}`);
-        const updateData: any = { status };
+        const updateData: Partial<Order> = { status };
 
         // Add completedAt timestamp when marking as completed
         if (status === 'completed') {
@@ -104,9 +59,9 @@ export const updateOrderStatus = async (
             // Calculate and award loyalty points
             const orderDoc = await db.collection('orders').doc(orderId).get();
             if (orderDoc.exists) {
-                const orderData = orderDoc.data() as OrderData;
+                const orderData = orderDoc.data() as Order;
                 // Check for userId or customerId (legacy support)
-                const targetUserId = (orderData as any).userId || orderData.customerId;
+                const targetUserId = orderData.userId || orderData.customerId;
 
                 if (targetUserId) {
                     let pointsEarned = 0;
@@ -119,6 +74,7 @@ export const updateOrderStatus = async (
                             // Points rules:
                             // Grande / Combo Meal = 4 points
                             // Venti / Ala Carte = 5 points
+                            // Venti / Combo Meal = 5 points
 
                             // Check size field first, then fallback to product name
                             const size = item.size;
@@ -167,7 +123,7 @@ export const updateOrderStatus = async (
         if (status === 'ready') {
             const orderDoc = await db.collection('orders').doc(orderId).get();
             if (orderDoc.exists) {
-                const orderData = orderDoc.data();
+                const orderData = orderDoc.data() as Order;
 
                 // Check if inventory was already deducted
                 if (orderData?.inventoryDeducted) {

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../firebaseConfig';
-import { QueueItem } from '../../context/OrderContext';
+import { Order } from '../../types';
 import { Search, Filter, Calendar, ChevronDown, Eye, CreditCard, Banknote, AlertCircle, ChevronLeft, ChevronRight, Package, Clock, User, Store } from 'lucide-react';
 import OrderDetailsModal from '../../components/employee/OrderDetailsModal';
 
 const AdminOrdersHistoryPage: React.FC = () => {
-    const [orders, setOrders] = useState<QueueItem[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [filterDate, setFilterDate] = useState<string>('all');
@@ -16,7 +16,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
     const itemsPerPage = 10;
 
     // Modal State
-    const [selectedOrder, setSelectedOrder] = useState<any>(null);
+    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     useEffect(() => {
@@ -32,7 +32,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
                         timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : (data.timestamp ? new Date(data.timestamp) : new Date()),
                         totalAmount: data.totalAmount || data.subtotal || 0, // Handle missing totalAmount
                     };
-                }) as QueueItem[];
+                }) as Order[];
                 setOrders(fetchedOrders);
                 setLoading(false);
             }, (error) => {
@@ -94,7 +94,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
         setCurrentPage(1);
     }, [filterStatus, filterDate, searchTerm]);
 
-    const handleViewDetails = (order: any) => {
+    const handleViewDetails = (order: Order) => {
         // Debug: Log the raw order data to see what fields exist
         console.log('📦 Raw order data from Firestore:', {
             id: order.id,
@@ -109,7 +109,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
         const mappedOrder = {
             ...order,
             // Map orderItems to items for the modal
-            items: (order.orderItems || []).map((item: any) => ({
+            items: (order.orderItems || []).map((item) => ({
                 ...item,
                 sizeLabel: item.sizeLabel || item.size || 'Standard' // Map size to sizeLabel
             })),
@@ -168,7 +168,7 @@ const AdminOrdersHistoryPage: React.FC = () => {
         );
     };
 
-    const formatDate = (date: any) => {
+    const formatDate = (date: Date | string | number | null | undefined) => {
         try {
             if (!date) return 'N/A';
             const d = new Date(date);
@@ -319,9 +319,9 @@ const AdminOrdersHistoryPage: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <div className="space-y-1 inline-block text-left">
-                                                    {(order.orderItems || []).slice(0, 2).map((item: any, idx: number) => (
+                                                    {(order.orderItems || []).slice(0, 2).map((item, idx: number) => (
                                                         <div key={idx} className="text-sm text-gray-600 flex items-center gap-2">
-                                                            <span className="font-medium text-gray-900 w-4 text-right">{item.quantity || item.qty || 1}x</span>
+                                                            <span className="font-medium text-gray-900 w-4 text-right">{item.quantity || 1}x</span>
                                                             <span className="truncate max-w-[150px]" title={item.productName}>{item.productName}</span>
                                                         </div>
                                                     ))}
@@ -382,10 +382,10 @@ const AdminOrdersHistoryPage: React.FC = () => {
                                     </div>
 
                                     <div className="bg-gray-50 rounded-lg p-3 space-y-1.5">
-                                        {(order.orderItems || []).map((item: any, idx: number) => (
+                                        {(order.orderItems || []).map((item, idx: number) => (
                                             <div key={idx} className="text-sm text-gray-600 flex justify-between items-center">
                                                 <div className="flex items-center gap-2">
-                                                    <span className="font-medium text-gray-900">{item.quantity || item.qty || 1}x</span>
+                                                    <span className="font-medium text-gray-900">{item.quantity || 1}x</span>
                                                     <span>{item.productName}</span>
                                                 </div>
                                                 {item.price && <span className="text-gray-400 text-xs">₱{item.price}</span>}

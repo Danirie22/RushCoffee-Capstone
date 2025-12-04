@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Facebook, Instagram, Twitter, MapPin, Phone, Mail } from 'lucide-react';
@@ -6,7 +5,7 @@ import RushCoffeeLogo from './RushCoffeeLogo';
 
 const Footer: React.FC = () => {
     return (
-        <footer className="relative bg-[#401a00] text-primary-100">
+        <footer className="relative bg-primary-900 text-primary-100">
             {/* Background Pattern */}
             <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>

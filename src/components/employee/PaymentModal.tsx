@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { X, Banknote, CreditCard, ArrowRight, CheckCircle2, Calculator } from 'lucide-react';
 
+import { PaymentDetails } from '../../types';
+
 interface PaymentModalProps {
     isOpen: boolean;
     onClose: () => void;
     totalAmount: number;
-    onPaymentComplete: (paymentDetails: any) => void;
+    onPaymentComplete: (paymentDetails: PaymentDetails) => void;
 }
 
 type PaymentMethod = 'cash' | 'gcash';

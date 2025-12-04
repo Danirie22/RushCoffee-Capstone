@@ -15,8 +15,11 @@ import ScrollToTop from './components/utils/ScrollToTop';
 import RushCoffeeLogo from './components/layout/RushCoffeeLogo';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import PageLoader from './components/ui/PageLoader';
+import ErrorBoundary from './components/ui/ErrorBoundary';
+import Button from './components/ui/Button';
 import { ReCaptchaProvider } from './context/ReCaptchaContext';
 import ChatBot from './components/common/ChatBot';
+import { UserRole } from './types';
 
 // Lazy load pages
 const HomePage = React.lazy(() => import('./pages/HomePage'));
@@ -35,7 +38,7 @@ const FAQPage = React.lazy(() => import('./pages/Home/FAQPage'));
 const TermsPage = React.lazy(() => import('./pages/Home/TermsPage'));
 const PrivacyPolicyPage = React.lazy(() => import('./pages/Home/PrivacyPolicyPage'));
 const CookiePolicyPage = React.lazy(() => import('./pages/Home/CookiePolicyPage'));
-const DrinkLabPage = React.lazy(() => import('./pages/DrinkLab/DrinkLabPage'));
+
 
 // Admin Pages
 const AdminLayout = React.lazy(() => import('./components/admin/AdminLayout'));
@@ -59,17 +62,21 @@ const ComingSoon: React.FC<{ title: string }> = ({ title }) => {
     return (
         <div className="flex min-h-screen flex-col">
             <Header />
-            <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-primary-50 to-coffee-50">
-                <div className="p-4 text-center">
-                    <RushCoffeeLogo className="mx-auto mb-4 h-16 w-16 text-gray-400 opacity-50" />
-                    <h1 className="mb-4 font-display text-4xl font-bold text-gray-900">
-                        {title}
-                    </h1>
-                    <p className="mb-8 text-gray-600">We're brewing something special. Check back soon!</p>
-                    <Link to="/" className="font-medium text-primary-600 transition-colors hover:text-primary-700">
-                        ← Back to Home
-                    </Link>
+            <main className="flex flex-1 flex-col items-center justify-center bg-gradient-to-br from-primary-50 to-coffee-50 p-6 text-center">
+                <div className="mb-6 rounded-full bg-primary-100 p-6 animate-pulse">
+                    <RushCoffeeLogo className="h-20 w-20 text-primary-600" />
                 </div>
+                <h1 className="mb-2 font-display text-4xl font-bold text-gray-900 md:text-5xl">
+                    {title}
+                </h1>
+                <p className="mb-8 max-w-md text-lg text-gray-600">
+                    We're currently brewing this page. It will be served hot and fresh very soon!
+                </p>
+                <Link to="/">
+                    <Button variant="outline" size="lg">
+                        Back to Home
+                    </Button>
+                </Link>
             </main>
             <Footer />
         </div>
@@ -81,17 +88,21 @@ const NotFound: React.FC = () => {
     return (
         <div className="flex min-h-screen flex-col">
             <Header />
-            <main className="flex flex-1 items-center justify-center bg-gradient-to-br from-primary-50 to-coffee-50">
-                <div className="p-4 text-center">
-                    <RushCoffeeLogo className="mx-auto mb-4 h-16 w-16 text-gray-400 opacity-50" />
-                    <h1 className="mb-4 font-display text-4xl font-bold text-gray-900">
-                        404 - Page Not Found
-                    </h1>
-                    <p className="mb-8 text-gray-600">This coffee blend doesn't exist on our menu. Maybe it got lost in the daily grind?</p>
-                    <Link to="/" className="font-medium text-primary-600 transition-colors hover:text-primary-700">
-                        ← Back to Home
-                    </Link>
+            <main className="flex flex-1 flex-col items-center justify-center bg-gradient-to-br from-primary-50 to-coffee-50 p-6 text-center">
+                <div className="mb-6 rounded-full bg-coffee-100 p-6">
+                    <RushCoffeeLogo className="h-20 w-20 text-coffee-600" />
                 </div>
+                <h1 className="mb-2 font-display text-4xl font-bold text-gray-900 md:text-5xl">
+                    404 - Page Not Found
+                </h1>
+                <p className="mb-8 max-w-md text-lg text-gray-600">
+                    This coffee blend doesn't exist on our menu. Maybe it got lost in the daily grind?
+                </p>
+                <Link to="/">
+                    <Button variant="primary" size="lg">
+                        Return to Home
+                    </Button>
+                </Link>
             </main>
             <Footer />
         </div>
@@ -111,7 +122,8 @@ const AppContent: React.FC = () => {
         selectedItemIds,
         toggleItemSelection,
         selectAllItems,
-        deselectAllItems
+        deselectAllItems,
+        isCartLoading
     } = useCart();
     const navigate = useNavigate();
 
@@ -146,7 +158,7 @@ const AppContent: React.FC = () => {
                     <Route path="/" element={<HomePage />} />
                     <Route path="/about" element={<AboutPage />} />
                     <Route path="/menu" element={<MenuPage />} />
-                    <Route path="/drink-lab" element={<DrinkLabPage />} />
+
                     <Route path="/contact" element={<ContactPage />} />
                     <Route path="/auth/login" element={<LoginPage />} />
                     <Route path="/auth/register" element={<RegisterPage />} />
@@ -177,7 +189,7 @@ const AppContent: React.FC = () => {
                     </Route>
 
                     {/* Employee Routes */}
-                    <Route element={<ProtectedRoute allowedRoles={['employee', 'admin']} />}>
+                    <Route element={<ProtectedRoute allowedRoles={[UserRole.EMPLOYEE, UserRole.ADMIN]} />}>
                         <Route path="/employee" element={<EmployeeLayout />}>
                             <Route index element={<POSDashboard />} />
                             <Route path="pos" element={<POSPage />} />
@@ -202,6 +214,7 @@ const AppContent: React.FC = () => {
                 onToggleItemSelection={toggleItemSelection}
                 onSelectAll={selectAllItems}
                 onDeselectAll={deselectAllItems}
+                isLoading={isCartLoading}
             />
             {editingCartItem && (
                 <ProductCustomizeModal
@@ -229,21 +242,23 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
     return (
-        <AuthProvider>
-            <ReCaptchaProvider>
-                <NotificationProvider>
-                    <ProductProvider>
-                        <OrderProvider>
-                            <CartProvider>
-                                <HashRouter>
-                                    <AppContent />
-                                </HashRouter>
-                            </CartProvider>
-                        </OrderProvider>
-                    </ProductProvider>
-                </NotificationProvider>
-            </ReCaptchaProvider>
-        </AuthProvider>
+        <ErrorBoundary>
+            <AuthProvider>
+                <ReCaptchaProvider>
+                    <NotificationProvider>
+                        <ProductProvider>
+                            <OrderProvider>
+                                <CartProvider>
+                                    <HashRouter>
+                                        <AppContent />
+                                    </HashRouter>
+                                </CartProvider>
+                            </OrderProvider>
+                        </ProductProvider>
+                    </NotificationProvider>
+                </ReCaptchaProvider>
+            </AuthProvider>
+        </ErrorBoundary>
     );
 };
 

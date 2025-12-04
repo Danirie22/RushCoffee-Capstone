@@ -3,9 +3,10 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Loader2, ShieldAlert, Mail } from 'lucide-react';
 import { auth } from '../../firebaseConfig';
+import { UserRole } from '../../types';
 
 interface ProtectedRouteProps {
-    allowedRoles?: Array<'customer' | 'employee' | 'admin'>;
+    allowedRoles?: Array<UserRole | string>;
     redirectTo?: string;
 }
 
@@ -80,7 +81,8 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     }
 
     // Check if user has required role
-    const hasAccess = currentUser.role && allowedRoles.includes(currentUser.role);
+    // We cast currentUser.role to string to compare with allowedRoles which might contain UserRole enum values (which are strings)
+    const hasAccess = currentUser.role && allowedRoles.includes(currentUser.role as UserRole);
 
     if (!hasAccess) {
         // Show unauthorized page for wrong role

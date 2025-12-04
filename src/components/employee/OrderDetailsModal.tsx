@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Clock, User, CreditCard, Package, Check, FileText } from 'lucide-react';
-import { OrderData, OrderItem } from '../../services/orderService';
+import { Order, OrderItem } from '../../types';
 import Badge from '../ui/Badge';
 import { db } from '../../firebaseConfig';
 
 interface OrderDetailsModalProps {
-    order: OrderData & { id: string };
+    order: Order;
     isOpen: boolean;
     onClose: () => void;
     onStatusUpdate?: (orderId: string, newStatus: 'preparing' | 'ready' | 'completed') => void;
@@ -121,10 +121,15 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
 
     if (!isOpen) return null;
 
-    const formatTime = (timestamp: any) => {
+    const formatTime = (timestamp: Date | { toDate: () => Date } | string | number | null | undefined) => {
         if (!timestamp) return '';
         // Handle Firestore Timestamp or standard Date object
-        const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+        let date: Date;
+        if (typeof timestamp === 'object' && timestamp !== null && 'toDate' in timestamp) {
+            date = (timestamp as { toDate: () => Date }).toDate();
+        } else {
+            date = new Date(timestamp as string | number | Date);
+        }
         return date.toLocaleString('en-US', {
             month: 'short',
             day: 'numeric',
@@ -282,7 +287,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                                     <span className="text-gray-600">Method:</span>
                                     <span className="font-medium capitalize">{order.paymentMethod}</span>
                                 </div>
-                                {order.paymentMethod === 'cash' && order.paymentDetails.amountReceived && (
+                                {order.paymentMethod === 'cash' && order.paymentDetails?.amountReceived && (
                                     <>
                                         <div className="flex justify-between">
                                             <span className="text-gray-600">Received:</span>
@@ -290,7 +295,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, isOpen, on
                                         </div>
                                         <div className="flex justify-between">
                                             <span className="text-gray-600">Change:</span>
-                                            <span className="font-medium">₱{(order.paymentDetails.amountReceived - order.subtotal).toFixed(2)}</span>
+                                            <span className="font-medium">₱{(order.paymentDetails.amountReceived - (order.subtotal || 0)).toFixed(2)}</span>
                                         </div>
                                     </>
                                 )}

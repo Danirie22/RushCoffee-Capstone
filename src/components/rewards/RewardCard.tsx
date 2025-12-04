@@ -39,7 +39,12 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, currentPoints, onRedeem
   };
 
   return (
-    <Card className="flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md border border-gray-100 rounded-2xl" hover>
+    <Card
+      className="flex flex-col overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl shadow-md border border-gray-100 rounded-2xl"
+      hover
+      clickable
+      onClick={() => onRedeem(id)}
+    >
       <div className="relative group">
         <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors duration-300 z-10 pointer-events-none"></div>
         <img
@@ -71,13 +76,18 @@ const RewardCard: React.FC<RewardCardProps> = ({ reward, currentPoints, onRedeem
         </div>
 
         <button
-          onClick={() => onRedeem(id)}
-          disabled={!isRedeemable}
-          className={`mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-white shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 
+          onClick={(e) => {
+            e.stopPropagation();
+            onRedeem(id);
+          }}
+          disabled={!available}
+          className={`mt-5 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 
             ${isRedeemable
-              ? 'bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 hover:shadow-lg transform hover:scale-[1.02]'
-              : 'bg-gray-300 cursor-not-allowed text-gray-500'}`}
-          aria-label={isRedeemable ? `Redeem ${name}` : `Cannot redeem ${name}`}
+              ? 'bg-gradient-to-r from-primary-600 to-primary-500 text-white hover:from-primary-700 hover:to-primary-600 hover:shadow-lg transform hover:scale-[1.02]'
+              : available
+                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                : 'bg-gray-300 cursor-not-allowed text-gray-500'}`}
+          aria-label={isRedeemable ? `Redeem ${name}` : `View details for ${name}`}
         >
           {getButtonContent()}
         </button>

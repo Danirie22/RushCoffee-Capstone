@@ -13,7 +13,7 @@ import ProductCustomizeModal from '../../components/menu/ProductCustomizeModal';
 import { Product, ProductSize } from '../../data/mockProducts';
 import { Customizations } from '../../context/CartContext';
 import VoiceSearch from '../../components/common/VoiceSearch';
-import { useSpeech } from '../../hooks/useSpeech';
+
 
 const sortOptionsList = [
     { value: 'default', label: 'Default' },
@@ -49,7 +49,7 @@ const MenuPage: React.FC = () => {
 
     const { addToCart } = useCart();
     const { currentUser } = useAuth();
-    const { speak } = useSpeech();
+
 
     const [isCustomizeModalOpen, setIsCustomizeModalOpen] = React.useState(false);
     const [selectedProduct, setSelectedProduct] = React.useState<Product | null>(null);
@@ -129,27 +129,46 @@ const MenuPage: React.FC = () => {
         }
 
         // Clean up
-        lowerTerm = lowerTerm.replace(/\s+/g, ' ').trim();
-        const fillers = ['please', 'paki', 'ng', 'sa', 'ang', 'yung', 'po', 'order', 'want', 'get', 'have', 'ko'];
+        // Remove punctuation and extra spaces
+        // CHANGED: Replace punctuation with space instead of empty string to handle hyphenated words like "Matcha-Series" -> "Matcha Series"
+        lowerTerm = lowerTerm.replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+        // CHANGED: Added 'category' to fillers
+        const fillers = ['please', 'paki', 'ng', 'sa', 'ang', 'yung', 'po', 'order', 'want', 'get', 'have', 'ko', 'the', 'a', 'an', 'i', 'my', 'for', 'me', 'category', 'show', 'view', 'menu', 'list', 'go', 'to', 'open'];
         const words = lowerTerm.split(' ');
         const filteredWords = words.filter(w => !fillers.includes(w));
         const cleanTerm = filteredWords.join(' ');
 
+        console.log('Voice Search Debug:', { term, lowerTerm, cleanTerm, productsCount: products.length });
+
         // 3. Find Product
+        // Priority 1: Exact Match
         let foundProduct = products.find(p => p.name.toLowerCase() === cleanTerm);
 
+        // Priority 2: Contains Match (Product name contains term OR Term contains product name)
         if (!foundProduct) {
-            foundProduct = products.find(p =>
-                p.name.toLowerCase().includes(cleanTerm) ||
-                p.aliases?.some(alias => alias.toLowerCase().includes(cleanTerm))
-            );
+            foundProduct = products.find(p => {
+                const pName = p.name.toLowerCase();
+                const nameMatch = pName.includes(cleanTerm) || cleanTerm.includes(pName);
+
+                const aliasMatch = p.aliases?.some(alias => {
+                    const lowerAlias = alias.toLowerCase();
+                    return lowerAlias.includes(cleanTerm) || cleanTerm.includes(lowerAlias);
+                });
+
+                return nameMatch || aliasMatch;
+            });
         }
 
+        // Priority 3: Fallback to original lowerTerm if cleanTerm failed
         if (!foundProduct && cleanTerm !== lowerTerm) {
-            foundProduct = products.find(p =>
-                p.name.toLowerCase().includes(lowerTerm) ||
-                p.aliases?.some(alias => alias.toLowerCase().includes(lowerTerm))
-            );
+            foundProduct = products.find(p => {
+                const pName = p.name.toLowerCase();
+                return pName.includes(lowerTerm) || lowerTerm.includes(pName) ||
+                    p.aliases?.some(alias => {
+                        const lowerAlias = alias.toLowerCase();
+                        return lowerAlias.includes(lowerTerm) || lowerTerm.includes(lowerAlias);
+                    });
+            });
         }
 
         return { foundProduct, quantity, targetSizeName, cleanTerm };
@@ -185,20 +204,23 @@ const MenuPage: React.FC = () => {
     const handleVoiceSearch = (term: string) => {
         const lowerTerm = term.toLowerCase();
 
-        // 1. Check for Category Switching
-        const sortedKeys = Object.keys(categoryMap).sort((a, b) => b.length - a.length);
-        const matchedCategoryKey = sortedKeys.find(key => lowerTerm.includes(key));
-        if (matchedCategoryKey) {
-            const categoryName = categoryMap[matchedCategoryKey];
+        // 1. Smart Product Matching with Quantity/Size
+        // PRIORITIZED: Check for product match first to avoid category keyword collisions
+        const { foundProduct, quantity, targetSizeName, cleanTerm } = parseOrderTerm(term);
+
+        // Priority 0: Exact Category Match
+        // This prevents "Matcha Series" from matching "Matcha Latte" (via "matcha" alias)
+        const exactCategoryMatch = Object.keys(categoryMap).find(key => key === cleanTerm);
+
+        console.log('Category Match Debug:', { cleanTerm, exactCategoryMatch, keys: Object.keys(categoryMap) });
+
+        if (exactCategoryMatch) {
+            const categoryName = categoryMap[exactCategoryMatch];
             setSelectedCategory(categoryName);
             setSearchQuery('');
             productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-            speak(`Showing ${categoryName} menu.`);
             return;
         }
-
-        // 2. Smart Product Matching with Quantity/Size
-        const { foundProduct, quantity, targetSizeName } = parseOrderTerm(term);
 
         if (foundProduct) {
             setSelectedProduct(foundProduct);
@@ -214,12 +236,23 @@ const MenuPage: React.FC = () => {
             setInitialQuantity(quantity);
             setIsCustomizeModalOpen(true);
             setSearchQuery('');
-            speak(`I found ${foundProduct.name}. How would you like that?`);
+
+            return;
+        }
+
+        // 2. Check for Category Switching
+        const sortedKeys = Object.keys(categoryMap).sort((a, b) => b.length - a.length);
+        const matchedCategoryKey = sortedKeys.find(key => lowerTerm.includes(key));
+        if (matchedCategoryKey) {
+            const categoryName = categoryMap[matchedCategoryKey];
+            setSelectedCategory(categoryName);
+            setSearchQuery('');
+            productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+
             return;
         }
 
         // 3. Fallback to Standard Search
-        speak(`Searching for ${term}`);
         setSearchQuery(term);
         productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -227,19 +260,6 @@ const MenuPage: React.FC = () => {
     const handleVoiceCommand = (command: string, term: string) => {
         const lowerTerm = term.toLowerCase();
         console.log('Voice command received:', command, 'Term:', lowerTerm);
-
-        // Check for Category Switching
-        const sortedKeys = Object.keys(categoryMap).sort((a, b) => b.length - a.length);
-        const matchedKey = sortedKeys.find(key => lowerTerm === key || lowerTerm.includes(key));
-
-        if (matchedKey) {
-            const categoryName = categoryMap[matchedKey];
-            setSelectedCategory(categoryName);
-            setSearchQuery('');
-            productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-            speak(`Here is our ${categoryName} menu.`);
-            return;
-        }
 
         if (command === 'order') {
             const { foundProduct, quantity, targetSizeName } = parseOrderTerm(term);
@@ -258,16 +278,25 @@ const MenuPage: React.FC = () => {
                 setInitialQuantity(quantity);
                 setIsCustomizeModalOpen(true);
                 setSearchQuery('');
-                speak(`I've selected ${quantity} ${foundProduct.name}. You can customize it now.`);
-            } else {
-                speak(`Sorry, I couldn't find ${term} on the menu.`);
-                setSearchQuery(term);
-                productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+                return;
             }
-        } else {
-            setSearchQuery(term);
-            productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
         }
+
+        // Check for Category Switching
+        const sortedKeys = Object.keys(categoryMap).sort((a, b) => b.length - a.length);
+        const matchedKey = sortedKeys.find(key => lowerTerm === key || lowerTerm.includes(key));
+
+        if (matchedKey) {
+            const categoryName = categoryMap[matchedKey];
+            setSelectedCategory(categoryName);
+            setSearchQuery('');
+            productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+
+            return;
+        }
+
+        setSearchQuery(term);
+        productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
     const categories = React.useMemo(() => {

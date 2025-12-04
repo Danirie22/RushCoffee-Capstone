@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
-import { QueueItem } from '../../context/OrderContext';
+import { Order } from '../../types';
 import { Clock, Coffee, CheckCircle, AlertCircle, XCircle, Play, Trash2, FileText } from 'lucide-react';
 import DigitalReceipt from '../../components/checkout/DigitalReceipt';
 import Card from '../../components/ui/Card';
@@ -13,9 +13,9 @@ import { useProduct } from '../../context/ProductContext';
 type OrderStatus = 'waiting' | 'preparing' | 'ready' | 'completed' | 'cancelled';
 
 const AdminQueuePage: React.FC = () => {
-    const [orders, setOrders] = useState<QueueItem[]>([]);
+    const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
-    const [selectedReceiptOrder, setSelectedReceiptOrder] = useState<QueueItem | null>(null);
+    const [selectedReceiptOrder, setSelectedReceiptOrder] = useState<Order | null>(null);
     const { showToast } = useCart();
     const { products } = useProduct();
     const previousOrderCount = React.useRef(0);
@@ -50,7 +50,7 @@ const AdminQueuePage: React.FC = () => {
                         orderItems: data.orderItems || data.items || [], // Handle legacy data
                         timestamp: data.timestamp?.toDate ? data.timestamp.toDate() : (data.timestamp ? new Date(data.timestamp) : new Date()),
                     };
-                }) as QueueItem[];
+                }) as Order[];
 
                 // Audio Alert for New Orders
                 if (fetchedOrders.length > previousOrderCount.current && previousOrderCount.current !== 0) {
@@ -67,7 +67,7 @@ const AdminQueuePage: React.FC = () => {
 
     const updateOrderStatus = async (orderId: string, newStatus: OrderStatus, reason?: string) => {
         try {
-            const updateData: any = {
+            const updateData: Partial<Order> = {
                 status: newStatus,
                 updatedAt: new Date(),
             };
@@ -110,7 +110,7 @@ const AdminQueuePage: React.FC = () => {
                         const items = orderData.orderItems || orderData.items || [];
                         const productNames: string[] = [];
 
-                        items.forEach((item: any) => {
+                        items.forEach((item) => {
                             productNames.push(item.productName);
                             const productName = item.productName.toLowerCase();
                             if (productName.includes('grande')) {
@@ -137,7 +137,7 @@ const AdminQueuePage: React.FC = () => {
 
                             // Fallback: Calculate from items if total is missing
                             if (!amountToAdd && items.length > 0) {
-                                amountToAdd = items.reduce((sum: number, item: any) => {
+                                amountToAdd = items.reduce((sum: number, item) => {
                                     return sum + (item.price * item.quantity);
                                 }, 0);
                                 console.log(`⚠️ Calculated total from items: ${amountToAdd}`);
@@ -180,7 +180,7 @@ const AdminQueuePage: React.FC = () => {
     const StatusColumn = ({ title, status, icon: Icon, color, nextStatus, actionLabel }: {
         title: string,
         status: OrderStatus,
-        icon: any,
+        icon: React.ElementType,
         color: string,
         nextStatus?: OrderStatus,
         actionLabel?: string

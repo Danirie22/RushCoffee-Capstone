@@ -124,7 +124,7 @@ const CheckoutPage: React.FC = () => {
     // Real-time form validation check
     const isFormValid = React.useMemo(() => {
         const hasValidName = customerInfo.name.trim().length >= 2;
-        const hasValidPhone = /^(09|\+639)\d{9}$/.test(customerInfo.phone);
+        const hasValidPhone = /^\+63 9\d{2} \d{3} \d{4}$/.test(customerInfo.phone);
         const hasPaymentMethod = selectedPaymentMethod !== null;
 
         // If GCash is selected, check for reference and account name
@@ -143,8 +143,8 @@ const CheckoutPage: React.FC = () => {
         if (customerInfo.name.trim().length < 2) {
             newErrors.name = 'Name must be at least 2 characters long.';
         }
-        if (!/^(09|\+639)\d{9}$/.test(customerInfo.phone)) {
-            newErrors.phone = 'Please enter a valid Philippine phone number (e.g., 09xxxxxxxxx).';
+        if (!/^\+63 9\d{2} \d{3} \d{4}$/.test(customerInfo.phone)) {
+            newErrors.phone = 'Please enter a valid PH phone number (+63 9xx xxx xxxx).';
         }
         if (!selectedPaymentMethod) {
             newErrors.payment = 'Please select a payment method.';
@@ -307,9 +307,64 @@ const CheckoutPage: React.FC = () => {
                                             type="tel"
                                             id="phone"
                                             value={customerInfo.phone}
-                                            onChange={e => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                                            onFocus={() => {
+                                                if (!customerInfo.phone) {
+                                                    setCustomerInfo(prev => ({ ...prev, phone: '+63 9' }));
+                                                }
+                                            }}
+                                            onBlur={() => {
+                                                if (customerInfo.phone === '+63 9') {
+                                                    setCustomerInfo(prev => ({ ...prev, phone: '' }));
+                                                }
+                                            }}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+
+                                                // Allow clearing
+                                                if (val === '') {
+                                                    setCustomerInfo({ ...customerInfo, phone: '' });
+                                                    return;
+                                                }
+
+                                                // Strip non-digits
+                                                let digits = val.replace(/\D/g, '');
+
+                                                // Handle leading 0 replacement
+                                                if (digits.startsWith('0')) {
+                                                    digits = '63' + digits.substring(1);
+                                                }
+
+                                                // Ensure starts with 63
+                                                if (!digits.startsWith('63')) {
+                                                    digits = '63' + digits;
+                                                }
+
+                                                // Ensure starts with 639
+                                                if (digits.length >= 2 && digits[2] !== '9') {
+                                                    digits = '639' + digits.substring(2);
+                                                } else if (digits.length === 2) {
+                                                    digits = '639';
+                                                }
+
+                                                // Max 12 digits (63 + 10 digits)
+                                                digits = digits.substring(0, 12);
+
+                                                // Format as +63 9xx xxx xxxx
+                                                let formatted = '+63';
+                                                if (digits.length > 2) {
+                                                    formatted += ' ' + digits.substring(2, 5);
+                                                }
+                                                if (digits.length > 5) {
+                                                    formatted += ' ' + digits.substring(5, 8);
+                                                }
+                                                if (digits.length > 8) {
+                                                    formatted += ' ' + digits.substring(8, 12);
+                                                }
+
+                                                setCustomerInfo({ ...customerInfo, phone: formatted });
+                                            }}
                                             className="block w-full rounded-lg border-gray-200 bg-gray-50 py-2.5 pl-10 text-gray-900 shadow-sm transition-all focus:border-primary-500 focus:bg-white focus:ring-primary-500"
-                                            placeholder="09171234567"
+                                            placeholder="+63 9xx xxx xxxx"
                                         />
                                     </div>
                                     {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}

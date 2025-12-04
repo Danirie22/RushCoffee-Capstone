@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
-import { Gift, Loader2, Check, ClipboardCopy, AlertCircle, Sparkles } from 'lucide-react';
+import { Gift, Loader2, Check, ClipboardCopy, AlertCircle, Sparkles, Lock } from 'lucide-react';
 // FIX: Use compat import for v8 syntax.
 import firebase from 'firebase/compat/app';
 import { db } from '../../firebaseConfig';
@@ -13,7 +13,7 @@ import Modal from '../../components/ui/Modal';
 import RewardsTierBadge from '../../components/rewards/RewardsTierBadge';
 import RewardCard from '../../components/rewards/RewardCard';
 import RewardsHistory from '../../components/rewards/RewardsHistory';
-import CoffeeGarden from '../../components/rewards/CoffeeGarden';
+
 import ProductCardSkeleton from '../../components/menu/ProductCardSkeleton';
 import { tierThresholds, AvailableReward } from '../../data/mockRewards';
 import { mockAvailableRewards } from '../../data/mockAvailableRewards';
@@ -241,20 +241,6 @@ const RewardsPage: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Coffee Garden Section */}
-                        <div className="mt-12 max-w-2xl mx-auto">
-                            <div className="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20">
-                                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                    <Sparkles className="w-5 h-5 text-yellow-300" />
-                                    Your Coffee Garden
-                                </h3>
-                                <CoffeeGarden points={currentUser.currentPoints} />
-                                <p className="text-center text-primary-100 text-sm mt-4">
-                                    Grow your plant by earning points! Harvest cherries for special rewards.
-                                </p>
-                            </div>
-                        </div>
                     </div>
                 </section>
 
@@ -331,20 +317,35 @@ const RewardsPage: React.FC = () => {
             <Footer />
 
             {/* Enhanced Modal */}
-            <Modal isOpen={isRedeemModalOpen} onClose={closeRedeemModal} title={redeemCode ? '🎉 Reward Claimed!' : `Redeem: ${selectedReward?.name || ''}`}>
+            <Modal isOpen={isRedeemModalOpen} onClose={closeRedeemModal} title={redeemCode ? '🎉 Reward Claimed!' : (selectedReward && currentUser && currentUser.currentPoints < selectedReward.pointsCost ? 'Keep Earning!' : `Redeem: ${selectedReward?.name || ''}`)}>
                 {!redeemCode ? (
-                    <>
-                        <p className="text-center text-gray-600 text-lg leading-relaxed">
-                            Are you sure you want to spend <span className="font-bold text-primary-600 text-xl">{selectedReward?.pointsCost} points</span> to redeem this reward?
-                        </p>
-                        <div className="mt-8 flex justify-end gap-3">
-                            <Button variant="ghost" onClick={closeRedeemModal}>Cancel</Button>
-                            <Button onClick={handleRedeem} disabled={isRedeeming}>
-                                {isRedeeming ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
-                                Confirm
+                    selectedReward && currentUser && currentUser.currentPoints < selectedReward.pointsCost ? (
+                        <div className="text-center py-4">
+                            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-yellow-100 mb-4">
+                                <Lock className="h-8 w-8 text-yellow-600" />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Not Enough Points</h3>
+                            <p className="text-gray-600 mb-6 max-w-xs mx-auto">
+                                You need <span className="font-bold text-primary-600">{selectedReward.pointsCost - currentUser.currentPoints} more points</span> to redeem this reward.
+                            </p>
+                            <Button onClick={closeRedeemModal} className="w-full sm:w-auto min-w-[120px]">
+                                Got it
                             </Button>
                         </div>
-                    </>
+                    ) : (
+                        <>
+                            <p className="text-center text-gray-600 text-lg leading-relaxed">
+                                Are you sure you want to spend <span className="font-bold text-primary-600 text-xl">{selectedReward?.pointsCost} points</span> to redeem this reward?
+                            </p>
+                            <div className="mt-8 flex justify-end gap-3">
+                                <Button variant="ghost" onClick={closeRedeemModal}>Cancel</Button>
+                                <Button onClick={handleRedeem} disabled={isRedeeming}>
+                                    {isRedeeming ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+                                    Confirm
+                                </Button>
+                            </div>
+                        </>
+                    )
                 ) : (
                     <div className="text-center">
                         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-green-100 to-green-200 shadow-lg">

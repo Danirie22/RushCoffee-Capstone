@@ -1,15 +1,12 @@
-
 import * as React from 'react';
 import { db } from '../firebaseConfig';
 import { Product, ProductSize } from '../data/mockProducts';
 import { useAuth } from './AuthContext';
 import { useProduct } from './ProductContext';
+import { debounce } from 'lodash';
+import { Customizations } from '../types';
 
-export interface Customizations {
-  sugarLevel?: string;
-  iceLevel?: string;
-  toppings?: string[];
-}
+export type { Customizations };
 
 export interface CartItem {
   id: string; // Composite ID: `${product.id}-${selectedSize.name}-${customizationString}`
@@ -142,38 +139,45 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   }, [currentUser, products, productsLoading, showToast]);
 
 
-  const updateFirestoreCart = React.useCallback(async (newCart: CartItem[]) => {
-    if (!currentUser) return;
-    try {
-      const userDocRef = db.collection('users').doc(currentUser.uid);
-      const firestoreCart: FirestoreCartItem[] = newCart.map(item => {
-        // Clean customizations to remove undefined values (Firestore doesn't accept them)
-        const cleanCustomizations: Partial<Customizations> = {};
-        if (item.customizations) {
-          if (item.customizations.sugarLevel !== undefined) {
-            cleanCustomizations.sugarLevel = item.customizations.sugarLevel;
+  // Debounced Firestore update
+  const debouncedUpdateFirestore = React.useMemo(
+    () => debounce(async (newCart: CartItem[], userId: string) => {
+      try {
+        const userDocRef = db.collection('users').doc(userId);
+        const firestoreCart: FirestoreCartItem[] = newCart.map(item => {
+          // Clean customizations to remove undefined values (Firestore doesn't accept them)
+          const cleanCustomizations: Partial<Customizations> = {};
+          if (item.customizations) {
+            if (item.customizations.sugarLevel !== undefined) {
+              cleanCustomizations.sugarLevel = item.customizations.sugarLevel;
+            }
+            if (item.customizations.iceLevel !== undefined) {
+              cleanCustomizations.iceLevel = item.customizations.iceLevel;
+            }
+            if (item.customizations.toppings !== undefined) {
+              cleanCustomizations.toppings = item.customizations.toppings;
+            }
           }
-          if (item.customizations.iceLevel !== undefined) {
-            cleanCustomizations.iceLevel = item.customizations.iceLevel;
-          }
-          if (item.customizations.toppings !== undefined) {
-            cleanCustomizations.toppings = item.customizations.toppings;
-          }
-        }
 
-        return {
-          productId: item.product.id,
-          sizeName: item.selectedSize.name,
-          quantity: item.quantity,
-          ...(Object.keys(cleanCustomizations).length > 0 && { customizations: cleanCustomizations as Customizations })
-        };
-      });
-      await userDocRef.set({ cart: firestoreCart }, { merge: true });
-    } catch (error) {
-      console.error("Error updating Firestore cart:", error);
-      showToast("Error saving your cart.");
-    }
-  }, [currentUser, showToast]);
+          return {
+            productId: item.product.id,
+            sizeName: item.selectedSize.name,
+            quantity: item.quantity,
+            ...(Object.keys(cleanCustomizations).length > 0 && { customizations: cleanCustomizations as Customizations })
+          };
+        });
+        await userDocRef.set({ cart: firestoreCart }, { merge: true });
+      } catch (error) {
+        console.error("Error updating Firestore cart:", error);
+      }
+    }, 1000), // 1 second debounce
+    []
+  );
+
+  const updateFirestoreCart = React.useCallback((newCart: CartItem[]) => {
+    if (!currentUser) return;
+    debouncedUpdateFirestore(newCart, currentUser.uid);
+  }, [currentUser, debouncedUpdateFirestore]);
 
   const totalCartItems = React.useMemo(() => {
     return cartItems.reduce((total, item) => total + item.quantity, 0);

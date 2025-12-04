@@ -65,10 +65,26 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
                 return;
             }
 
-            const productList = productSnapshot.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            })) as Product[];
+            const productList = productSnapshot.docs.map(doc => {
+                const data = doc.data();
+                const mockProduct = mockProducts.find(p => p.id === doc.id);
+
+                // Always use the latest aliases and recipe from code (mockProducts)
+                // This ensures search and ingredients are always up to date without waiting for DB sync
+                if (mockProduct) {
+                    return {
+                        id: doc.id,
+                        ...data,
+                        aliases: mockProduct.aliases,
+                        recipe: mockProduct.recipe
+                    };
+                }
+
+                return {
+                    id: doc.id,
+                    ...data
+                };
+            }) as Product[];
 
             setProducts(productList);
 
@@ -81,15 +97,26 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
             mockProducts.forEach(mockProduct => {
                 const firestoreProduct = productList.find(p => p.id === mockProduct.id);
                 if (firestoreProduct) {
-                    // Check if recipe is different
+                    // Check if recipe or aliases are different
                     const currentRecipe = JSON.stringify(firestoreProduct.recipe || []);
                     const newRecipe = JSON.stringify(mockProduct.recipe || []);
 
+                    const currentAliases = JSON.stringify(firestoreProduct.aliases || []);
+                    const newAliases = JSON.stringify(mockProduct.aliases || []);
+
+                    const updates: any = {};
                     if (currentRecipe !== newRecipe) {
+                        updates.recipe = mockProduct.recipe;
+                    }
+                    if (currentAliases !== newAliases) {
+                        updates.aliases = mockProduct.aliases;
+                    }
+
+                    if (Object.keys(updates).length > 0) {
                         const ref = productsCollectionRef.doc(mockProduct.id);
-                        batch.update(ref, { recipe: mockProduct.recipe });
+                        batch.update(ref, updates);
                         hasUpdates = true;
-                        console.log(`Syncing recipe for ${mockProduct.name}`);
+                        console.log(`Syncing updates for ${mockProduct.name}`);
                     }
                 }
             });

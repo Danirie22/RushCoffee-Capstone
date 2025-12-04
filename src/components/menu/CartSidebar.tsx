@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Minus, Plus, Trash2, ArrowRight, Coffee, Check } from 'lucide-react';
+import { X, Minus, Plus, Trash2, ArrowRight, Coffee, Check, Loader2 } from 'lucide-react';
 import { Product, ProductSize } from '../../data/mockProducts';
 import Badge from '../ui/Badge';
 import RushCoffeeLogo from '../layout/RushCoffeeLogo';
@@ -20,6 +20,7 @@ interface CartSidebarProps {
   onToggleItemSelection: (cartItemId: string) => void;
   onSelectAll: () => void;
   onDeselectAll: () => void;
+  isLoading?: boolean;
 }
 
 const CartSidebar: React.FC<CartSidebarProps> = ({
@@ -34,6 +35,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
   onToggleItemSelection,
   onSelectAll,
   onDeselectAll,
+  isLoading = false,
 }) => {
   const navigate = useNavigate();
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -82,7 +84,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 right-0 z-50 h-full w-full transform bg-white shadow-2xl transition-transform duration-300 ease-in-out sm:w-96 md:w-[450px] ${isOpen ? 'translate-x-0' : 'translate-x-full'
+        className={`fixed top-0 right-0 z-[60] h-full w-full transform bg-white shadow-2xl transition-transform duration-300 ease-in-out sm:w-96 md:w-[450px] ${isOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         role="dialog"
         aria-modal="true"
@@ -109,7 +111,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
           </header>
 
           {/* Select All Checkbox */}
-          {cartItems.length > 0 && (
+          {!isLoading && cartItems.length > 0 && (
             <div className="border-b border-gray-200 px-6 py-3 bg-gray-50/50 backdrop-blur-sm sticky top-0 z-10">
               <label className="flex items-center gap-3 cursor-pointer group select-none">
                 <div className="relative flex items-center justify-center h-5 w-5">
@@ -140,7 +142,12 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
           )}
 
           {/* Cart Items or Empty State */}
-          {cartItems.length === 0 ? (
+          {isLoading ? (
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
+              <Loader2 className="h-12 w-12 animate-spin text-primary-600" />
+              <p className="text-gray-500">Loading your cart...</p>
+            </div>
+          ) : cartItems.length === 0 ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center">
               <RushCoffeeLogo className="h-24 w-24 text-gray-300 opacity-50" />
               <h3 className="text-lg font-semibold text-gray-800">Your cart is empty</h3>
@@ -282,7 +289,7 @@ const CartSidebar: React.FC<CartSidebarProps> = ({
           )}
 
           {/* Footer */}
-          {cartItems.length > 0 && (
+          {!isLoading && cartItems.length > 0 && (
             <footer className="mt-auto border-t border-gray-200 p-6 bg-gray-50/50">
               <div className="flex items-center justify-between">
                 <span className="text-base font-medium text-gray-600">Subtotal</span>

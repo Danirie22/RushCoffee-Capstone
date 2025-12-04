@@ -30,10 +30,12 @@ html {
 
 .animate-fade-in {
     animation: fade-in 0.2s ease-out;
+    will-change: opacity;
 }
 
 .animate-scale-in {
     animation: scale-in 0.2s ease-out;
+    will-change: opacity, transform;
 }
 
 /* Custom Scrollbar */
@@ -59,4 +61,11 @@ html {
 /* Visible when hovering over the scrollbar itself */
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #cbd5e1;
+}
+
+/* Performance Optimizations */
+.gpu-accelerated {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
 }

@@ -3,36 +3,10 @@ import * as React from 'react';
 import firebase from 'firebase/compat/app';
 import { db } from '../firebaseConfig';
 import { useAuth } from './AuthContext';
-import { Customizations } from './CartContext';
 import { useNotification } from './NotificationContext';
+import { Order } from '../types';
 
-export interface QueueItem {
-    id: string; // Firestore document ID
-    userId: string;
-    customerName: string;
-    orderNumber: string;
-    position: number;
-    status: 'waiting' | 'preparing' | 'ready' | 'completed' | 'cancelled';
-    orderItems: Array<{
-        productId: string;
-        productName: string;
-        quantity: number;
-        price: number;
-        customizations?: Customizations;
-        size?: string;
-        category?: string;
-    }>;
-    totalAmount: number;
-    paymentMethod: 'gcash' | 'cash';
-    paymentStatus: 'pending' | 'paid' | 'failed';
-    receiptUrl?: string;
-    paymentReference?: string;
-    paymentAccountName?: string;
-    timestamp: Date;
-    estimatedTime: number; // in minutes
-    cancellationReason?: string;
-    orderType?: 'online' | 'walk-in';
-}
+export type QueueItem = Order;
 
 interface OrderContextType {
     activeOrder: QueueItem | null;

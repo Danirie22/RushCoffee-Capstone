@@ -4,48 +4,7 @@ import firebase from 'firebase/compat/app';
 import { auth, db } from '../firebaseConfig';
 import { QueueItem } from './OrderContext';
 import { AvailableReward, tierThresholds } from '../data/mockRewards';
-
-export interface RewardHistory {
-    id: string;
-    type: 'earned' | 'redeemed';
-    points: number;
-    description: string;
-    date: Date;
-}
-export interface UserPreferences {
-    notifications: {
-        push: boolean;
-        emailUpdates: boolean;
-        marketing: boolean;
-    };
-    theme: 'light' | 'dark' | 'auto';
-    privacy: {
-        shareUsageData: boolean;
-        personalizedRecs: boolean;
-    };
-}
-
-export interface UserProfile {
-    uid: string;
-    email: string | null;
-    displayName?: string;
-    firstName: string;
-    lastName: string;
-    phone?: string;
-    photoURL?: string;
-    createdAt: Date;
-    role?: 'customer' | 'employee' | 'admin';
-    loyaltyPoints?: number;
-    // Stats & Rewards
-    totalOrders: number;
-    totalSpent: number;
-    currentPoints: number;
-    lifetimePoints: number;
-    tier: 'bronze' | 'silver' | 'gold';
-    rewardsHistory: RewardHistory[];
-    preferences: UserPreferences;
-    cart?: any[]; // To hold cart data in Firestore
-}
+import { UserProfile, UserRole, RewardHistory, UserPreferences } from '../types';
 
 interface AuthContextType {
     currentUser: UserProfile | null;
@@ -110,7 +69,7 @@ const fetchUserProfile = async (uid: string): Promise<UserProfile> => {
             phone: authUser.phoneNumber || '',
             photoURL: authUser.photoURL || undefined,
             createdAt: new Date(),
-            role: 'customer',  // Default role for existing auth users
+            role: UserRole.CUSTOMER,  // Default role for existing auth users
             totalOrders: 0,
             totalSpent: 0,
             currentPoints: 0, // No welcome bonus for backfilled users
@@ -239,7 +198,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                             firstName: 'User',
                             lastName: '',
                             createdAt: new Date(),
-                            role: 'customer',
+                            role: UserRole.CUSTOMER,
                             totalOrders: 0,
                             totalSpent: 0,
                             currentPoints: 0,
@@ -286,7 +245,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             lastName,
             phone: phone || '',
             createdAt: new Date(),
-            role: 'customer',
+            role: UserRole.CUSTOMER,
             totalOrders: 0,
             totalSpent: 0,
             currentPoints: 25,
@@ -326,7 +285,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 lastName,
                 photoURL: user.photoURL || undefined,
                 createdAt: new Date(),
-                role: 'customer',
+                role: UserRole.CUSTOMER,
                 totalOrders: 0,
                 totalSpent: 0,
                 currentPoints: 25,
@@ -366,7 +325,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 lastName,
                 photoURL: user.photoURL || undefined,
                 createdAt: new Date(),
-                role: 'customer',
+                role: UserRole.CUSTOMER,
                 totalOrders: 0,
                 totalSpent: 0,
                 currentPoints: 25,
@@ -388,7 +347,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             const verificationCode = '123456';
             sessionStorage.setItem(`dev_verification_code_${userId}`, verificationCode);
             sessionStorage.setItem('requires2FA', 'true');
-            return { needsVerification: true, userId, email, role: 'customer' };
+            return { needsVerification: true, userId, email, role: UserRole.CUSTOMER };
         }
 
         const persistence = rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
@@ -421,7 +380,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
                 const userDoc = await db.collection('users').doc(userId).get();
                 role = userDoc.data()?.role;
             } catch (e) {
-                role = 'customer';
+                role = UserRole.CUSTOMER;
             }
 
             return { needsVerification: true, userId, email, role };

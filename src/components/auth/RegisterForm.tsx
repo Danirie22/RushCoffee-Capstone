@@ -164,9 +164,9 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
 
             // PH Phone Number Validation
             if (formData.phone) {
-                const phoneRegex = /^(09|\+639)\d{9}$/;
+                const phoneRegex = /^\+63 9\d{2} \d{3} \d{4}$/;
                 if (!phoneRegex.test(formData.phone)) {
-                    setFieldErrors(prev => ({ ...prev, phone: 'Please enter a valid PH phone number (e.g., 09xxxxxxxxx).' }));
+                    setFieldErrors(prev => ({ ...prev, phone: 'Please enter a valid PH phone number (+63 9xx xxx xxxx).' }));
                     setIsLoading(false);
                     return;
                 }
@@ -321,7 +321,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                                 type="text"
                                 required
                                 value={formData.firstName}
-                                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, firstName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                 className="w-full pl-12 pr-4 py-3.5 bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all placeholder:text-gray-400"
                                 placeholder="Enter first name"
                             />
@@ -335,7 +335,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                                 type="text"
                                 required
                                 value={formData.lastName}
-                                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                onChange={(e) => setFormData({ ...formData, lastName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
                                 className="w-full pl-12 pr-4 py-3.5 bg-primary-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:bg-white transition-all placeholder:text-gray-400"
                                 placeholder="Enter last name"
                             />
@@ -387,12 +387,66 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                             name="phone"
                             autoComplete="off"
                             value={formData.phone}
+                            onFocus={() => {
+                                if (!formData.phone) {
+                                    setFormData(prev => ({ ...prev, phone: '+63 9' }));
+                                }
+                            }}
+                            onBlur={() => {
+                                if (formData.phone === '+63 9') {
+                                    setFormData(prev => ({ ...prev, phone: '' }));
+                                }
+                            }}
                             onChange={(e) => {
-                                setFormData({ ...formData, phone: e.target.value });
+                                const val = e.target.value;
+
+                                // Allow clearing
+                                if (val === '') {
+                                    setFormData({ ...formData, phone: '' });
+                                    if (fieldErrors.phone) setFieldErrors(prev => ({ ...prev, phone: '' }));
+                                    return;
+                                }
+
+                                // Strip non-digits
+                                let digits = val.replace(/\D/g, '');
+
+                                // Handle leading 0 replacement
+                                if (digits.startsWith('0')) {
+                                    digits = '63' + digits.substring(1);
+                                }
+
+                                // Ensure starts with 63
+                                if (!digits.startsWith('63')) {
+                                    digits = '63' + digits;
+                                }
+
+                                // Ensure starts with 639
+                                if (digits.length >= 2 && digits[2] !== '9') {
+                                    digits = '639' + digits.substring(2);
+                                } else if (digits.length === 2) {
+                                    digits = '639';
+                                }
+
+                                // Max 12 digits (63 + 10 digits)
+                                digits = digits.substring(0, 12);
+
+                                // Format as +63 9xx xxx xxxx
+                                let formatted = '+63 9';
+                                if (digits.length > 2) {
+                                    formatted += ' ' + digits.substring(2, 5);
+                                }
+                                if (digits.length > 5) {
+                                    formatted += ' ' + digits.substring(5, 8);
+                                }
+                                if (digits.length > 8) {
+                                    formatted += ' ' + digits.substring(8, 12);
+                                }
+
+                                setFormData({ ...formData, phone: formatted });
                                 if (fieldErrors.phone) setFieldErrors(prev => ({ ...prev, phone: '' }));
                             }}
                             className={`w-full pl-12 pr-4 py-3.5 bg-primary-50 border ${fieldErrors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-200 focus:ring-primary-500'} rounded-xl focus:outline-none focus:ring-2 focus:bg-white transition-all placeholder:text-gray-400`}
-                            placeholder="09xxxxxxxxx"
+                            placeholder="+63 9xx xxx xxxx"
                         />
                     </div>
                     {fieldErrors.phone && (

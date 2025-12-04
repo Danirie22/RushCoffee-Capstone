@@ -46,6 +46,7 @@ export const mockProducts: Product[] = [
     stock: 99,
     popular: true,
     displayOrder: 1,
+    aliases: ['spanish', 'spanish coffee'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 150 },
@@ -86,6 +87,7 @@ export const mockProducts: Product[] = [
     stock: 99,
     popular: true,
     displayOrder: 3,
+    aliases: ['caramel mocha', 'caramel choco', 'caramel chocolate'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 150 },
@@ -106,6 +108,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 4,
+    aliases: ['dark mocha', 'dark chocolate', 'dark choco'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 150 },
@@ -125,6 +128,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 5,
+    aliases: ['mocha', 'chocolate latte', 'choco latte'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 180 },
@@ -144,6 +148,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 6,
+    aliases: ['black coffee', 'cafe americano'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'hot-water', quantity: 220 },
@@ -162,6 +167,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 7,
+    aliases: ['biscoff', 'cookie butter latte'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 170 },
@@ -181,7 +187,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 8,
-    aliases: ['reese', "reese's", 'reeses'],
+    aliases: ['reese', "reese's", 'reeses', 'rhys', 'rhys latte'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 160 },
@@ -202,6 +208,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 9,
+    aliases: ['brown sugar', 'brown sugar coffee'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 180 },
@@ -241,6 +248,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 11,
+    aliases: ['orange coffee', 'orange'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 170 },
@@ -260,6 +268,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 12,
+    aliases: ['jelly', 'coffee jelly drink'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'milk', quantity: 150 },
@@ -282,6 +291,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 13,
+    aliases: ['red velvet cake drink', 'red velvet latte'],
     recipe: [
       { ingredientId: 'milk', quantity: 200 },
       { ingredientId: 'red-velvet-powder', quantity: 25 },
@@ -302,6 +312,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 14,
+    aliases: ['red velvet matcha', 'matcha red velvet'],
     recipe: [
       { ingredientId: 'milk', quantity: 180 },
       { ingredientId: 'matcha-powder', quantity: 5 },
@@ -322,6 +333,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 15,
+    aliases: ['chocolate milk', 'choco milk', 'milky chocolate'],
     recipe: [
       { ingredientId: 'milk', quantity: 220 },
       { ingredientId: 'chocolate-sauce', quantity: 30 },
@@ -340,6 +352,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 16,
+    aliases: ['strawberry milk drink', 'pink milk'],
     recipe: [
       { ingredientId: 'milk', quantity: 200 },
       { ingredientId: 'strawberry-puree', quantity: 50 },
@@ -358,6 +371,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 17,
+    aliases: ['biscoff milk', 'biscoff drink'],
     recipe: [
       { ingredientId: 'milk', quantity: 200 },
       { ingredientId: 'biscoff-spread', quantity: 35 },
@@ -376,6 +390,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 18,
+    aliases: ['oreo', 'cookies and cream', 'oreo drink'],
     recipe: [
       { ingredientId: 'milk', quantity: 180 },
       { ingredientId: 'oreo-crumbs', quantity: 40 },
@@ -398,6 +413,7 @@ export const mockProducts: Product[] = [
     stock: 99,
     popular: true,
     displayOrder: 19,
+    aliases: ['green tea latte', 'matcha'],
     recipe: [
       { ingredientId: 'matcha-powder', quantity: 5 },
       { ingredientId: 'milk', quantity: 200 },
@@ -416,6 +432,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 20,
+    aliases: ['strawberry green tea', 'pink matcha'],
     recipe: [
       { ingredientId: 'matcha-powder', quantity: 5 },
       { ingredientId: 'milk', quantity: 180 },
@@ -435,6 +452,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 21,
+    aliases: ['matcha cheese', 'cheese matcha'],
     recipe: [
       { ingredientId: 'matcha-powder', quantity: 5 },
       { ingredientId: 'milk', quantity: 180 },
@@ -454,6 +472,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 22,
+    aliases: ['oreo matcha', 'matcha cookies'],
     recipe: [
       { ingredientId: 'matcha-powder', quantity: 5 },
       { ingredientId: 'milk', quantity: 180 },
@@ -475,7 +494,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 23,
-    aliases: ['flamingo', 'flamango', 'overload'],
+    aliases: ['flamingo', 'flamango', 'overload', 'flamango overload', 'flamango overload shake'],
     recipe: [
       { ingredientId: 'mango-puree', quantity: 100 },
       { ingredientId: 'strawberry-puree', quantity: 50 },
@@ -496,7 +515,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 24,
-    aliases: ['mango berry'],
+    aliases: ['mango berry', 'mango berry shake'],
     recipe: [
       { ingredientId: 'mango-puree', quantity: 80 },
       { ingredientId: 'mixed-berries', quantity: 50 },
@@ -517,6 +536,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 25,
+    aliases: ['mango caramel', 'caramel mango'],
     recipe: [
       { ingredientId: 'mango-puree', quantity: 100 },
       { ingredientId: 'caramel-sauce', quantity: 20 },
@@ -537,6 +557,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 26,
+    aliases: ['blueberry', 'blueberry drink'],
     recipe: [
       { ingredientId: 'blueberry-puree', quantity: 100 },
       { ingredientId: 'ice-cubes', quantity: 120 },
@@ -556,6 +577,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 27,
+    aliases: ['strawberry', 'strawberry drink'],
     recipe: [
       { ingredientId: 'strawberry-puree', quantity: 100 },
       { ingredientId: 'ice-cubes', quantity: 120 },
@@ -575,6 +597,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 28,
+    aliases: ['green apple', 'apple shake'],
     recipe: [
       { ingredientId: 'green-apple-puree', quantity: 100 },
       { ingredientId: 'ice-cubes', quantity: 120 },
