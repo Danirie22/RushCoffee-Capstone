@@ -47,6 +47,7 @@ const AdminQueuePage = React.lazy(() => import('./pages/Admin/AdminQueuePage'));
 const AdminInventoryPage = React.lazy(() => import('./pages/Admin/AdminInventoryPage'));
 const AdminProductsPage = React.lazy(() => import('./pages/Admin/AdminProductsPage'));
 const AdminAnalyticsPage = React.lazy(() => import('./pages/Admin/AdminAnalyticsPage'));
+const AdminMessagesPage = React.lazy(() => import('./pages/Admin/AdminMessagesPage'));
 const AdminFeedbackPage = React.lazy(() => import('./pages/Admin/AdminFeedbackPage'));
 const AdminSettingsPage = React.lazy(() => import('./pages/Admin/AdminSettingsPage'));
 const AdminOrdersHistoryPage = React.lazy(() => import('./pages/Admin/AdminOrdersHistoryPage'));
@@ -183,6 +184,7 @@ const AppContent: React.FC = () => {
                             <Route path="inventory" element={<AdminInventoryPage />} />
                             <Route path="products" element={<AdminProductsPage />} />
                             <Route path="analytics" element={<AdminAnalyticsPage />} />
+                            <Route path="messages" element={<AdminMessagesPage />} />
                             <Route path="feedback" element={<AdminFeedbackPage />} />
                             <Route path="settings" element={<AdminSettingsPage />} />
                         </Route>

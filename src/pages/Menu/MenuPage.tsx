@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Search, ArrowUpDown, Check, AlertCircle, X } from 'lucide-react';
+import { Search, ArrowUpDown, Check, AlertCircle, X, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import Header from '../../components/layout/Header';
@@ -9,6 +9,7 @@ import ProductCardSkeleton from '../../components/menu/ProductCardSkeleton';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useProduct } from '../../context/ProductContext';
+import { useOrder } from '../../context/OrderContext';
 import ProductCustomizeModal from '../../components/menu/ProductCustomizeModal';
 import { Product, ProductSize } from '../../data/mockProducts';
 import { Customizations } from '../../context/CartContext';
@@ -49,6 +50,7 @@ const MenuPage: React.FC = () => {
 
     const { addToCart } = useCart();
     const { currentUser } = useAuth();
+    const { orderHistory } = useOrder();
 
 
     const [isCustomizeModalOpen, setIsCustomizeModalOpen] = React.useState(false);
@@ -77,6 +79,26 @@ const MenuPage: React.FC = () => {
             }
         }
     };
+
+    // Calculate Favorites
+    const favorites = React.useMemo(() => {
+        if (!currentUser || orderHistory.length === 0) return [];
+
+        const counts: Record<string, number> = {};
+        orderHistory.forEach(order => {
+            if (order.status === 'cancelled') return;
+            order.orderItems.forEach(item => {
+                counts[item.productId] = (counts[item.productId] || 0) + 1;
+            });
+        });
+
+        const topIds = Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 4)
+            .map(([id]) => id);
+
+        return products.filter(p => topIds.includes(p.id));
+    }, [currentUser, orderHistory, products]);
 
     // Helper to parse voice term for quantity, size, and product
     const parseOrderTerm = (term: string) => {
@@ -435,6 +457,34 @@ const MenuPage: React.FC = () => {
                         </div>
                     </div>
                 </section>
+
+                {/* Favorites Section (AI Recommendation) */}
+                {favorites.length > 0 && !searchQuery && selectedCategory === 'All' && (
+                    <section className="bg-white px-6 py-12 border-b border-gray-100 animate-fade-in-up">
+                        <div className="container mx-auto max-w-7xl">
+                            <div className="flex items-center gap-2 mb-6">
+                                <Sparkles className="h-6 w-6 text-amber-500" />
+                                <h2 className="text-2xl font-bold text-gray-900 font-display">Your Favorites & Recommendations</h2>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4 sm:gap-6 sm:grid-cols-2 md:grid-cols-4">
+                                {favorites.map(product => (
+                                    <div key={`fav-${product.id}`} className="flex">
+                                        <ProductCard
+                                            product={product}
+                                            onAddToCart={handleAddToCart}
+                                            onProductClick={(product, size) => {
+                                                setSelectedProduct(product);
+                                                setSelectedSize(size);
+                                                setIsCustomizeModalOpen(true);
+                                            }}
+                                            isLoggedIn={!!currentUser}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                )}
 
                 {/* Category Filters */}
                 <div className="sticky top-16 z-20 border-b border-gray-200 bg-white/95 py-3 backdrop-blur-sm sm:top-20">

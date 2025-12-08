@@ -73,14 +73,12 @@ const QueuePage: React.FC = () => {
 
     // Determine which order to display (Prioritize Undismissed Completed Order -> Then Active Order)
     const displayOrder = React.useMemo(() => {
-        // 1. Check for any completed order that hasn't been dismissed yet
-        // We look for the most recent one first (since history is sorted desc)
-        const undismissedCompleted = orderHistory.find(
-            order => order.status === 'completed' && !dismissedOrderIds.includes(order.id)
-        );
+        // 1. Check for the MOST RECENT completed order that hasn't been dismissed yet
+        // We only care about the very latest completed order to prevent "stacking" modals for old history
+        const mostRecentCompleted = orderHistory.find(order => order.status === 'completed');
 
-        if (undismissedCompleted) {
-            return undismissedCompleted;
+        if (mostRecentCompleted && !dismissedOrderIds.includes(mostRecentCompleted.id)) {
+            return mostRecentCompleted;
         }
 
         // 2. If no completed order needs attention, show active order

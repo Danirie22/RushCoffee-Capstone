@@ -1,13 +1,17 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, X, Send, Minimize2, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { db } from '../../firebaseConfig';
+import firebase from 'firebase/compat/app';
+import { useAuth } from '../../context/AuthContext';
 
 interface Message {
     id: string;
     text: string;
-    sender: 'user' | 'bot';
-    timestamp: Date;
+    sender: 'user' | 'bot' | 'admin';
+    timestamp: any;
     action?: {
         label: string;
         path: string;
@@ -16,28 +20,23 @@ interface Message {
 
 const ChatBot: React.FC = () => {
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
     const [inputText, setInputText] = useState('');
-    const [messages, setMessages] = useState<Message[]>(() => {
-        const saved = localStorage.getItem('chat_history');
-        if (saved) {
-            return JSON.parse(saved, (key, value) => {
-                if (key === 'timestamp') return new Date(value);
-                return value;
-            });
-        }
-        return [{
-            id: '1',
-            text: "Hello, welcome to Rush Coffee! ☕ I'm Rush Bot. How can I help you today?",
-            sender: 'bot',
-            timestamp: new Date()
-        }];
-    });
+    const [messages, setMessages] = useState<Message[]>([]);
     const [isTyping, setIsTyping] = useState(false);
     const [showGreeting, setShowGreeting] = useState(false);
-    const [showQuickReplies, setShowQuickReplies] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [sessionId, setSessionId] = useState<string>(() => {
+        return localStorage.getItem('chatSessionId') || `guest_${Date.now()}`;
+    });
+
+    useEffect(() => {
+        if (!localStorage.getItem('chatSessionId')) {
+            localStorage.setItem('chatSessionId', sessionId);
+        }
+    }, [sessionId]);
 
     const quickReplies = [
         { id: 2, text: "⏰ Store Hours", message: "hours" },
@@ -50,10 +49,47 @@ const ChatBot: React.FC = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
 
+    // Listen to messages from Firestore
+    useEffect(() => {
+        if (!sessionId) return;
+
+        const unsubscribe = db.collection('conversations')
+            .doc(sessionId)
+            .collection('messages')
+            .orderBy('timestamp', 'asc')
+            .onSnapshot((snapshot) => {
+                const msgs: Message[] = [];
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    msgs.push({
+                        id: doc.id,
+                        text: data.text,
+                        sender: data.sender,
+                        timestamp: data.timestamp ? data.timestamp.toDate() : new Date(),
+                        action: data.action
+                    });
+                });
+
+                // If no messages, add initial greeting
+                if (msgs.length === 0) {
+                    const initialMsg: Message = {
+                        id: '1',
+                        text: "Hello, welcome to Rush Coffee! ☕ I'm Rush Bot. How can I help you today?",
+                        sender: 'bot',
+                        timestamp: new Date()
+                    };
+                    setMessages([initialMsg]);
+                } else {
+                    setMessages(msgs);
+                }
+            });
+
+        return () => unsubscribe();
+    }, [sessionId]);
+
     useEffect(() => {
         scrollToBottom();
-        localStorage.setItem('chat_history', JSON.stringify(messages));
-    }, [messages, isTyping]);
+    }, [messages, isTyping, isOpen]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -89,27 +125,50 @@ const ChatBot: React.FC = () => {
         setShowGreeting(false);
     };
 
-    const handleQuickReply = (message: string) => {
-        const userMessage: Message = {
-            id: Date.now().toString(),
-            text: message,
-            sender: 'user',
-            timestamp: new Date()
+    const updateConversationMetadata = async (lastMsg: string) => {
+        const convoRef = db.collection('conversations').doc(sessionId);
+        const convoSnap = await convoRef.get();
+
+        const data = {
+            lastMessage: lastMsg,
+            lastTimestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            unreadCount: convoSnap.exists ? (convoSnap.data()?.unreadCount || 0) + 1 : 1,
+            userId: currentUser?.uid || null,
+            userName: currentUser ? `${currentUser.firstName} ${currentUser.lastName}` : 'Guest',
+            userEmail: currentUser?.email || null,
+            isGuest: !currentUser
         };
 
-        setMessages(prev => [...prev, userMessage]);
+        if (!convoSnap.exists) {
+            await convoRef.set(data);
+        } else {
+            await convoRef.update(data);
+        }
+    };
+
+    const saveMessage = async (text: string, sender: 'user' | 'bot', action?: any) => {
+        await db.collection('conversations')
+            .doc(sessionId)
+            .collection('messages')
+            .add({
+                text,
+                sender,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                action: action || null
+            });
+
+        if (sender === 'user') {
+            await updateConversationMetadata(text);
+        }
+    };
+
+    const handleQuickReply = async (message: string) => {
+        await saveMessage(message, 'user');
         setIsTyping(true);
 
-        setTimeout(() => {
+        setTimeout(async () => {
             const response = generateResponse(message);
-            const botResponse: Message = {
-                id: (Date.now() + 1).toString(),
-                text: response.text,
-                sender: 'bot',
-                timestamp: new Date(),
-                action: response.action
-            };
-            setMessages(prev => [...prev, botResponse]);
+            await saveMessage(response.text, 'bot', response.action);
             setIsTyping(false);
         }, 1000);
     };
@@ -157,36 +216,28 @@ const ChatBot: React.FC = () => {
             return { text: "Goodbye! Have a wonderful day! 👋" };
         }
 
-        return { text: "I'm not sure about that, but I'd love to help! You can ask me about our menu, opening hours, or location." };
+        return { text: "Thanks for your message! Our team will get back to you shortly. In the meantime, you can ask me about our menu, hours, or location." };
     };
 
-    const handleSend = (e?: React.FormEvent) => {
+    const handleSend = async (e?: React.FormEvent) => {
         e?.preventDefault();
         if (!inputText.trim()) return;
 
-        const userMessage: Message = {
-            id: Date.now().toString(),
-            text: inputText,
-            sender: 'user',
-            timestamp: new Date()
-        };
-
-        setMessages(prev => [...prev, userMessage]);
+        const text = inputText;
         setInputText('');
-        setIsTyping(true);
 
-        setTimeout(() => {
-            const response = generateResponse(userMessage.text);
-            const botResponse: Message = {
-                id: (Date.now() + 1).toString(),
-                text: response.text,
-                sender: 'bot',
-                timestamp: new Date(),
-                action: response.action
-            };
-            setMessages(prev => [...prev, botResponse]);
-            setIsTyping(false);
-        }, 1000);
+        await saveMessage(text, 'user');
+
+        // Check if bot should auto-reply
+        // Logic: specific keywords trigger bot, otherwise it's just sent to admin
+        const response = generateResponse(text);
+        if (response.text !== "Thanks for your message! Our team will get back to you shortly. In the meantime, you can ask me about our menu, hours, or location.") {
+            setIsTyping(true);
+            setTimeout(async () => {
+                await saveMessage(response.text, 'bot', response.action);
+                setIsTyping(false);
+            }, 1000);
+        }
     };
 
     return (
@@ -247,9 +298,9 @@ const ChatBot: React.FC = () => {
                         </div>
 
                         <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
-                            {messages.map((msg) => (
+                            {messages.map((msg, index) => (
                                 <div
-                                    key={msg.id}
+                                    key={msg.id || index}
                                     className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     <div
@@ -273,7 +324,10 @@ const ChatBot: React.FC = () => {
                                         )}
                                         <p className={`mt-1 text-[9px] ${msg.sender === 'user' ? 'text-primary-100' : 'text-gray-400'
                                             }`}>
-                                            {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {msg.timestamp instanceof Date
+                                                ? msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                                : new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                                            }
                                         </p>
                                     </div>
                                 </div>
