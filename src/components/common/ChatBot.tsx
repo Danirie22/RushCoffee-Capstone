@@ -56,7 +56,6 @@ const ChatBot: React.FC = () => {
         const unsubscribe = db.collection('conversations')
             .doc(sessionId)
             .collection('messages')
-            .orderBy('timestamp', 'asc')
             .onSnapshot((snapshot) => {
                 const msgs: Message[] = [];
                 snapshot.forEach((doc) => {
@@ -70,11 +69,18 @@ const ChatBot: React.FC = () => {
                     });
                 });
 
+                // Sort client-side to avoid index issues
+                msgs.sort((a, b) => {
+                    const timeA = a.timestamp instanceof Date ? a.timestamp.getTime() : new Date(a.timestamp).getTime();
+                    const timeB = b.timestamp instanceof Date ? b.timestamp.getTime() : new Date(b.timestamp).getTime();
+                    return timeA - timeB;
+                });
+
                 // If no messages, add initial greeting
                 if (msgs.length === 0) {
                     const initialMsg: Message = {
                         id: '1',
-                        text: "Hello, welcome to Rush Coffee! ☕ I'm Rush Bot. How can I help you today?",
+                        text: "Hello, I'm chat bot welcome to rush coffee. How can I help you?",
                         sender: 'bot',
                         timestamp: new Date()
                     };
@@ -82,6 +88,8 @@ const ChatBot: React.FC = () => {
                 } else {
                     setMessages(msgs);
                 }
+            }, (error) => {
+                console.error("ChatBot Listener Error:", error);
             });
 
         return () => unsubscribe();
@@ -147,18 +155,32 @@ const ChatBot: React.FC = () => {
     };
 
     const saveMessage = async (text: string, sender: 'user' | 'bot', action?: any) => {
-        await db.collection('conversations')
-            .doc(sessionId)
-            .collection('messages')
-            .add({
-                text,
-                sender,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                action: action || null
-            });
+        // Optimistic update: Show message immediately
+        const newMessage: Message = {
+            id: Date.now().toString(),
+            text,
+            sender,
+            timestamp: new Date(),
+            action: action || null
+        };
+        setMessages(prev => [...prev, newMessage]);
 
-        if (sender === 'user') {
-            await updateConversationMetadata(text);
+        try {
+            await db.collection('conversations')
+                .doc(sessionId)
+                .collection('messages')
+                .add({
+                    text,
+                    sender,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    action: action || null
+                });
+
+            if (sender === 'user') {
+                await updateConversationMetadata(text);
+            }
+        } catch (error) {
+            console.error("Error sending message:", error);
         }
     };
 
@@ -407,7 +429,7 @@ const ChatBot: React.FC = () => {
                     onMouseEnter={() => setIsHovered(true)}
                     onMouseLeave={() => setIsHovered(false)}
                     className={`pointer-events-auto flex h-14 w-14 items-center justify-center rounded-full shadow-xl shadow-primary-600/20 transition-all duration-300 ${isOpen
-                        ? 'bg-gray-800 text-white rotate-90'
+                        ? 'bg-primary-600 text-white rotate-90'
                         : 'bg-gradient-to-br from-primary-600 to-primary-500 text-white hover:shadow-2xl hover:shadow-primary-600/30'
                         }`}
                 >

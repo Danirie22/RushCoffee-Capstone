@@ -4,6 +4,7 @@ export const loggedOutNavLinks = [
     { href: '/', label: 'Home' },
     { href: '/about', label: 'About' },
     { href: '/menu', label: 'Menu' },
+    { href: '/queue', label: 'Queue' },
     { href: '/contact', label: 'Contact' },
 ];
 

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Link } from 'react-router-dom';
 import { Menu, Clock, Gift, Wallet, Users, Bell, ArrowRight, Quote } from 'lucide-react';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, doc, getDoc, orderBy, limit } from 'firebase/firestore';
 import { db } from '../firebaseConfig';
 
 import Card from '../components/ui/Card';
@@ -12,6 +12,7 @@ import Footer from '../components/layout/Footer';
 import TestimonialSkeleton from '../components/home/TestimonialSkeleton';
 import { useAuth } from '../context/AuthContext';
 import RushCoffeeLogo from '../components/layout/RushCoffeeLogo';
+import HeroCarousel from '../components/home/HeroCarousel';
 import heroBgFull from '../assets/rushb.webp';
 import { UserRole, Review, Testimonial } from '../types';
 
@@ -52,12 +53,14 @@ const steps = [
         Icon: Menu,
         title: 'Browse & Customize',
         description: 'Explore our menu of premium coffee drinks and customize your order exactly how you like it.',
+        hasAnimation: false,
     },
     {
         number: 2,
         Icon: Users,
         title: 'Join Virtual Queue',
         description: 'Place your order and automatically join the queue. Get your position and estimated wait time instantly.',
+        hasAnimation: true,
     },
     {
         number: 3,
@@ -65,6 +68,7 @@ const steps = [
         title: 'Pickup & Enjoy',
         description: 'Receive real-time notifications. When ready, breeze past the line and grab your coffee.',
         isPulsing: true,
+        hasAnimation: false,
     },
 ];
 
@@ -110,19 +114,19 @@ const HomePage: React.FC = () => {
     React.useEffect(() => {
         const fetchReviews = async () => {
             try {
+                // Optimized query: Only fetch published reviews with high ratings, sorted by rating, limit 3
                 const q = query(
                     collection(db, 'feedback'),
-                    where('status', '==', 'published')
+                    where('status', '==', 'published'),
+                    where('rating', '>=', 4),
+                    orderBy('rating', 'desc'),
+                    limit(3)
                 );
 
                 const snapshot = await getDocs(q);
 
                 if (!snapshot.empty) {
-                    const allReviews = snapshot.docs.map(doc => doc.data() as Review);
-                    const topReviews = allReviews
-                        .filter((data) => data.rating >= 4)
-                        .sort((a, b) => b.rating - a.rating)
-                        .slice(0, 3);
+                    const topReviews = snapshot.docs.map(doc => doc.data() as Review);
 
                     if (topReviews.length > 0) {
                         const reviewsData = await Promise.all(topReviews.map(async (data) => {
@@ -183,7 +187,7 @@ const HomePage: React.FC = () => {
         fetchReviews();
     }, []);
 
-    let orderNowPath = '/auth/register';
+    let orderNowPath = '/menu';
     if (currentUser) {
         if (currentUser.role === UserRole.ADMIN) {
             orderNowPath = '/admin';
@@ -198,41 +202,37 @@ const HomePage: React.FC = () => {
         <div className="bg-white">
             <Header />
             <main>
-                <section className="relative flex min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-gray-900">
-                    <div className="absolute inset-0 z-0">
-                        <img
-                            src={heroBgFull}
-                            alt="Coffee Shop Atmosphere"
-                            className="h-full w-full object-cover object-left brightness-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent"></div>
-                    </div>
+                <section className="relative flex min-h-[550px] lg:min-h-[calc(100vh-5rem)] items-center overflow-hidden bg-gradient-to-br from-[#F9F5F1] to-[#EFE6DD]">
+                    {/* Decorative Elements */}
+                    <div className="absolute top-0 right-0 -mt-20 -mr-20 h-[500px] w-[500px] rounded-full bg-primary-200/20 blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 -mb-20 -ml-20 h-[400px] w-[400px] rounded-full bg-orange-200/20 blur-3xl"></div>
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]"></div>
 
-                    <div className="container relative z-10 mx-auto max-w-7xl px-6 py-16 md:py-20">
-                        <div className="grid grid-cols-1 items-center gap-12 xl:grid-cols-2">
+                    <div className="container relative z-10 mx-auto max-w-7xl px-6 py-6 md:py-10">
+                        <div className="grid grid-cols-1 items-center gap-12 lg:gap-12 xl:grid-cols-2">
                             <div className="animate-fade-in-up text-center xl:text-left">
-                                <h1 className="font-display text-4xl font-bold text-white md:text-6xl lg:text-7xl leading-tight">
+                                <h1 className="font-display text-4xl font-bold text-gray-900 md:text-6xl lg:text-7xl leading-none tracking-tight">
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 200ms forwards', opacity: 0 }}>Skip the Line,</span>
-                                    <span className="block text-primary-400" style={{ animation: 'fade-in-up 0.8s ease-out 300ms forwards', opacity: 0 }}>Get Your Coffee</span>
+                                    <span className="block text-primary-600" style={{ animation: 'fade-in-up 0.8s ease-out 300ms forwards', opacity: 0 }}>Get Your Coffee</span>
                                     <span className="block" style={{ animation: 'fade-in-up 0.8s ease-out 400ms forwards', opacity: 0 }}>Faster.</span>
                                 </h1>
-                                <p className="mx-auto mt-5 md:mt-6 max-w-2xl text-base md:text-lg text-gray-200 md:text-xl xl:mx-0 shadow-black drop-shadow-md leading-relaxed" style={{ animation: 'fade-in-up 0.8s ease-out 500ms forwards', opacity: 0 }}>
+                                <p className="mx-auto mt-6 md:mt-8 max-w-2xl text-base md:text-lg text-gray-700 md:text-xl xl:mx-0 leading-relaxed" style={{ animation: 'fade-in-up 0.8s ease-out 500ms forwards', opacity: 0 }}>
                                     Join our digital queue system. Order ahead, track your position in real-time, and breeze through pickup. Your perfect cup awaits—without the wait.
                                 </p>
 
-                                <div className="mt-6 md:mt-8 flex flex-wrap justify-center gap-2.5 md:gap-3 xl:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 600ms forwards', opacity: 0 }}>
-                                    <Badge className="bg-primary-900/90 !text-white border border-primary-700 backdrop-blur-sm px-4 py-2">⚡ Real-Time Queue</Badge>
-                                    <Badge className="bg-primary-900/90 !text-white border border-primary-700 backdrop-blur-sm px-4 py-2">📱 Mobile Ordering</Badge>
-                                    <Badge className="bg-primary-900/90 !text-white border border-primary-700 backdrop-blur-sm px-4 py-2">🎁 Rewards Program</Badge>
+                                <div className="mt-8 md:mt-10 flex flex-wrap justify-center gap-2.5 md:gap-3 xl:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 600ms forwards', opacity: 0 }}>
+                                    <Badge className="bg-white/80 text-primary-900 border border-primary-100 shadow-sm backdrop-blur-sm px-4 py-2">⚡ Real-Time Queue</Badge>
+                                    <Badge className="bg-white/80 text-primary-900 border border-primary-100 shadow-sm backdrop-blur-sm px-4 py-2">📱 Mobile Ordering</Badge>
+                                    <Badge className="bg-white/80 text-primary-900 border border-primary-100 shadow-sm backdrop-blur-sm px-4 py-2">🎁 Rewards Program</Badge>
                                 </div>
 
-                                <div className="mt-8 md:mt-10 flex flex-col items-center gap-3 md:gap-4 sm:flex-row sm:justify-center xl:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 700ms forwards', opacity: 0 }}>
+                                <div className="mt-10 md:mt-12 flex flex-col items-center gap-3 md:gap-4 sm:flex-row sm:justify-center xl:justify-start" style={{ animation: 'fade-in-up 0.8s ease-out 700ms forwards', opacity: 0 }}>
                                     <Link to={orderNowPath}>
                                         <Button
                                             variant="primary"
                                             size="lg"
                                             startIcon={<RushCoffeeLogo className="h-5 w-5" />}
-                                            className="!bg-primary-600 !hover:bg-primary-700 !shadow-sm"
+                                            className="!bg-primary-600 !hover:bg-primary-700 !shadow-lg hover:shadow-primary-500/30 transition-all font-bold"
                                         >
                                             Order Now
                                         </Button>
@@ -240,12 +240,14 @@ const HomePage: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="hidden lg:block"></div>
+                            <div className="hidden lg:block relative items-center justify-center">
+                                <HeroCarousel />
+                            </div>
                         </div>
                     </div>
                 </section>
 
-                <section id="features" className="bg-white px-6 py-20">
+                <section id="features" className="relative flex min-h-[350px] lg:min-h-[calc(45vh-5rem)] items-center bg-white px-6 py-6 md:py-10">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center">
                             <p className="mb-2 font-medium text-primary-600">Why Rush Coffee?</p>
@@ -275,7 +277,7 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                <section id="how-it-works" className="bg-gradient-to-b from-coffee-50 to-white px-6 py-12 md:py-20">
+                <section id="how-it-works" className="relative flex min-h-[350px] lg:min-h-[calc(45vh-5rem)] items-center bg-gradient-to-b from-coffee-50 to-white px-6 py-6 md:py-10">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center">
                             <p className="mb-2 font-medium text-primary-600">Simple Process</p>
@@ -318,7 +320,7 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                <section id="testimonials" className="bg-white py-12 px-6 md:py-20">
+                <section id="testimonials" className="relative flex min-h-[350px] lg:min-h-[calc(45vh-5rem)] items-center bg-white px-6 py-6 md:py-10">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center">
                             <p className="mb-2 font-medium text-primary-600">Customer Love</p>
@@ -372,7 +374,7 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                <section className="relative overflow-hidden bg-primary-600 px-6 py-24 text-center text-white">
+                <section className="relative flex min-h-[350px] lg:min-h-[calc(45vh-5rem)] items-center justify-center overflow-hidden bg-primary-600 px-6 py-6 md:py-10 text-center text-white">
                     <div className="absolute inset-0 z-0">
                         <img
                             src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070&auto=format&fit=crop"

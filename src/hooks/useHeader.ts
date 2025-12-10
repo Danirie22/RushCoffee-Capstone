@@ -31,7 +31,7 @@ export const useHeader = () => {
     // If we are on the verification page OR if 2FA is pending OR if the auth modal is open, pretend we are logged out
     const isVerifying = location.pathname === '/auth/verify-email';
     const isPending2FA = sessionStorage.getItem('requires2FA') === 'true';
-    const showLoggedInState = currentUser && !isVerifying && !isPending2FA && !isAuthModalOpen && location.pathname !== '/';
+    const showLoggedInState = currentUser && !isVerifying && !isPending2FA && !isAuthModalOpen;
 
     const navLinks = showLoggedInState ? loggedInNavLinks : loggedOutNavLinks;
 
