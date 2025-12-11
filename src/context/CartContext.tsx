@@ -76,6 +76,19 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const { currentUser } = useAuth();
   const { products, isLoading: productsLoading } = useProduct();
 
+  // Helper: Generate a stable string for customizations by sorting keys
+  const generateCustomizationString = (customizations?: Customizations): string => {
+    if (!customizations) return '';
+    // Sort keys to ensure {a:1, b:2} === {b:2, a:1}
+    const sortedKeys = Object.keys(customizations).sort();
+    const sortedObj: any = {};
+    sortedKeys.forEach(key => {
+      // @ts-ignore
+      sortedObj[key] = customizations[key];
+    });
+    return JSON.stringify(sortedObj);
+  };
+
   // Toast message handler
   React.useEffect(() => {
     if (toastMessage) {
@@ -107,7 +120,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
             if (!selectedSize) return null;
 
             // Generate ID consistent with addToCart logic
-            const customizationString = item.customizations ? JSON.stringify(item.customizations) : '';
+            const customizationString = generateCustomizationString(item.customizations);
             const id = `${product.id}-${selectedSize.name}-${customizationString}`;
 
             return {
@@ -187,7 +200,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const closeCart = () => setIsCartOpen(false);
 
   const addToCart = (product: Product, selectedSize: ProductSize, customizations?: Customizations, quantity: number = 1) => {
-    const customizationString = customizations ? JSON.stringify(customizations) : '';
+    const customizationString = generateCustomizationString(customizations);
     const cartItemId = `${product.id}-${selectedSize.name}-${customizationString}`;
 
     let newCart;
@@ -214,7 +227,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     let itemsAddedCount = 0;
 
     itemsToAdd.forEach(item => {
-      const customizationString = item.customizations ? JSON.stringify(item.customizations) : '';
+      const customizationString = generateCustomizationString(item.customizations);
       const cartItemId = `${item.product.id}-${item.selectedSize.name}-${customizationString}`;
       const existingItemIndex = newCart.findIndex(cartItem => cartItem.id === cartItemId);
 
@@ -273,7 +286,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     // Remove old item and add new one with updated values
     const newCart = cartItems.filter(item => item.id !== oldCartItemId);
 
-    const customizationString = customizations ? JSON.stringify(customizations) : '';
+    const customizationString = generateCustomizationString(customizations);
     const newCartItemId = `${product.id}-${selectedSize.name}-${customizationString}`;
 
     // Check if new configuration already exists

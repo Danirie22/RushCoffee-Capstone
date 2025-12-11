@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Mic, MicOff, Loader2 } from 'lucide-react';
 
-
 interface VoiceSearchProps {
     onSearch: (term: string) => void;
     onCommand: (command: string, term: string) => void;
@@ -15,11 +14,19 @@ declare global {
     }
 }
 
+const DEMO_TOOLTIP_DURATION = 5000;
+const HINTS = [
+    "Try saying 'Order Spanish Latte'",
+    "Say 'Show me Meals'",
+    "Try 'Order Iced Latte'",
+    "Say 'Matcha Series'"
+];
+
 const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearch, onCommand, language = 'en-US' }) => {
     const [isListening, setIsListening] = useState(false);
     const [isSupported, setIsSupported] = useState(true);
     const recognitionRef = useRef<any>(null);
-
+    const [hintIndex, setHintIndex] = useState(0);
 
     const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +45,7 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearch, onCommand, language
         recognitionRef.current.onstart = () => {
             setIsListening(true);
             setError(null);
-
+            setHintIndex(0); // Reset hint cycle
         };
 
         recognitionRef.current.onend = () => {
@@ -80,6 +87,17 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearch, onCommand, language
             }
         };
     }, [language]);
+
+    // Hint Cycling Logic
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isListening) {
+            interval = setInterval(() => {
+                setHintIndex((prev) => (prev + 1) % HINTS.length);
+            }, 2500); // Change hint every 2.5 seconds
+        }
+        return () => clearInterval(interval);
+    }, [isListening]);
 
     const processResult = (text: string) => {
         const lowerText = text.toLowerCase().trim();
@@ -155,13 +173,23 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearch, onCommand, language
         }
     };
 
+    const [showDemoTooltip, setShowDemoTooltip] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowDemoTooltip(false);
+        }, DEMO_TOOLTIP_DURATION);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     if (!isSupported) return null;
 
     return (
-        <div className="relative flex items-center gap-2">
+        <div className="relative w-12 h-12 flex items-center justify-center z-20">
             <button
                 onClick={toggleListening}
-                className={`relative flex h-12 w-12 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-300 ${isListening
+                className={`relative flex h-full w-full items-center justify-center rounded-full backdrop-blur-sm transition-all duration-300 ${isListening
                     ? 'bg-red-500 text-white shadow-[0_0_15px_rgba(239,68,68,0.5)] animate-pulse'
                     : error
                         ? 'bg-red-500/20 text-red-500 ring-1 ring-red-500/50'
@@ -177,11 +205,35 @@ const VoiceSearch: React.FC<VoiceSearchProps> = ({ onSearch, onCommand, language
                 )}
             </button>
 
+            {/* Hint Tooltip (Only when listening) */}
+            {isListening && !error && (
+                <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+                    <div className="animate-fade-in bg-gray-900/90 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-xl whitespace-nowrap backdrop-blur-md border border-white/10">
+                        {HINTS[hintIndex]}
+                        {/* Upward pointing arrow */}
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900/90"></div>
+                    </div>
+                </div>
+            )}
+
             {/* Error Tooltip */}
             {error && (
-                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-red-500 px-2 py-1 text-[10px] font-medium text-white shadow-lg">
+                <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-red-500 px-2 py-1 text-[10px] font-medium text-white shadow-lg z-50">
                     {error}
                     <div className="absolute -top-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-b-red-500"></div>
+                </div>
+            )}
+
+            {/* Demo Tooltip - Auto-hide */}
+            {showDemoTooltip && !isListening && !error && (
+                <div className="absolute top-full mt-3 left-1/2 -translate-x-1/2 z-50 pointer-events-none">
+                    <div className="animate-bounce">
+                        <div className="bg-primary-600 text-white text-xs font-medium px-3 py-1.5 rounded-full shadow-lg whitespace-nowrap">
+                            Try voice search!
+                        </div>
+                        {/* Upward pointing arrow */}
+                        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-primary-600"></div>
+                    </div>
                 </div>
             )}
         </div>

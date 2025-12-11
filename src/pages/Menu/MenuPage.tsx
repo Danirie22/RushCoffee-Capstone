@@ -274,7 +274,29 @@ const MenuPage: React.FC = () => {
             return;
         }
 
-        // 3. Fallback to Standard Search
+        // 3. Fallback: Check if the search term yields a distinct single result
+        // This acts as a safety net for voice commands that text-match exactly one product (e.g. "Amerikano")
+        // but might have failed the strict parser for some reason.
+        const searchMatches = products.filter(p => {
+            const pName = p.name.toLowerCase();
+            const pDesc = p.description.toLowerCase();
+            // Simple loose matching similar to the search filter
+            return pName.includes(lowerTerm) ||
+                lowerTerm.includes(pName) ||
+                p.aliases?.some(a => a.toLowerCase().includes(lowerTerm));
+        });
+
+        if (searchMatches.length === 1) {
+            const match = searchMatches[0];
+            setSelectedProduct(match);
+            setSelectedSize(match.sizes[0]);
+            setInitialQuantity(1);
+            setIsCustomizeModalOpen(true);
+            setSearchQuery('');
+            return;
+        }
+
+        // 4. Fallback to Standard Search
         setSearchQuery(term);
         productsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
@@ -413,10 +435,10 @@ const MenuPage: React.FC = () => {
                             />
 
                             {/* Sort Dropdown */}
-                            <div className="relative shrink-0" ref={sortMenuRef}>
+                            <div className="relative shrink-0 z-20" ref={sortMenuRef}>
                                 <button
                                     onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
-                                    className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm ring-1 ring-white/20 transition hover:bg-white/20"
+                                    className="flex h-12 w-12 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur-sm ring-1 ring-white/20 transition hover:bg-white/20 select-none"
                                     aria-haspopup="true"
                                     aria-expanded={isSortMenuOpen}
                                     aria-label="Sort products"
@@ -439,7 +461,7 @@ const MenuPage: React.FC = () => {
                                                     setSortOption(option.value);
                                                     setIsSortMenuOpen(false);
                                                 }}
-                                                className={`flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-sm text-left font-medium transition-colors ${sortOption === option.value
+                                                className={`flex w-full items-center justify-between rounded-lg px-4 py-2.5 text-sm text-left font-medium transition-colors select-none ${sortOption === option.value
                                                     ? 'bg-primary-50 text-primary-700'
                                                     : 'text-gray-700 hover:bg-gray-50'
                                                     }`}

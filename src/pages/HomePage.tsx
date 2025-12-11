@@ -247,7 +247,7 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                <section id="features" className="relative flex min-h-[350px] lg:min-h-[calc(45vh-5rem)] items-center bg-white px-6 py-6 md:py-10">
+                <section id="features" className="relative flex min-h-[60vh] md:min-h-[calc(100vh-5rem)] items-center bg-white px-6 py-6 md:py-10">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center">
                             <p className="mb-2 font-medium text-primary-600">Why Rush Coffee?</p>
@@ -277,7 +277,7 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                <section id="how-it-works" className="relative flex min-h-[350px] lg:min-h-[calc(45vh-5rem)] items-center bg-gradient-to-b from-coffee-50 to-white px-6 py-6 md:py-10">
+                <section id="how-it-works" className="relative flex min-h-[60vh] md:min-h-[calc(100vh-5rem)] items-center bg-gradient-to-b from-coffee-50 to-white px-6 py-6 md:py-10">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center">
                             <p className="mb-2 font-medium text-primary-600">Simple Process</p>
@@ -320,7 +320,7 @@ const HomePage: React.FC = () => {
                     </div>
                 </section>
 
-                <section id="testimonials" className="relative flex min-h-[350px] lg:min-h-[calc(45vh-5rem)] items-center bg-white px-6 py-6 md:py-10">
+                <section id="testimonials" className="relative flex min-h-[60vh] md:min-h-[calc(100vh-5rem)] items-center bg-white px-6 py-6 md:py-10">
                     <div className="container mx-auto max-w-7xl">
                         <div className="text-center">
                             <p className="mb-2 font-medium text-primary-600">Customer Love</p>

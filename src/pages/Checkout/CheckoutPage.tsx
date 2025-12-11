@@ -1,13 +1,15 @@
 import * as React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, User, Phone, MessageSquare, Check, Coffee, AlertCircle, Loader2, ArrowLeft, ArrowRight } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, ArrowRight, MessageSquare } from 'lucide-react';
 
 import Header from '../../components/layout/Header';
 import Button from '../../components/ui/Button';
 
-import PaymentMethodSelector from '../../components/checkout/PaymentMethodSelector';
-import GCashPayment from '../../components/checkout/GCashPayment';
 import OrderSummaryWidget from '../../components/checkout/OrderSummaryWidget';
+import UserInfoForm from '../../components/checkout/UserInfoForm';
+import RewardsRedemption from '../../components/checkout/RewardsRedemption';
+import CheckoutPayment from '../../components/checkout/CheckoutPayment';
+
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { useOrder, QueueItem } from '../../context/OrderContext';
@@ -236,8 +238,6 @@ const CheckoutPage: React.FC = () => {
     };
 
 
-
-
     if (!currentUser || (totalCartItems === 0 && !orderPlaced)) {
         return (
             <div className="flex min-h-screen flex-col">
@@ -276,219 +276,36 @@ const CheckoutPage: React.FC = () => {
                 <form onSubmit={handlePlaceOrder} id="checkout-form" className="grid grid-cols-1 gap-8 lg:grid-cols-3">
                     {/* Left Column */}
                     <div className="space-y-8 lg:col-span-2">
-                        {/* Customer Info */}
-                        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                            <h2 className="mb-4 font-display text-xl font-bold text-coffee-900">Your Information</h2>
-                            <div className="space-y-4">
-                                <div>
-                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
-                                    <div className="relative mt-1">
-                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                            <User className="h-5 w-5 text-gray-400" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            id="name"
-                                            value={customerInfo.name}
-                                            onChange={e => setCustomerInfo({ ...customerInfo, name: e.target.value })}
-                                            className="block w-full rounded-lg border-gray-200 bg-gray-50 py-2.5 pl-10 text-gray-900 shadow-sm transition-all focus:border-primary-500 focus:bg-white focus:ring-primary-500"
-                                            placeholder="Juan dela Cruz"
-                                        />
-                                    </div>
-                                    {errors.name && <p className="mt-1 text-xs text-red-500">{errors.name}</p>}
-                                </div>
-                                <div>
-                                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
-                                    <div className="relative mt-1">
-                                        <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                            <Phone className="h-5 w-5 text-gray-400" />
-                                        </div>
-                                        <input
-                                            type="tel"
-                                            id="phone"
-                                            value={customerInfo.phone}
-                                            onFocus={() => {
-                                                if (!customerInfo.phone) {
-                                                    setCustomerInfo(prev => ({ ...prev, phone: '+63 9' }));
-                                                }
-                                            }}
-                                            onBlur={() => {
-                                                if (customerInfo.phone === '+63 9') {
-                                                    setCustomerInfo(prev => ({ ...prev, phone: '' }));
-                                                }
-                                            }}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
 
-                                                // Allow clearing
-                                                if (val === '') {
-                                                    setCustomerInfo({ ...customerInfo, phone: '' });
-                                                    return;
-                                                }
+                        {/* 1. User Information */}
+                        <UserInfoForm
+                            customerInfo={customerInfo}
+                            setCustomerInfo={setCustomerInfo}
+                            errors={errors}
+                        />
 
-                                                // Strip non-digits
-                                                let digits = val.replace(/\D/g, '');
+                        {/* 2. Rewards Selection */}
+                        <RewardsRedemption
+                            rewards={rewards}
+                            selectedReward={selectedReward}
+                            setSelectedReward={setSelectedReward}
+                            loading={loadingRewards}
+                            currentUser={currentUser}
+                        />
 
-                                                // Handle leading 0 replacement
-                                                if (digits.startsWith('0')) {
-                                                    digits = '63' + digits.substring(1);
-                                                }
+                        {/* 3. Payment Method */}
+                        <CheckoutPayment
+                            selectedPaymentMethod={selectedPaymentMethod}
+                            setSelectedPaymentMethod={setSelectedPaymentMethod}
+                            totalAmount={total}
+                            paymentReference={paymentReference}
+                            setPaymentReference={setPaymentReference}
+                            accountName={accountName}
+                            setAccountName={setAccountName}
+                            errors={errors}
+                        />
 
-                                                // Ensure starts with 63
-                                                if (!digits.startsWith('63')) {
-                                                    digits = '63' + digits;
-                                                }
-
-                                                // Ensure starts with 639
-                                                if (digits.length >= 2 && digits[2] !== '9') {
-                                                    digits = '639' + digits.substring(2);
-                                                } else if (digits.length === 2) {
-                                                    digits = '639';
-                                                }
-
-                                                // Max 12 digits (63 + 10 digits)
-                                                digits = digits.substring(0, 12);
-
-                                                // Format as +63 9xx xxx xxxx
-                                                let formatted = '+63';
-                                                if (digits.length > 2) {
-                                                    formatted += ' ' + digits.substring(2, 5);
-                                                }
-                                                if (digits.length > 5) {
-                                                    formatted += ' ' + digits.substring(5, 8);
-                                                }
-                                                if (digits.length > 8) {
-                                                    formatted += ' ' + digits.substring(8, 12);
-                                                }
-
-                                                setCustomerInfo({ ...customerInfo, phone: formatted });
-                                            }}
-                                            className="block w-full rounded-lg border-gray-200 bg-gray-50 py-2.5 pl-10 text-gray-900 shadow-sm transition-all focus:border-primary-500 focus:bg-white focus:ring-primary-500"
-                                            placeholder="+63 9xx xxx xxxx"
-                                        />
-                                    </div>
-                                    {errors.phone && <p className="mt-1 text-xs text-red-500">{errors.phone}</p>}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Rewards Selection */}
-                        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                            <h2 className="mb-4 font-display text-xl font-bold text-coffee-900">Redeem Rewards</h2>
-                            {loadingRewards ? (
-                                <div className="flex justify-center py-8">
-                                    <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {/* No Reward Option */}
-                                    <label
-                                        className={`relative flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all hover:border-primary-300 hover:shadow-md ${selectedReward === null
-                                            ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600'
-                                            : 'border-gray-200 bg-white'
-                                            }`}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className={`flex h-12 w-12 items-center justify-center rounded-full transition-colors ${selectedReward === null ? 'bg-primary-100 text-primary-600' : 'bg-gray-100 text-gray-500'}`}>
-                                                <Coffee className="h-6 w-6" />
-                                            </div>
-                                            <div>
-                                                <p className={`font-semibold ${selectedReward === null ? 'text-primary-900' : 'text-gray-900'}`}>No Reward</p>
-                                                <p className="text-sm text-gray-500">Save your points for later</p>
-                                            </div>
-                                        </div>
-                                        <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${selectedReward === null ? 'border-primary-600 bg-primary-600' : 'border-gray-300'}`}>
-                                            {selectedReward === null && <div className="h-2 w-2 rounded-full bg-white" />}
-                                        </div>
-                                        <input
-                                            type="radio"
-                                            name="reward"
-                                            className="hidden"
-                                            checked={selectedReward === null}
-                                            onChange={() => setSelectedReward(null)}
-                                        />
-                                    </label>
-
-                                    {rewards.map(reward => {
-                                        const canAfford = currentUser.currentPoints >= reward.pointsCost;
-                                        const isSelected = selectedReward?.id === reward.id;
-                                        return (
-                                            <label
-                                                key={reward.id}
-                                                className={`relative flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all ${!canAfford ? 'cursor-not-allowed opacity-60 bg-gray-50' : 'hover:border-primary-300 hover:shadow-md'
-                                                    } ${isSelected
-                                                        ? 'border-primary-600 bg-primary-50 ring-1 ring-primary-600'
-                                                        : 'border-gray-200 bg-white'
-                                                    }`}
-                                            >
-                                                <div className="flex items-center gap-4">
-                                                    <div className="h-12 w-12 overflow-hidden rounded-lg border border-gray-100 bg-gray-50">
-                                                        <img src={reward.imageUrl} alt={reward.name} className="h-full w-full object-cover" />
-                                                    </div>
-                                                    <div>
-                                                        <p className={`font-semibold ${isSelected ? 'text-primary-900' : 'text-gray-900'}`}>{reward.name}</p>
-                                                        <div className="flex items-center gap-1">
-                                                            <span className={`text-sm font-bold ${canAfford ? 'text-primary-600' : 'text-gray-400'}`}>{reward.pointsCost} Points</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <div className={`flex h-5 w-5 items-center justify-center rounded-full border ${isSelected ? 'border-primary-600 bg-primary-600' : 'border-gray-300'}`}>
-                                                    {isSelected && <div className="h-2 w-2 rounded-full bg-white" />}
-                                                </div>
-                                                <input
-                                                    type="radio"
-                                                    name="reward"
-                                                    className="hidden"
-                                                    disabled={!canAfford}
-                                                    checked={isSelected}
-                                                    onChange={() => setSelectedReward(reward)}
-                                                />
-                                            </label>
-                                        );
-                                    })}
-                                </div>
-                            )}
-                            <div className="mt-6 flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 text-sm">
-                                <span className="text-gray-600">Available Points</span>
-                                <span className="font-display text-lg font-bold text-primary-600">{currentUser.currentPoints}</span>
-                            </div>
-                        </div>
-
-                        {/* Payment Method */}
-                        <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                            <PaymentMethodSelector selectedMethod={selectedPaymentMethod} onSelectMethod={setSelectedPaymentMethod} totalAmount={total} />
-                            {errors.payment && <p className="mt-2 text-xs text-red-500">{errors.payment}</p>}
-                            {selectedPaymentMethod === 'gcash' && (
-                                <div className="mt-6 border-t pt-6">
-                                    <GCashPayment
-                                        totalAmount={total}
-                                        orderNumber={`RC-${Date.now()}`}
-                                        referenceNumber={paymentReference}
-                                        onReferenceNumberChange={setPaymentReference}
-                                        accountName={accountName}
-                                        onAccountNameChange={setAccountName}
-                                    />
-                                    {errors.gcash && <p className="mt-2 text-xs text-red-500 text-center">{errors.gcash}</p>}
-                                    {errors.accountName && <p className="mt-2 text-xs text-red-500 text-center">{errors.accountName}</p>}
-                                    {errors.reference && <p className="mt-2 text-xs text-red-500 text-center">{errors.reference}</p>}
-                                </div>
-                            )}
-
-                            {selectedPaymentMethod === 'cash' && (
-                                <div className="mt-6 rounded-lg border-l-4 border-green-400 bg-green-50 p-4" role="alert">
-                                    <div className="flex">
-                                        <div className="flex-shrink-0">
-                                            <AlertCircle className="h-5 w-5 text-green-400" />
-                                        </div>
-                                        <div className="ml-3">
-                                            <p className="text-sm text-green-700">Please prepare the exact amount. You can pay at the counter upon pickup.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Order Notes */}
+                        {/* 4. Order Notes (Kept minimal here or could be extracted too) */}
                         <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                             <h2 className="mb-4 font-display text-xl font-bold text-coffee-900">Special Instructions (Optional)</h2>
                             <div className="relative">
@@ -545,8 +362,6 @@ const CheckoutPage: React.FC = () => {
                     {`Place Order (₱${total.toFixed(2)})`}
                 </Button>
             </div>
-
-
         </div>
     );
 };

@@ -148,7 +148,7 @@ export const mockProducts: Product[] = [
     available: true,
     stock: 99,
     displayOrder: 6,
-    aliases: ['black coffee', 'cafe americano'],
+    aliases: ['black coffee', 'cafe americano', 'amerikano'],
     recipe: [
       { ingredientId: 'espresso-shot', quantity: 2 },
       { ingredientId: 'hot-water', quantity: 220 },
