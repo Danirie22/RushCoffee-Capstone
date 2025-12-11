@@ -69,46 +69,37 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
                 const data = doc.data();
                 const mockProduct = mockProducts.find(p => p.id === doc.id);
 
-                // Always use the latest aliases and recipe from code (mockProducts)
-                // This ensures search and ingredients are always up to date without waiting for DB sync
-                if (mockProduct) {
-                    return {
-                        id: doc.id,
-                        ...data,
-                        aliases: mockProduct.aliases,
-                        recipe: mockProduct.recipe
-                    };
-                }
-
+                // PRIORITIZE FIRESTORE DATA
+                // Only fall back to mock data if Firestore fields are missing
                 return {
                     id: doc.id,
-                    ...data
+                    ...data,
+                    aliases: data.aliases || (mockProduct ? mockProduct.aliases : []),
+                    recipe: data.recipe || (mockProduct ? mockProduct.recipe : [])
                 };
             }) as Product[];
 
             setProducts(productList);
 
-            // Auto-sync recipes from code to Firestore
-            // This ensures that any changes to recipes in mockProducts.ts are reflected in Firestore
-            // We do this silently in the background
+            // Auto-seed recipes/aliases ONLY IF MISSING in Firestore
+            // This ensures we don't overwrite any changes made directly in the DB
             const batch = db.batch();
             let hasUpdates = false;
 
             mockProducts.forEach(mockProduct => {
                 const firestoreProduct = productList.find(p => p.id === mockProduct.id);
+                // Cast to any to check for property existence easily
+                const productData = firestoreProduct as any;
+
                 if (firestoreProduct) {
-                    // Check if recipe or aliases are different
-                    const currentRecipe = JSON.stringify(firestoreProduct.recipe || []);
-                    const newRecipe = JSON.stringify(mockProduct.recipe || []);
-
-                    const currentAliases = JSON.stringify(firestoreProduct.aliases || []);
-                    const newAliases = JSON.stringify(mockProduct.aliases || []);
-
                     const updates: any = {};
-                    if (currentRecipe !== newRecipe) {
+
+                    // Only update if the field is strictly undefined or null in Firestore
+                    // This allows the DB to become the source of truth
+                    if (!productData.recipe) {
                         updates.recipe = mockProduct.recipe;
                     }
-                    if (currentAliases !== newAliases) {
+                    if (!productData.aliases) {
                         updates.aliases = mockProduct.aliases;
                     }
 
@@ -116,14 +107,14 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
                         const ref = productsCollectionRef.doc(mockProduct.id);
                         batch.update(ref, updates);
                         hasUpdates = true;
-                        console.log(`Syncing updates for ${mockProduct.name}`);
+                        console.log(`Seeding missing data for ${mockProduct.name}`);
                     }
                 }
             });
 
             if (hasUpdates) {
                 await batch.commit();
-                console.log('✅ Recipes synced from code to Firestore');
+                console.log('✅ Missing recipes/aliases seeded to Firestore');
             }
 
         } catch (err: any) {

@@ -34,12 +34,36 @@ const SpinWheelModal: React.FC<SpinWheelModalProps> = ({ isOpen, onClose }) => {
 
         setLoading(true);
         try {
-            // TESTING MODE: Always allow spins
-            setSpinsLeft(3);
-            setCanSpin(true);
+            const userRef = db.collection('users').doc(currentUser.uid);
+            const userDoc = await userRef.get();
+            const userData = userDoc.data();
+
+            if (userData?.lastSpinDate) {
+                const lastSpin = userData.lastSpinDate.toDate();
+                const today = new Date();
+
+                // Reset at midnight
+                const isSameDay = lastSpin.getDate() === today.getDate() &&
+                    lastSpin.getMonth() === today.getMonth() &&
+                    lastSpin.getFullYear() === today.getFullYear();
+
+                if (isSameDay) {
+                    setSpinsLeft(0);
+                    setCanSpin(false);
+                } else {
+                    setSpinsLeft(1); // 1 spin per day
+                    setCanSpin(true);
+                }
+            } else {
+                // First time spinning
+                setSpinsLeft(1);
+                setCanSpin(true);
+            }
         } catch (error) {
             console.error('Error checking spin availability:', error);
-            setCanSpin(true);
+            // Default to allowing a spin if check fails (optimize for user experience) or block it?
+            // Let's safe fail to false to prevent abuse if DB is down
+            setCanSpin(false);
         } finally {
             setLoading(false);
         }
@@ -196,7 +220,7 @@ const SpinWheelModal: React.FC<SpinWheelModalProps> = ({ isOpen, onClose }) => {
                                         <div className="text-center">
                                             <p className="text-sm font-semibold text-gray-600 flex items-center justify-center gap-2">
                                                 <TrendingUp className="w-4 h-4" />
-                                                Spins Remaining: <span className="text-orange-600 text-lg">{spinsLeft}</span>/3
+                                                Spins Remaining: <span className="text-orange-600 text-lg">{spinsLeft}</span>/1
                                             </p>
                                         </div>
 
@@ -288,9 +312,7 @@ const SpinWheelModal: React.FC<SpinWheelModalProps> = ({ isOpen, onClose }) => {
                         {/* Game Info */}
                         {!prize && (
                             <div className="text-center mt-6 space-y-1">
-                                <p className="text-xs text-gray-500 font-medium">
-                                    🎮 TESTING MODE: Unlimited spins enabled
-                                </p>
+
                                 <p className="text-xs text-gray-400">
                                     Weighted probability • All prizes guaranteed • Discounts expire in 24h
                                 </p>

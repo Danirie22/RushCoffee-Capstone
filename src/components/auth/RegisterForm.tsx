@@ -420,19 +420,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onLogin, onSuccess, onVerif
                                     digits = '63' + digits;
                                 }
 
-                                // Ensure starts with 639
-                                if (digits.length >= 2 && digits[2] !== '9') {
-                                    digits = '639' + digits.substring(2);
-                                } else if (digits.length === 2) {
-                                    digits = '639';
-                                }
-
                                 // Max 12 digits (63 + 10 digits)
                                 digits = digits.substring(0, 12);
 
                                 // Format as +63 9xx xxx xxxx
-                                let formatted = '+63 9';
+                                let formatted = '+63';
+
                                 if (digits.length > 2) {
+                                    // Add the 9 prefix group
                                     formatted += ' ' + digits.substring(2, 5);
                                 }
                                 if (digits.length > 5) {
